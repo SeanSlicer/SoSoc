@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/webpack-config": "^0.17.2",
+    "@react-native-community/netinfo": "^9.3.1",
     "expo": "~46.0.9",
     "expo-status-bar": "~1.4.0",
     "query": "^0.2.0",

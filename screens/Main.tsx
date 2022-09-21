@@ -1,17 +1,43 @@
 import React, { FC } from "react";
-import { Image, StyleSheet, View, Text } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import {
+  QueryClient,
+  QueryClientProvider,
+  focusManager,
+  onlineManager,
+} from "react-query";
+import { AppState, AppStateStatus, Platform, StatusBar } from "react-native";
 import Expo from "expo";
 import { registerRootComponent } from "expo";
 import Index from "./Index";
 
+function onAppStateChange(status: AppStateStatus) {
+  if (Platform.OS !== "web") {
+    focusManager.setFocused(status === "active");
+  }
+}
+
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(!!state.isConnected);
+  });
+});
+
 export function Main() {
+  const queryClient = new QueryClient();
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener("change", onAppStateChange);
+
+    return () => subscription.remove();
+  }, []);
+
   return (
-    <View>
+    <QueryClientProvider client={queryClient}>
+      <StatusBar barStyle="dark-content" />
       <Index />
-    </View>
+    </QueryClientProvider>
   );
 }
 
 registerRootComponent(Main);
-
-const styles = StyleSheet.create({});
