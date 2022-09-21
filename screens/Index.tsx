@@ -1,17 +1,18 @@
 import React, { FC } from "react";
 import { Image, StyleSheet, View, Text } from "react-native";
 import Expo from "expo";
-import { registerRootComponent } from "expo";
-import Index from "./Index";
+import { Section } from "../components/section";
 
-export function Main() {
+const Index = () => {
   return (
     <View>
-      <Index />
+      <Section title={"section.navigation.title"}>
+        <Text>sosoc</Text>
+      </Section>
     </View>
   );
-}
+};
 
-registerRootComponent(Main);
+export default Index;
 
 const styles = StyleSheet.create({});
