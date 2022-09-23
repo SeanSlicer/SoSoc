@@ -1,16 +1,10 @@
 import React, { FC } from "react";
 import { Image, StyleSheet, View, Text } from "react-native";
 import Expo from "expo";
-import { Section } from "../components/section";
-import { Settings } from "./Settings";
+import { LoginScreen } from "./Login";
 
 const Index = () => {
-  return (
-    <View>
-      <Settings />
-      <Text>wowowowowwowowo</Text>
-    </View>
-  );
+  return <LoginScreen />;
 };
 
 export default Index;
