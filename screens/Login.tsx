@@ -1,7 +1,15 @@
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 import React, { useState } from "react";
 
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Button,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+} from "react-native";
 
 export const LoginScreen = () => {
   const [passwordHide, setPasswordHide] = useState(true);
@@ -42,7 +50,9 @@ export const LoginScreen = () => {
         </View>
       </View>
 
-      <Button title="Submit" />
+      <TouchableOpacity style={styles.appButtonContainer}>
+        <Text style={styles.appButtonText}>Login</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -77,5 +87,19 @@ const styles = StyleSheet.create({
   error: {
     marginBottom: 20,
     height: 17.5,
+  },
+  appButtonContainer: {
+    elevation: 8,
+    backgroundColor: "#009688",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+  },
+  appButtonText: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "bold",
+    alignSelf: "center",
+    textTransform: "uppercase",
   },
 });

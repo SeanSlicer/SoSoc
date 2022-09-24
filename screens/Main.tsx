@@ -9,6 +9,7 @@ const Main = () => {
   return (
     <NavigationContainer>
       <StatusBar barStyle="dark-content" />
+
       <Index />
     </NavigationContainer>
   );
