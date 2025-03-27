@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+    ADMIN
+    USER
+}
+
+enum NotificationType {
+    NEW_FOLLOWER
+    NEW_MESSAGE
+    FRIEND_REQUEST
+}
+
+enum PostType {
+    PHOTO
+    CAPTION
+    VIDEO
+}
+
+model User {
+    id            String    @id @default(cuid())
+    username      String    @unique
+    email         String    @unique
+    emailVerified DateTime?
+    password      String
+    role          UserRole  @default(USER)
+    photo         String?   @default("default.png")
+    createdAt     DateTime  @default(now()) @map(name: "created_at")
+    updatedAt     DateTime  @default(now()) @map(name: "updated_at")
+
+    //application specific
+    followers     User[]         @relation(name: "Followers")
+    follows       User[]         @relation(name: "Followers")
+    notifications Notification[]
+    posts         Post[]
+    likes         Like[]
+    comments      Comment[]
+
+    @@map(name: "users")
+}
+
+model Post {
+    id        String   @id @default(cuid())
+    content   String
+    type      PostType
+    imageUrl  String?
+    videoUrl  String?
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+    author   User      @relation(fields: [authorId], references: [id])
+    authorId String
+    likes    Like[]
+    comments Comment[]
+
+    @@index([authorId])
+    @@map(name: "posts")
+}
+
+model Notification {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+    content   String
+    userId    String
+
+    user   User             @relation(fields: [userId], references: [id])
+    type   NotificationType
+    isRead Boolean          @default(false)
+
+    @@index([userId])
+}
+
+model Like {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map(name: "created_at")
+
+    user   User   @relation(fields: [userId], references: [id], map: "UserLikes")
+    userId String
+
+    post   Post   @relation(fields: [postId], references: [id], map: "PostLikes")
+    postId String
+
+    @@index([userId])
+    @@index([postId])
+    @@map(name: "likes")
+}
+
+model Comment {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map(name: "created_at")
+
+    content String
+
+    user   User   @relation(fields: [userId], references: [id], map: "UserComments")
+    userId String
+
+    post   Post   @relation(fields: [postId], references: [id], map: "PostComments")
+    postId String
+
+    @@index([userId])
+    @@index([postId])
+    @@map(name: "comments")
+}
