@@ -1,20 +1,47 @@
-import { prisma } from "~/../lib/client/db";
+import { prisma } from "src/server/db";
 import bcrypt from "bcrypt";
+import { TRPCError } from "@trpc/server";
+import { type User } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function createUser(
   username: string,
   email: string,
   password: string,
-) {
-  const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+): Promise<User> {
+  try {
+    // now TypeScript knows bcrypt.hash returns Promise<string>
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      username,
-      email,
-      password: hashedPassword,
-    },
-  });
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+      },
+    });
 
-  return user;
+    return user;
+  } catch (error: unknown) {
+    // fully narrow 'error' before using it:
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "Username or email already exists",
+      });
+    }
+    if (error instanceof Error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Failed to create user: ${error.message}`,
+      });
+    }
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to create user",
+    });
+  }
 }

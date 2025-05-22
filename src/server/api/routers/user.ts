@@ -1,6 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-
+import {
+  createTRPCRouter,
+  publicProcedure,
+  userProcedure,
+} from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import cookie from "cookie";
 import { sign } from "jsonwebtoken";
@@ -51,7 +54,7 @@ export const userRouter = createTRPCRouter({
         });
       }
 
-      const token = await createAuthToken(user.id);
+      const token = createAuthToken(user.id);
       res.setHeader(
         "Set-Cookie",
         cookie.serialize("user-token", token, COOKIE_OPTIONS),
@@ -68,14 +71,7 @@ export const userRouter = createTRPCRouter({
 
       const user = await createUser(username, email, password);
 
-      if (!user) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create user",
-        });
-      }
-
-      const token = await createAuthToken(user.id);
+      const token = createAuthToken(user.id);
       res.setHeader(
         "Set-Cookie",
         cookie.serialize("user-token", token, COOKIE_OPTIONS),
