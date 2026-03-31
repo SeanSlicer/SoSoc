@@ -5,12 +5,12 @@ import {
   userProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import cookie from "cookie";
+import { cookies } from "next/headers";
 import { sign } from "jsonwebtoken";
-import { env } from "~/../src/env.js";
+import { env } from "~/env";
 import { getUserByUsernameOrEmailAndPassword } from "~/../prisma/queries/auth/getUser";
 import { createUser } from "~/../prisma/queries/auth/signUp";
-import { signUpSchema } from "~/../src/validation/auth/auth";
+import { signUpSchema } from "~/validation/auth/auth";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -23,12 +23,11 @@ const COOKIE_OPTIONS = {
 function createAuthToken(userId: string) {
   return sign(
     {
-      userId,
+      sub: userId,
       iat: Math.floor(Date.now() / 1000),
     },
     env.JWT_SECRET_KEY,
     {
-      subject: userId,
       expiresIn: "1h",
       algorithm: "HS256",
     },
@@ -38,8 +37,7 @@ function createAuthToken(userId: string) {
 export const userRouter = createTRPCRouter({
   login: publicProcedure
     .input(z.object({ usernameOrEmail: z.string(), password: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      const { res } = ctx;
+    .mutation(async ({ input }) => {
       const { usernameOrEmail, password } = input;
 
       const user = await getUserByUsernameOrEmailAndPassword(
@@ -55,41 +53,29 @@ export const userRouter = createTRPCRouter({
       }
 
       const token = createAuthToken(user.id);
-      res.setHeader(
-        "Set-Cookie",
-        cookie.serialize("user-token", token, COOKIE_OPTIONS),
-      );
+      const cookieStore = await cookies();
+      cookieStore.set("user-token", token, COOKIE_OPTIONS);
 
       return { success: true };
     }),
 
   signUp: publicProcedure
     .input(signUpSchema)
-    .mutation(async ({ input, ctx }) => {
-      const { res } = ctx;
+    .mutation(async ({ input }) => {
       const { username, email, password } = input;
 
       const user = await createUser(username, email, password);
 
       const token = createAuthToken(user.id);
-      res.setHeader(
-        "Set-Cookie",
-        cookie.serialize("user-token", token, COOKIE_OPTIONS),
-      );
+      const cookieStore = await cookies();
+      cookieStore.set("user-token", token, COOKIE_OPTIONS);
 
       return { success: true };
     }),
 
-  signOut: userProcedure.mutation(({ ctx }) => {
-    const { res } = ctx;
-    res.setHeader(
-      "Set-Cookie",
-      cookie.serialize("user-token", "", {
-        ...COOKIE_OPTIONS,
-        maxAge: 0,
-      }),
-    );
-
+  signOut: userProcedure.mutation(async () => {
+    const cookieStore = await cookies();
+    cookieStore.delete("user-token");
     return { success: true };
   }),
 });

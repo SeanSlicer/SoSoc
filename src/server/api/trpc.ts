@@ -1,9 +1,5 @@
-/**
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
- * need to use are documented accordingly near the end.
- */
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { cookies } from "next/headers";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { verifyAuth } from "~/../lib/client/auth";
@@ -21,17 +17,15 @@ import { prisma } from "~/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  const { req, res } = opts;
+export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
-    headers: req.headers,
+    headers: opts.headers,
     db: prisma,
-    res,
-    req,
   };
 };
 
 export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
+
 /**
  * 2. INITIALIZATION
  *
@@ -84,8 +78,8 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 const isAuthenticated = t.middleware(async ({ ctx, next }) => {
-  const { req } = ctx;
-  const token = req.cookies["user-token"];
+  const cookieStore = await cookies();
+  const token = cookieStore.get("user-token")?.value;
 
   if (!token) {
     throw new TRPCError({
@@ -93,6 +87,7 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
       message: "Missing user token",
     });
   }
+
   const verifiedToken = verifyAuth(token);
 
   if (!verifiedToken) {
@@ -102,12 +97,11 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  return next();
+  return next({ ctx: { ...ctx, userId: verifiedToken.sub } });
 });
 
 /**
- *Procedures
- *
+ * Procedures
  */
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure.use(timingMiddleware);
