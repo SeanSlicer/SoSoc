@@ -1,12 +1,14 @@
+"use client";
+
 import React from "react";
-import { useRouter } from "next/router";
-import { trpc } from "@/lib/client/trpc";
+import { useRouter } from "next/navigation";
+import { api } from "~/trpc/react";
 
 const SignOutButton: React.FC = () => {
   const router = useRouter();
-  const { mutate: signOut, error } = trpc.user.signOut.useMutation({
-    onSuccess: async () => {
-      await router.push("/login");
+  const { mutate: signOut, error } = api.user.signOut.useMutation({
+    onSuccess: () => {
+      router.push("/login");
     },
   });
 

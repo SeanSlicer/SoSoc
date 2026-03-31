@@ -1,12 +1,16 @@
+"use client";
+
 import React, { useState, type ChangeEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { trpc } from "@/lib/client/trpc";
+import { useRouter } from "next/navigation";
+import { api } from "~/trpc/react";
 
 const SignUp: React.FC = () => {
-  const { mutate: signUp, error } = trpc.user.signUp.useMutation({
-    onSuccess: async () => {
-      await router.push("/login");
+  const router = useRouter();
+
+  const { mutate: signUp, error } = api.user.signUp.useMutation({
+    onSuccess: () => {
+      router.push("/login");
     },
   });
 
@@ -15,8 +19,6 @@ const SignUp: React.FC = () => {
     email: "",
     password: "",
   });
-
-  const router = useRouter();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
