@@ -1,4 +1,4 @@
-import { prisma } from "src/server/db";
+import { prisma } from "~/server/db";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { type User } from "@prisma/client";

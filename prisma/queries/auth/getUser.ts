@@ -1,19 +1,13 @@
 // prisma/queries/user.ts
  
-import { prisma } from '~/../lib/client/db';
+import { prisma } from '~/server/db';
 import bcrypt from 'bcrypt';
 import type { User } from '@prisma/client';
 
-export async function getUserById(id:string) {
-  const user : User = await prisma.user.findFirst({
-    where: {
-      id : id,
-    },
+export async function getUserById(id: string): Promise<User | null> {
+  return prisma.user.findFirst({
+    where: { id },
   });
-  if(!user) return null
-
-  return user;
-
 }
 
 export async function getUserByUsernameOrEmailAndPassword(
