@@ -36,6 +36,8 @@ model User {
     password      String
     role          UserRole  @default(USER)
     photo         String?   @default("default.png")
+    bio           String?
+    displayName   String?
     createdAt     DateTime  @default(now()) @map(name: "created_at")
     updatedAt     DateTime  @default(now()) @map(name: "updated_at")
 
@@ -92,6 +94,7 @@ model Like {
     post   Post   @relation(fields: [postId], references: [id], map: "PostLikes")
     postId String
 
+    @@unique([userId, postId])
     @@index([userId])
     @@index([postId])
     @@map(name: "likes")
