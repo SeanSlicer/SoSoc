@@ -12,6 +12,7 @@ import { getUserByUsernameOrEmailAndPassword } from "~/../prisma/queries/auth/ge
 import { createUser } from "~/../prisma/queries/auth/signUp";
 import { signUpSchema } from "~/validation/auth/auth";
 import { getUserProfile, updateUserProfile, updateUserPhoto } from "~/../prisma/queries/users/profile";
+import { followUser, unfollowUser, isFollowing } from "~/../prisma/queries/users/follows";
 import { updateProfileSchema } from "~/validation/post/post";
 
 const COOKIE_OPTIONS = {
@@ -19,20 +20,14 @@ const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/",
-  maxAge: 60 * 60, // 1 hour
+  maxAge: 60 * 60 * 24 * 7, // 7 days
 } as const;
 
 function createAuthToken(userId: string) {
   return sign(
-    {
-      sub: userId,
-      iat: Math.floor(Date.now() / 1000),
-    },
+    { sub: userId, iat: Math.floor(Date.now() / 1000) },
     env.JWT_SECRET_KEY,
-    {
-      expiresIn: "1h",
-      algorithm: "HS256",
-    },
+    { expiresIn: "7d", algorithm: "HS256" },
   );
 }
 
@@ -40,42 +35,24 @@ export const userRouter = createTRPCRouter({
   login: publicProcedure
     .input(z.object({ usernameOrEmail: z.string(), password: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const { usernameOrEmail, password } = input;
-
       const user = await getUserByUsernameOrEmailAndPassword(
-        usernameOrEmail,
-        password,
+        input.usernameOrEmail,
+        input.password,
       );
-
       if (!user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Invalid username or password",
-        });
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid username or password" });
       }
-
       const token = createAuthToken(user.id);
-      ctx.resHeaders.append(
-        "Set-Cookie",
-        serialize("user-token", token, COOKIE_OPTIONS),
-      );
-
+      ctx.resHeaders.append("Set-Cookie", serialize("user-token", token, COOKIE_OPTIONS));
       return { success: true };
     }),
 
   signUp: publicProcedure
     .input(signUpSchema)
     .mutation(async ({ input, ctx }) => {
-      const { username, email, password } = input;
-
-      const user = await createUser(username, email, password);
-
+      const user = await createUser(input.username, input.email, input.password);
       const token = createAuthToken(user.id);
-      ctx.resHeaders.append(
-        "Set-Cookie",
-        serialize("user-token", token, COOKIE_OPTIONS),
-      );
-
+      ctx.resHeaders.append("Set-Cookie", serialize("user-token", token, COOKIE_OPTIONS));
       return { success: true };
     }),
 
@@ -110,7 +87,7 @@ export const userRouter = createTRPCRouter({
       try {
         return await updateUserProfile(ctx.userId, input);
       } catch (e: unknown) {
-        if (e instanceof Error && 'code' in e && (e as { code: string }).code === "P2002") {
+        if (e instanceof Error && "code" in e && (e as { code: string }).code === "P2002") {
           throw new TRPCError({ code: "CONFLICT", message: "Username already taken" });
         }
         throw e;
@@ -120,4 +97,21 @@ export const userRouter = createTRPCRouter({
   updatePhoto: userProcedure
     .input(z.object({ photo: z.string().url() }))
     .mutation(({ ctx, input }) => updateUserPhoto(ctx.userId, input.photo)),
+
+  follow: userProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(({ ctx, input }) => {
+      if (ctx.userId === input.userId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot follow yourself" });
+      }
+      return followUser(ctx.userId, input.userId);
+    }),
+
+  unfollow: userProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(({ ctx, input }) => unfollowUser(ctx.userId, input.userId)),
+
+  isFollowing: userProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(({ ctx, input }) => isFollowing(ctx.userId, input.userId)),
 });
