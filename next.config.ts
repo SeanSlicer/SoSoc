@@ -7,6 +7,11 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   serverExternalPackages: ["bcrypt", "jsonwebtoken", "@mapbox/node-pre-gyp"],
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "ncxsxujpfydoajeeebms.supabase.co" },
+    ],
+  },
 };
 
 export default config;
