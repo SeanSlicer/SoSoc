@@ -1,34 +1,47 @@
 "use client";
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import { api } from "~/trpc/react";
 import type { SignUp } from "~/validation/auth/auth";
 
 export default function SignUpForm() {
-  const [formData, setFormData] = useState<SignUp>({
-    username: "",
-    email: "",
-    password: "",
-  });
-
-  const {
-    mutate: signUp,
-    isPending,
-    error,
-  } = api.user.signUp.useMutation({
-    onSuccess: () => { window.location.href = "/feed"; },
-  });
-
-  const fieldErrors = error?.data?.zodError?.fieldErrors;
-
-  const hasErrors = !!fieldErrors && Object.keys(fieldErrors).length > 0;
+  const [formData, setFormData] = useState<SignUp>({ username: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [isPending, setIsPending] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setFieldErrors({});
+    setIsPending(true);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json() as { error?: string | Record<string, string[]> };
+      if (!res.ok) {
+        if (typeof data.error === "object") {
+          setFieldErrors(data.error);
+        } else {
+          setError(data.error ?? "Sign up failed");
+        }
+        return;
+      }
+      window.location.href = "/feed";
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
 
   return (
     <div className="w-full max-w-sm">
@@ -38,21 +51,17 @@ export default function SignUpForm() {
           <p className="mt-1 text-sm text-neutral-500">Create your account</p>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void signUp(formData);
-          }}
-          className="space-y-4"
-        >
-          {hasErrors && (
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+          {error && (
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
+          )}
+          {hasFieldErrors && (
             <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
               <ul className="list-disc space-y-1 pl-5">
                 {Object.entries(fieldErrors).flatMap(([field, messages]) =>
                   (messages ?? []).map((msg, i) => (
                     <li key={`${field}-${i}`}>
-                      <span className="font-medium capitalize">{field}:</span>{" "}
-                      {msg}
+                      <span className="font-medium capitalize">{field}:</span> {msg}
                     </li>
                   )),
                 )}
@@ -61,9 +70,7 @@ export default function SignUpForm() {
           )}
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-              Username
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Username</label>
             <input
               name="username"
               type="text"
@@ -77,9 +84,7 @@ export default function SignUpForm() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-              Email
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Email</label>
             <input
               name="email"
               type="email"
@@ -93,9 +98,7 @@ export default function SignUpForm() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-              Password
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Password</label>
             <input
               name="password"
               type="password"
@@ -119,10 +122,7 @@ export default function SignUpForm() {
 
         <p className="mt-6 text-center text-sm text-neutral-500">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
+          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
             Sign in
           </Link>
         </p>

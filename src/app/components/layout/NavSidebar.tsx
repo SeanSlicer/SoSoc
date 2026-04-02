@@ -14,13 +14,14 @@ type NavUser = {
 
 export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
   const pathname = usePathname();
-  // Keep user data live so profile picture / name changes reflect without a full reload
+  // Keep user data live so profile picture / display name changes reflect without a hard reload
   const { data: me } = api.user.getMe.useQuery();
   const user = me ?? initialUser;
 
-  const { mutate: signOut } = api.user.signOut.useMutation({
-    onSuccess: () => { window.location.href = "/login"; },
-  });
+  const handleSignOut = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
 
   const navItems = [
     { href: "/feed", icon: Home, label: "Home" },
@@ -63,7 +64,7 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
           </div>
         </div>
         <button
-          onClick={() => signOut()}
+          onClick={() => void handleSignOut()}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-neutral-600 hover:bg-red-50 hover:text-red-600 transition-colors"
         >
           <LogOut size={18} />

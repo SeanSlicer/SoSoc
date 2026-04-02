@@ -1,17 +1,37 @@
 "use client";
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import { api } from "~/trpc/react";
 
 export default function LoginForm() {
   const [input, setInput] = useState({ usernameOrEmail: "", password: "" });
-
-  const { mutate: login, isPending, error } = api.user.login.useMutation({
-    onSuccess: () => { window.location.href = "/feed"; },
-  });
+  const [error, setError] = useState("");
+  const [isPending, setIsPending] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsPending(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json() as { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? "Login failed");
+        return;
+      }
+      window.location.href = "/feed";
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -22,11 +42,9 @@ export default function LoginForm() {
           <p className="mt-1 text-sm text-neutral-500">Sign in to your account</p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); login(input); }} className="space-y-4">
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           {error && (
-            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-              {error.message}
-            </div>
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
           )}
 
           <div>
@@ -46,9 +64,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Password</label>
             <input
               name="password"
               type="password"
