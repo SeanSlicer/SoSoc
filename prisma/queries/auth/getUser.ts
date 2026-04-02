@@ -1,5 +1,3 @@
-// prisma/queries/user.ts
- 
 import { prisma } from '~/server/db';
 import bcrypt from 'bcrypt';
 import type { User } from '@prisma/client';

@@ -5,7 +5,7 @@ import {
   userProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { cookies } from "next/headers";
+import { serialize } from "cookie";
 import { sign } from "jsonwebtoken";
 import { env } from "~/env";
 import { getUserByUsernameOrEmailAndPassword } from "~/../prisma/queries/auth/getUser";
@@ -37,7 +37,7 @@ function createAuthToken(userId: string) {
 export const userRouter = createTRPCRouter({
   login: publicProcedure
     .input(z.object({ usernameOrEmail: z.string(), password: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { usernameOrEmail, password } = input;
 
       const user = await getUserByUsernameOrEmailAndPassword(
@@ -53,29 +53,35 @@ export const userRouter = createTRPCRouter({
       }
 
       const token = createAuthToken(user.id);
-      const cookieStore = await cookies();
-      cookieStore.set("user-token", token, COOKIE_OPTIONS);
+      ctx.resHeaders.append(
+        "Set-Cookie",
+        serialize("user-token", token, COOKIE_OPTIONS),
+      );
 
       return { success: true };
     }),
 
   signUp: publicProcedure
     .input(signUpSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { username, email, password } = input;
 
       const user = await createUser(username, email, password);
 
       const token = createAuthToken(user.id);
-      const cookieStore = await cookies();
-      cookieStore.set("user-token", token, COOKIE_OPTIONS);
+      ctx.resHeaders.append(
+        "Set-Cookie",
+        serialize("user-token", token, COOKIE_OPTIONS),
+      );
 
       return { success: true };
     }),
 
-  signOut: userProcedure.mutation(async () => {
-    const cookieStore = await cookies();
-    cookieStore.delete("user-token");
+  signOut: userProcedure.mutation(({ ctx }) => {
+    ctx.resHeaders.append(
+      "Set-Cookie",
+      serialize("user-token", "", { ...COOKIE_OPTIONS, maxAge: 0 }),
+    );
     return { success: true };
   }),
 });

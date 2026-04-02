@@ -5,6 +5,8 @@
 import "./src/env.js";
 import type { NextConfig } from "next";
 
-const config: NextConfig = {};
+const config: NextConfig = {
+  serverExternalPackages: ["bcrypt", "jsonwebtoken", "@mapbox/node-pre-gyp"],
+};
 
 export default config;
