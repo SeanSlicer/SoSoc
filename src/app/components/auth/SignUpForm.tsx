@@ -1,13 +1,10 @@
 "use client";
 import { useState, type ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import type { SignUp } from "~/validation/auth/auth";
 
 export default function SignUpForm() {
-  const router = useRouter();
-
   const [formData, setFormData] = useState<SignUp>({
     username: "",
     email: "",
@@ -19,7 +16,7 @@ export default function SignUpForm() {
     isPending,
     error,
   } = api.user.signUp.useMutation({
-    onSuccess: () => router.push("/feed"),
+    onSuccess: () => { window.location.href = "/feed"; },
   });
 
   const fieldErrors = error?.data?.zodError?.fieldErrors;

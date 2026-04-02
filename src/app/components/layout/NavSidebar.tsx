@@ -3,7 +3,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, User, LogOut } from "lucide-react";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
 import Avatar from "~/app/components/ui/Avatar";
 
 type NavUser = {
@@ -13,11 +12,14 @@ type NavUser = {
   photo?: string | null;
 };
 
-export default function NavSidebar({ user }: { user: NavUser }) {
+export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
   const pathname = usePathname();
-  const router = useRouter();
+  // Keep user data live so profile picture / name changes reflect without a full reload
+  const { data: me } = api.user.getMe.useQuery();
+  const user = me ?? initialUser;
+
   const { mutate: signOut } = api.user.signOut.useMutation({
-    onSuccess: () => router.push("/login"),
+    onSuccess: () => { window.location.href = "/login"; },
   });
 
   const navItems = [

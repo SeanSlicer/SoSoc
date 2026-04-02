@@ -1,15 +1,13 @@
 "use client";
 import { useState, type ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 
 export default function LoginForm() {
-  const router = useRouter();
   const [input, setInput] = useState({ usernameOrEmail: "", password: "" });
 
   const { mutate: login, isPending, error } = api.user.login.useMutation({
-    onSuccess: () => router.push("/feed"),
+    onSuccess: () => { window.location.href = "/feed"; },
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

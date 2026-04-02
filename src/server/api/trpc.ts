@@ -5,11 +5,6 @@ import { ZodError } from "zod";
 import { verifyAuth } from "~/../lib/client/auth";
 import { prisma } from "~/server/db";
 
-/**
- * 1. CONTEXT
- *
- * @see https://trpc.io/docs/server/context
- */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
     headers: opts.headers,
@@ -20,9 +15,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
 export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
 
-/**
- * 2. INITIALIZATION
- */
 const t = initTRPC.context<Context>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
@@ -39,43 +31,23 @@ const t = initTRPC.context<Context>().create({
 
 export const createCallerFactory = t.createCallerFactory;
 
-const timingMiddleware = t.middleware(async ({ next, path }) => {
-  const start = Date.now();
-
-  if (t._config.isDev) {
-    const waitMs = Math.floor(Math.random() * 400) + 100;
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-  }
-
-  const result = await next();
-  console.log(`[TRPC] ${path} took ${Date.now() - start}ms to execute`);
-  return result;
-});
-
 const isAuthenticated = t.middleware(async ({ ctx, next }) => {
-  const cookieHeader = ctx.headers.get("cookie") ?? "";
-  const parsedCookies = parse(cookieHeader);
-  const token = parsedCookies["user-token"];
+  const token = parse(ctx.headers.get("cookie") ?? "")["user-token"];
 
   if (!token) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Missing user token",
-    });
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Not signed in" });
   }
 
-  const verifiedToken = verifyAuth(token);
-
-  if (!verifiedToken) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid user token",
-    });
+  let verifiedToken: ReturnType<typeof verifyAuth>;
+  try {
+    verifiedToken = verifyAuth(token);
+  } catch {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Session expired" });
   }
 
   return next({ ctx: { ...ctx, userId: verifiedToken.sub } });
 });
 
 export const createTRPCRouter = t.router;
-export const publicProcedure = t.procedure.use(timingMiddleware);
+export const publicProcedure = t.procedure;
 export const userProcedure = t.procedure.use(isAuthenticated);
