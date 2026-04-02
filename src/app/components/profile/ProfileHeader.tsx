@@ -13,20 +13,44 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({ username, currentUserId }: ProfileHeaderProps) {
   const [showEditModal, setShowEditModal] = useState(false);
-  const { data: profile, refetch } = api.user.getProfile.useQuery({ username });
+  const utils = api.useUtils();
 
-  if (!profile) return (
-    <div className="flex justify-center py-12">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-    </div>
+  const { data: profile, isLoading } = api.user.getProfile.useQuery({ username });
+
+  const { data: following, isLoading: followLoading } = api.user.isFollowing.useQuery(
+    { userId: profile?.id ?? "" },
+    { enabled: !!profile && profile.id !== currentUserId },
   );
 
+  const onFollowSuccess = () => {
+    void utils.user.getProfile.invalidate({ username });
+    void utils.user.isFollowing.invalidate({ userId: profile?.id });
+  };
+
+  const { mutate: follow, isPending: isFollowPending } = api.user.follow.useMutation({
+    onSuccess: onFollowSuccess,
+  });
+
+  const { mutate: unfollow, isPending: isUnfollowPending } = api.user.unfollow.useMutation({
+    onSuccess: onFollowSuccess,
+  });
+
+  if (isLoading || !profile) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+      </div>
+    );
+  }
+
   const isOwnProfile = profile.id === currentUserId;
+  const isFollowingUser = following ?? false;
+  const followActionPending = isFollowPending || isUnfollowPending || followLoading;
 
   return (
     <>
       <div>
-        {/* Sticky header */}
+        {/* Sticky back header */}
         <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-neutral-100 px-4 py-3">
           <h1 className="font-bold text-neutral-900">{profile.displayName ?? profile.username}</h1>
           <p className="text-xs text-neutral-500">{profile._count.posts} posts</p>
@@ -40,20 +64,40 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           <div className="relative">
             <Avatar user={profile} size="xl" />
             {isOwnProfile && (
-              <ProfilePictureUpload userId={profile.id} onUpload={() => void refetch()} />
+              <ProfilePictureUpload
+                userId={profile.id}
+                onUpload={() => void utils.user.getProfile.invalidate({ username })}
+              />
             )}
           </div>
-          {isOwnProfile && (
+
+          {isOwnProfile ? (
             <button
               onClick={() => setShowEditModal(true)}
               className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
             >
               Edit profile
             </button>
+          ) : (
+            <button
+              onClick={() =>
+                isFollowingUser
+                  ? unfollow({ userId: profile.id })
+                  : follow({ userId: profile.id })
+              }
+              disabled={followActionPending}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                isFollowingUser
+                  ? "border border-neutral-200 bg-white text-neutral-700 hover:border-red-300 hover:text-red-600"
+                  : "bg-neutral-900 text-white hover:bg-neutral-700"
+              }`}
+            >
+              {followActionPending ? "…" : isFollowingUser ? "Following" : "Follow"}
+            </button>
           )}
         </div>
 
-        {/* Info */}
+        {/* Bio / info */}
         <div className="px-4 pb-5">
           <h2 className="text-xl font-bold text-neutral-900">
             {profile.displayName ?? profile.username}
@@ -66,7 +110,13 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
 
           <div className="mt-2 flex items-center gap-1 text-xs text-neutral-400">
             <Calendar size={13} />
-            <span>Joined {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
+            <span>
+              Joined{" "}
+              {new Date(profile.createdAt).toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
           </div>
 
           <div className="mt-3 flex gap-4 text-sm">
@@ -91,7 +141,7 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           profile={profile}
-          onSaved={() => void refetch()}
+          onSaved={() => void utils.user.getProfile.invalidate({ username })}
         />
       )}
     </>

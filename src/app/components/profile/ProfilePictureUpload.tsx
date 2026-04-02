@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { Camera } from "lucide-react";
-import { supabase } from "~/lib/supabase";
+import { storageProvider } from "~/lib/storage";
 import { api } from "~/trpc/react";
 
 type Props = { userId: string; onUpload: () => void };
@@ -18,13 +18,11 @@ export default function ProfilePictureUpload({ userId, onUpload }: Props) {
     setIsUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
-      const filename = `${userId}-${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage.from("avatars").upload(filename, file, { upsert: true });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(data.path);
+      const path = `${userId}-${Date.now()}.${ext}`;
+      const publicUrl = await storageProvider.upload("avatars", path, file);
       updatePhoto({ photo: publicUrl });
     } catch (err) {
-      console.error("Upload failed:", err);
+      console.error("Profile picture upload failed:", err);
     } finally {
       setIsUploading(false);
     }
