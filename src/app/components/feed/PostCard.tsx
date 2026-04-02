@@ -7,16 +7,16 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { timeAgo } from "~/lib/timeAgo";
 
-type FeedPost = RouterOutputs["post"]["getFeed"]["posts"][number];
+export type FeedPost = RouterOutputs["post"]["getFeed"]["posts"][number];
 
 type PostCardProps = {
   post: FeedPost;
   currentUserId: string;
-  onDelete: (postId: string) => void;
-  onUpdate: (postId: string, content: string) => void;
 };
 
-export default function PostCard({ post, currentUserId, onDelete, onUpdate }: PostCardProps) {
+export default function PostCard({ post, currentUserId }: PostCardProps) {
+  const utils = api.useUtils();
+
   const [showComments, setShowComments] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -26,20 +26,26 @@ export default function PostCard({ post, currentUserId, onDelete, onUpdate }: Po
 
   const isOwn = post.author.id === currentUserId;
 
+  const invalidatePosts = () => {
+    void utils.post.getFeed.invalidate();
+    void utils.post.getUserPosts.invalidate();
+  };
+
   const { mutate: toggleLike } = api.post.toggleLike.useMutation({
     onMutate: () => {
-      setLiked((l) => !l);
-      setLikeCount((c) => liked ? c - 1 : c + 1);
+      const wasLiked = liked;
+      setLiked(!wasLiked);
+      setLikeCount((c) => (wasLiked ? c - 1 : c + 1));
     },
   });
 
   const { mutate: deletePost } = api.post.delete.useMutation({
-    onSuccess: () => onDelete(post.id),
+    onSuccess: invalidatePosts,
   });
 
   const { mutate: updatePost, isPending: isUpdating } = api.post.update.useMutation({
     onSuccess: () => {
-      onUpdate(post.id, editContent);
+      invalidatePosts();
       setIsEditing(false);
     },
   });
@@ -71,13 +77,17 @@ export default function PostCard({ post, currentUserId, onDelete, onUpdate }: Po
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-baseline gap-1.5 flex-wrap">
-              <Link href={`/profile/${post.author.username}`} className="font-semibold text-neutral-900 hover:underline text-sm">
+              <Link
+                href={`/profile/${post.author.username}`}
+                className="font-semibold text-neutral-900 hover:underline text-sm"
+              >
                 {post.author.displayName ?? post.author.username}
               </Link>
               <span className="text-neutral-500 text-sm">@{post.author.username}</span>
               <span className="text-neutral-400 text-xs">·</span>
               <span className="text-neutral-400 text-xs">{timeAgo(new Date(post.createdAt))}</span>
             </div>
+
             {isOwn && !isEditing && (
               <div className="flex items-center gap-1 shrink-0">
                 <button
@@ -124,7 +134,9 @@ export default function PostCard({ post, currentUserId, onDelete, onUpdate }: Po
               </div>
             </div>
           ) : (
-            <p className="mt-1.5 text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+            <p className="mt-1.5 text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
+              {post.content}
+            </p>
           )}
 
           {/* Image */}
@@ -164,7 +176,6 @@ export default function PostCard({ post, currentUserId, onDelete, onUpdate }: Po
           {/* Comments */}
           {showComments && (
             <div className="mt-3 space-y-3">
-              {/* Add comment */}
               <div className="flex gap-2">
                 <input
                   value={commentText}
@@ -187,7 +198,6 @@ export default function PostCard({ post, currentUserId, onDelete, onUpdate }: Po
                 </button>
               </div>
 
-              {/* Comment list */}
               {comments?.map((comment) => (
                 <div key={comment.id} className="flex gap-2.5">
                   <Avatar user={comment.user} size="sm" />

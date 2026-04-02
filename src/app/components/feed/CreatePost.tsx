@@ -3,17 +3,12 @@ import { useState, useRef } from "react";
 import { Image as ImageIcon, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
-import { supabase } from "~/lib/supabase";
-import type { RouterOutputs } from "~/trpc/react";
+import { storageProvider } from "~/lib/storage";
 
-type CreatedPost = RouterOutputs["post"]["create"] & { isLiked: boolean };
+type PostUser = { id: string; username: string; displayName?: string | null; photo?: string | null };
 
-type CreatePostProps = {
-  user: { id: string; username: string; displayName?: string | null; photo?: string | null };
-  onPostCreated: (post: CreatedPost) => void;
-};
-
-export default function CreatePost({ user, onPostCreated }: CreatePostProps) {
+export default function CreatePost({ user }: { user: PostUser }) {
+  const utils = api.useUtils();
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -22,11 +17,11 @@ export default function CreatePost({ user, onPostCreated }: CreatePostProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { mutate: createPost, isPending } = api.post.create.useMutation({
-    onSuccess: (post) => {
-      onPostCreated({ ...post, isLiked: false });
+    onSuccess: () => {
       setContent("");
       setImageUrl("");
       setIsFocused(false);
+      void utils.post.getFeed.invalidate();
     },
   });
 
@@ -35,13 +30,11 @@ export default function CreatePost({ user, onPostCreated }: CreatePostProps) {
     setUploadError("");
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
-      const filename = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { data, error } = await supabase.storage.from("posts").upload(filename, file, { upsert: false });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from("posts").getPublicUrl(data.path);
-      setImageUrl(publicUrl);
+      const path = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const url = await storageProvider.upload("posts", path, file);
+      setImageUrl(url);
     } catch {
-      setUploadError("Image upload failed. Please paste an image URL instead.");
+      setUploadError("Image upload failed. Make sure the 'posts' bucket exists in your storage provider.");
     } finally {
       setIsUploading(false);
     }
