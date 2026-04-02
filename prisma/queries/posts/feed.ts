@@ -1,9 +1,18 @@
 import { prisma } from "~/server/db";
 
-export async function getFeed(currentUserId: string, cursor?: string, limit = 20) {
+export async function getFeed(
+  currentUserId: string,
+  cursor?: string,
+  limit = 20,
+  feedType: "all" | "following" = "all",
+) {
   const posts = await prisma.post.findMany({
     take: limit + 1,
     ...(cursor && { cursor: { id: cursor }, skip: 1 }),
+    where:
+      feedType === "following"
+        ? { author: { followers: { some: { id: currentUserId } } } }
+        : {},
     orderBy: { createdAt: "desc" },
     include: {
       author: { select: { id: true, username: true, displayName: true, photo: true } },

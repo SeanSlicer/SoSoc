@@ -16,8 +16,11 @@ import {
 
 export const postRouter = createTRPCRouter({
   getFeed: userProcedure
-    .input(z.object({ cursor: z.string().optional() }))
-    .query(({ ctx, input }) => getFeed(ctx.userId, input.cursor)),
+    .input(z.object({
+      cursor: z.string().optional(),
+      feedType: z.enum(["all", "following"]).default("all"),
+    }))
+    .query(({ ctx, input }) => getFeed(ctx.userId, input.cursor, 20, input.feedType)),
 
   getUserPosts: userProcedure
     .input(z.object({ username: z.string() }))
