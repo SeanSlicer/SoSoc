@@ -1,103 +1,105 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { api } from "~/trpc/react";
 import PostCard from "./PostCard";
 import CreatePost from "./CreatePost";
-import type { RouterOutputs } from "~/trpc/react";
 
-type FeedPost = RouterOutputs["post"]["getFeed"]["posts"][number];
+type FeedType = "all" | "following";
 
 export default function FeedClient() {
-  const { data: me } = api.user.getMe.useQuery();
-  const [posts, setPosts] = useState<FeedPost[]>([]);
-  const [cursor, setCursor] = useState<string | undefined>();
-  const [hasMore, setHasMore] = useState(true);
-  const [loadMoreCursor, setLoadMoreCursor] = useState<string | undefined>();
+  const { data: me, isLoading: meLoading } = api.user.getMe.useQuery();
+  const [feedType, setFeedType] = useState<FeedType>("all");
 
-  const { data, isFetching } = api.post.getFeed.useQuery({ cursor: undefined });
-
-  useEffect(() => {
-    if (data) {
-      setPosts(data.posts);
-      setHasMore(!!data.nextCursor);
-      setCursor(data.nextCursor);
-    }
-  }, [data]);
-
-  const { data: moreData, refetch: fetchMore, isFetching: isFetchingMore } = api.post.getFeed.useQuery(
-    { cursor: loadMoreCursor },
-    { enabled: false },
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: feedLoading,
+  } = api.post.getFeed.useInfiniteQuery(
+    { feedType },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor },
   );
 
-  useEffect(() => {
-    if (moreData) {
-      setPosts((prev) => [...prev, ...moreData.posts]);
-      setHasMore(!!moreData.nextCursor);
-      setCursor(moreData.nextCursor);
-    }
-  }, [moreData]);
+  const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
-  const handleLoadMore = () => {
-    setLoadMoreCursor(cursor);
-    void fetchMore();
-  };
-
-  const handlePostCreated = (post: FeedPost) => {
-    setPosts((prev) => [post, ...prev]);
-  };
-
-  const handlePostDeleted = (postId: string) => {
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-  };
-
-  const handlePostUpdated = (postId: string, content: string) => {
-    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, content } : p));
-  };
+  if (meLoading || feedLoading) {
+    return (
+      <>
+        <FeedHeader feedType={feedType} onTabChange={setFeedType} />
+        <div className="flex justify-center py-16">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+        </div>
+      </>
+    );
+  }
 
   if (!me) return null;
 
   return (
     <div>
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-neutral-100 px-4 py-3">
-        <h1 className="font-bold text-neutral-900">Home</h1>
-      </div>
+      <FeedHeader feedType={feedType} onTabChange={setFeedType} />
 
-      <CreatePost user={me} onPostCreated={handlePostCreated} />
+      <CreatePost user={me} />
 
-      {isFetching && posts.length === 0 ? (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-        </div>
-      ) : posts.length === 0 ? (
+      {posts.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="text-neutral-400 text-sm">No posts yet. Be the first to post!</p>
+          <p className="text-neutral-400 text-sm">
+            {feedType === "following"
+              ? "Follow some people to see their posts here."
+              : "No posts yet. Be the first to post!"}
+          </p>
         </div>
       ) : (
         <>
           {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              currentUserId={me.id}
-              onDelete={handlePostDeleted}
-              onUpdate={handlePostUpdated}
-            />
+            <PostCard key={post.id} post={post} currentUserId={me.id} />
           ))}
 
-          {hasMore && (
+          {hasNextPage && (
             <div className="flex justify-center py-6">
               <button
-                onClick={handleLoadMore}
-                disabled={isFetchingMore}
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
                 className="rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
               >
-                {isFetchingMore ? "Loading…" : "Load more"}
+                {isFetchingNextPage ? "Loading…" : "Load more"}
               </button>
             </div>
           )}
         </>
       )}
+    </div>
+  );
+}
+
+function FeedHeader({
+  feedType,
+  onTabChange,
+}: {
+  feedType: FeedType;
+  onTabChange: (t: FeedType) => void;
+}) {
+  return (
+    <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
+      <div className="px-4 pt-3 pb-0">
+        <h1 className="font-bold text-neutral-900">Home</h1>
+      </div>
+      <div className="flex">
+        {(["all", "following"] as const).map((type) => (
+          <button
+            key={type}
+            onClick={() => onTabChange(type)}
+            className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
+              feedType === type
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-neutral-500 hover:text-neutral-700"
+            }`}
+          >
+            {type === "all" ? "For You" : "Following"}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
