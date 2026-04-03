@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import { storageProvider } from "~/lib/storage";
+import { resizeImage } from "~/lib/resizeImage";
 import { api } from "~/trpc/react";
 
 type Props = { userId: string; onUpload: () => void };
@@ -17,9 +18,9 @@ export default function ProfilePictureUpload({ userId, onUpload }: Props) {
   const handleFile = async (file: File) => {
     setIsUploading(true);
     try {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${userId}-${Date.now()}.${ext}`;
-      const publicUrl = await storageProvider.upload("avatars", path, file);
+      const resized = await resizeImage(file, 400);
+      const path = `${userId}-${Date.now()}.jpg`;
+      const publicUrl = await storageProvider.upload("avatars", path, resized);
       updatePhoto({ photo: publicUrl });
     } catch (err) {
       console.error("Profile picture upload failed:", err);

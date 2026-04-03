@@ -4,6 +4,7 @@ import { Image as ImageIcon, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { storageProvider } from "~/lib/storage";
+import { resizeImage } from "~/lib/resizeImage";
 
 type PostUser = { id: string; username: string; displayName?: string | null; photo?: string | null };
 
@@ -29,12 +30,12 @@ export default function CreatePost({ user }: { user: PostUser }) {
     setIsUploading(true);
     setUploadError("");
     try {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const url = await storageProvider.upload("posts", path, file);
+      const resized = await resizeImage(file, 1200);
+      const path = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+      const url = await storageProvider.upload("posts", path, resized);
       setImageUrl(url);
     } catch {
-      setUploadError("Image upload failed. Make sure the 'posts' bucket exists in your storage provider.");
+      setUploadError("Image upload failed.");
     } finally {
       setIsUploading(false);
     }

@@ -1,19 +1,19 @@
 "use client";
-import { supabase } from "~/lib/supabase";
 import type { StorageBucket, StorageProvider } from "../types";
 
 export const supabaseStorageProvider: StorageProvider = {
   async upload(bucket: StorageBucket, path: string, file: File): Promise<string> {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, { upsert: true });
+    const body = new FormData();
+    body.append("file", file);
+    body.append("bucket", bucket);
+    body.append("path", path);
 
-    if (error) throw error;
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(bucket).getPublicUrl(data.path);
-
-    return publicUrl;
+    const res = await fetch("/api/upload", { method: "POST", body });
+    if (!res.ok) {
+      const data = (await res.json()) as { error?: string };
+      throw new Error(data.error ?? "Upload failed");
+    }
+    const { url } = (await res.json()) as { url: string };
+    return url;
   },
 };
