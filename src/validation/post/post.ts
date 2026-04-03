@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createPostSchema = z.object({
   content: z.string().min(1, "Post cannot be empty").max(500, "Post too long"),
-  imageUrl: z.string().url().optional().or(z.literal("")),
+  images: z.array(z.string().url()).max(15).default([]),
 });
 
 export const updatePostSchema = z.object({

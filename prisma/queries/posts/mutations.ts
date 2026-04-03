@@ -1,9 +1,15 @@
 import { prisma } from "~/server/db";
 import { type PostType } from "@prisma/client";
 
-export async function createPost(authorId: string, content: string, type: PostType, imageUrl?: string) {
+export async function createPost(authorId: string, content: string, type: PostType, images: string[]) {
   return prisma.post.create({
-    data: { content, type, imageUrl, authorId },
+    data: {
+      content,
+      type,
+      images,
+      imageUrl: images[0] ?? null, // keep for backward compat with existing queries
+      authorId,
+    },
     include: {
       author: { select: { id: true, username: true, displayName: true, photo: true } },
       _count: { select: { likes: true, comments: true } },
