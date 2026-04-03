@@ -1,4 +1,6 @@
+"use client";
 import Image from "next/image";
+import { useState } from "react";
 
 type AvatarUser = {
   username: string;
@@ -13,26 +15,31 @@ type AvatarProps = {
 
 const sizes = { sm: 32, md: 40, lg: 56, xl: 88 };
 const textSizes = { sm: "text-xs", md: "text-sm", lg: "text-lg", xl: "text-2xl" };
+const colors = ["bg-indigo-500", "bg-violet-500", "bg-pink-500", "bg-emerald-500", "bg-orange-500", "bg-sky-500"];
 
-export default function Avatar({ user, size = "md" }: AvatarProps) {
-  const px = sizes[size];
-  const isDefault = !user.photo || user.photo === "default.png";
+function InitialsAvatar({ user, size }: AvatarProps) {
+  const px = sizes[size ?? "md"];
   const initials = (user.displayName ?? user.username).charAt(0).toUpperCase();
-
-  // Generate a consistent color from username
-  const colors = ["bg-indigo-500", "bg-violet-500", "bg-pink-500", "bg-emerald-500", "bg-orange-500", "bg-sky-500"];
   const colorIndex = user.username.charCodeAt(0) % colors.length;
   const bgColor = colors[colorIndex] ?? "bg-indigo-500";
 
-  if (isDefault) {
-    return (
-      <div
-        className={`${bgColor} ${textSizes[size]} flex items-center justify-center rounded-full font-semibold text-white shrink-0`}
-        style={{ width: px, height: px }}
-      >
-        {initials}
-      </div>
-    );
+  return (
+    <div
+      className={`${bgColor} ${textSizes[size ?? "md"]} flex items-center justify-center rounded-full font-semibold text-white shrink-0`}
+      style={{ width: px, height: px }}
+    >
+      {initials}
+    </div>
+  );
+}
+
+export default function Avatar({ user, size = "md" }: AvatarProps) {
+  const px = sizes[size];
+  const [imgError, setImgError] = useState(false);
+  const hasPhoto = !!user.photo && user.photo !== "default.png";
+
+  if (!hasPhoto || imgError) {
+    return <InitialsAvatar user={user} size={size} />;
   }
 
   return (
@@ -43,6 +50,7 @@ export default function Avatar({ user, size = "md" }: AvatarProps) {
       height={px}
       className="rounded-full object-cover shrink-0"
       style={{ width: px, height: px }}
+      onError={() => setImgError(true)}
     />
   );
 }
