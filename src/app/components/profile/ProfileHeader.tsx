@@ -5,6 +5,7 @@ import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import EditProfileModal from "./EditProfileModal";
 import ProfilePictureUpload from "./ProfilePictureUpload";
+import Lightbox from "~/app/components/ui/Lightbox";
 
 type ProfileHeaderProps = {
   username: string;
@@ -13,6 +14,7 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({ username, currentUserId }: ProfileHeaderProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
   const utils = api.useUtils();
 
   const { data: profile, isLoading } = api.user.getProfile.useQuery({ username });
@@ -62,7 +64,11 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
         {/* Avatar row */}
         <div className="flex items-end justify-between px-4 -mt-14 pb-4">
           <div className="relative">
-            <Avatar user={profile} size="xl" />
+            <Avatar
+              user={profile}
+              size="xl"
+              onClick={profile.photo && profile.photo !== "default.png" ? () => setShowAvatarLightbox(true) : undefined}
+            />
             {isOwnProfile && (
               <ProfilePictureUpload
                 userId={profile.id}
@@ -142,6 +148,15 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           onClose={() => setShowEditModal(false)}
           profile={profile}
           onSaved={() => void utils.user.getProfile.invalidate({ username })}
+        />
+      )}
+
+      {showAvatarLightbox && profile.photo && profile.photo !== "default.png" && (
+        <Lightbox
+          images={[profile.photo]}
+          index={0}
+          alt={profile.displayName ?? profile.username}
+          onClose={() => setShowAvatarLightbox(false)}
         />
       )}
     </>

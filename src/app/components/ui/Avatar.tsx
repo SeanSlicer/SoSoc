@@ -11,6 +11,7 @@ type AvatarUser = {
 type AvatarProps = {
   user: AvatarUser;
   size?: "sm" | "md" | "lg" | "xl";
+  onClick?: () => void;
 };
 
 const sizes = { sm: 32, md: 40, lg: 56, xl: 88 };
@@ -33,13 +34,21 @@ function InitialsAvatar({ user, size }: AvatarProps) {
   );
 }
 
-export default function Avatar({ user, size = "md" }: AvatarProps) {
+export default function Avatar({ user, size = "md", onClick }: AvatarProps) {
   const px = sizes[size];
   const [imgError, setImgError] = useState(false);
   const hasPhoto = !!user.photo && user.photo !== "default.png";
+  const clickable = !!onClick;
 
   if (!hasPhoto || imgError) {
-    return <InitialsAvatar user={user} size={size} />;
+    return (
+      <div
+        onClick={onClick}
+        className={clickable ? "cursor-pointer" : undefined}
+      >
+        <InitialsAvatar user={user} size={size} />
+      </div>
+    );
   }
 
   return (
@@ -48,9 +57,10 @@ export default function Avatar({ user, size = "md" }: AvatarProps) {
       alt={user.displayName ?? user.username}
       width={px}
       height={px}
-      className="rounded-full object-cover shrink-0"
+      className={`rounded-full object-cover shrink-0 ${clickable ? "cursor-pointer" : ""}`}
       style={{ width: px, height: px }}
       onError={() => setImgError(true)}
+      onClick={onClick}
     />
   );
 }
