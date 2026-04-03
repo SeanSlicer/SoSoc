@@ -20,6 +20,8 @@ enum NotificationType {
     NEW_FOLLOWER
     NEW_MESSAGE
     FRIEND_REQUEST
+    NEW_LIKE
+    NEW_COMMENT
 }
 
 enum PostType {
@@ -41,13 +43,13 @@ model User {
     createdAt     DateTime  @default(now()) @map(name: "created_at")
     updatedAt     DateTime  @default(now()) @map(name: "updated_at")
 
-    //application specific
-    followers     User[]         @relation(name: "Followers")
-    follows       User[]         @relation(name: "Followers")
-    notifications Notification[]
-    posts         Post[]
-    likes         Like[]
-    comments      Comment[]
+    followers              User[]         @relation(name: "Followers")
+    follows                User[]         @relation(name: "Followers")
+    notifications          Notification[] @relation("NotificationRecipient")
+    triggeredNotifications Notification[] @relation("NotificationActor")
+    posts                  Post[]
+    likes                  Like[]
+    comments               Comment[]
 
     @@map(name: "users")
 }
@@ -57,6 +59,7 @@ model Post {
     content   String
     type      PostType
     imageUrl  String?
+    images    String[] @default([])
     videoUrl  String?
     createdAt DateTime @default(now()) @map(name: "created_at")
     updatedAt DateTime @default(now()) @map(name: "updated_at")
@@ -71,13 +74,16 @@ model Post {
 }
 
 model Notification {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now()) @map(name: "created_at")
-    updatedAt DateTime @updatedAt @map(name: "updated_at")
+    id        String           @id @default(cuid())
+    createdAt DateTime         @default(now()) @map(name: "created_at")
+    updatedAt DateTime         @updatedAt @map(name: "updated_at")
     content   String
     userId    String
+    actorId   String?
+    postId    String?
 
-    user   User             @relation(fields: [userId], references: [id])
+    user   User             @relation("NotificationRecipient", fields: [userId], references: [id])
+    actor  User?            @relation("NotificationActor", fields: [actorId], references: [id])
     type   NotificationType
     isRead Boolean          @default(false)
 
