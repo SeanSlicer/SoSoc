@@ -1,5 +1,6 @@
 import { prisma } from "~/server/db";
 import { type PostType } from "@prisma/client";
+import { createNotification } from "../notifications/notifications";
 
 export async function createPost(authorId: string, content: string, type: PostType, images: string[]) {
   return prisma.post.create({
@@ -39,7 +40,17 @@ export async function toggleLike(userId: string, postId: string) {
     await prisma.like.delete({ where: { userId_postId: { userId, postId } } });
     return false;
   }
-  await prisma.like.create({ data: { userId, postId } });
+
+  const [, post, liker] = await Promise.all([
+    prisma.like.create({ data: { userId, postId } }),
+    prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { username: true, displayName: true } }),
+  ]);
+
+  if (post) {
+    const name = liker?.displayName ?? liker?.username ?? "Someone";
+    void createNotification(post.authorId, userId, "NEW_LIKE", `${name} liked your post`, postId);
+  }
   return true;
 }
 
@@ -54,12 +65,20 @@ export async function getComments(postId: string) {
 }
 
 export async function createComment(userId: string, postId: string, content: string) {
-  return prisma.comment.create({
-    data: { userId, postId, content },
-    include: {
-      user: { select: { id: true, username: true, displayName: true, photo: true } },
-    },
-  });
+  const [comment, post, commenter] = await Promise.all([
+    prisma.comment.create({
+      data: { userId, postId, content },
+      include: { user: { select: { id: true, username: true, displayName: true, photo: true } } },
+    }),
+    prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { username: true, displayName: true } }),
+  ]);
+
+  if (post) {
+    const name = commenter?.displayName ?? commenter?.username ?? "Someone";
+    void createNotification(post.authorId, userId, "NEW_COMMENT", `${name} commented on your post`, postId);
+  }
+  return comment;
 }
 
 export async function deleteComment(commentId: string, userId: string) {

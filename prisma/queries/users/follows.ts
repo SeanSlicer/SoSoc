@@ -1,10 +1,19 @@
 import { prisma } from "~/server/db";
+import { createNotification } from "../notifications/notifications";
 
 export async function followUser(followerId: string, followingId: string) {
-  return prisma.user.update({
-    where: { id: followerId },
-    data: { follows: { connect: { id: followingId } } },
-  });
+  const [result, follower] = await Promise.all([
+    prisma.user.update({
+      where: { id: followerId },
+      data: { follows: { connect: { id: followingId } } },
+    }),
+    prisma.user.findUnique({ where: { id: followerId }, select: { username: true, displayName: true } }),
+  ]);
+
+  const name = follower?.displayName ?? follower?.username ?? "Someone";
+  void createNotification(followingId, followerId, "NEW_FOLLOWER", `${name} started following you`);
+
+  return result;
 }
 
 export async function unfollowUser(followerId: string, followingId: string) {
