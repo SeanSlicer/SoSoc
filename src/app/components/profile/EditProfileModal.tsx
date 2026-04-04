@@ -9,6 +9,8 @@ type Profile = {
   displayName: string | null;
   bio: string | null;
   photo: string | null;
+  isPrivate: boolean;
+  hideFollowLists: boolean;
 };
 
 type EditProfileModalProps = {
@@ -23,6 +25,8 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
     displayName: profile.displayName ?? "",
     bio: profile.bio ?? "",
     username: profile.username,
+    isPrivate: profile.isPrivate,
+    hideFollowLists: profile.hideFollowLists,
   });
 
   useEffect(() => {
@@ -30,6 +34,8 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
       displayName: profile.displayName ?? "",
       bio: profile.bio ?? "",
       username: profile.username,
+      isPrivate: profile.isPrivate,
+      hideFollowLists: profile.hideFollowLists,
     });
   }, [profile]);
 
@@ -49,6 +55,8 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
             displayName: form.displayName || undefined,
             bio: form.bio || undefined,
             username: form.username !== profile.username ? form.username : undefined,
+            isPrivate: form.isPrivate,
+            hideFollowLists: form.hideFollowLists,
           });
         }}
         className="space-y-4"
@@ -95,6 +103,34 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
             className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-colors"
             placeholder="Tell people about yourself"
           />
+        </div>
+
+        {/* Privacy settings */}
+        <div className="rounded-xl border border-neutral-200 divide-y divide-neutral-100">
+          <label className="flex items-center justify-between px-4 py-3 cursor-pointer">
+            <div>
+              <p className="text-sm font-medium text-neutral-800">Private account</p>
+              <p className="text-xs text-neutral-500">Only approved followers can see your posts</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={form.isPrivate}
+              onChange={(e) => setForm((f) => ({ ...f, isPrivate: e.target.checked }))}
+              className="h-4 w-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
+            />
+          </label>
+          <label className="flex items-center justify-between px-4 py-3 cursor-pointer">
+            <div>
+              <p className="text-sm font-medium text-neutral-800">Hide follow lists</p>
+              <p className="text-xs text-neutral-500">Others can&apos;t see who you follow or your followers</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={form.hideFollowLists}
+              onChange={(e) => setForm((f) => ({ ...f, hideFollowLists: e.target.checked }))}
+              className="h-4 w-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
+            />
+          </label>
         </div>
 
         <div className="flex justify-end gap-2 pt-1">
