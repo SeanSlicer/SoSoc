@@ -3,12 +3,14 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import PostCard from "./PostCard";
 import CreatePost from "./CreatePost";
+import SharePostModal from "~/app/components/messages/SharePostModal";
 
 type FeedType = "all" | "following";
 
 export default function FeedClient() {
   const { data: me, isLoading: meLoading } = api.user.getMe.useQuery();
   const [feedType, setFeedType] = useState<FeedType>("all");
+  const [sharingPostId, setSharingPostId] = useState<string | null>(null);
 
   const {
     data,
@@ -53,7 +55,7 @@ export default function FeedClient() {
       ) : (
         <>
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} currentUserId={me.id} />
+            <PostCard key={post.id} post={post} currentUserId={me.id} onShare={setSharingPostId} />
           ))}
 
           {hasNextPage && (
@@ -69,6 +71,8 @@ export default function FeedClient() {
           )}
         </>
       )}
+
+      <SharePostModal postId={sharingPostId} onClose={() => setSharingPostId(null)} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Bell, LogOut, Shield, Search } from "lucide-react";
+import { Home, User, Bell, LogOut, Shield, Search, MessageSquare } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 
@@ -28,6 +28,9 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
   const { data: unreadCount = 0 } = api.notification.getUnreadCount.useQuery(undefined, {
     refetchInterval: 30_000,
   });
+  const { data: unreadMessages = 0 } = api.messages.getTotalUnread.useQuery(undefined, {
+    refetchInterval: 5_000,
+  });
 
   const handleSignOut = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -37,6 +40,7 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
   const navItems = [
     { href: "/feed", icon: Home, label: "Home", badge: 0 },
     { href: "/search", icon: Search, label: "Search", badge: 0 },
+    { href: "/messages", icon: MessageSquare, label: "Messages", badge: unreadMessages },
     { href: "/notifications", icon: Bell, label: "Notifications", badge: unreadCount },
     { href: `/profile/${user.username}`, icon: User, label: "Profile", badge: 0 },
     ...(me?.role === "ADMIN"
