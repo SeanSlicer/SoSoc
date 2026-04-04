@@ -12,7 +12,13 @@ export async function getFeed(
     where:
       feedType === "following"
         ? { author: { followers: { some: { id: currentUserId } } } }
-        : {},
+        : {
+            OR: [
+              { author: { isPrivate: false } },
+              { author: { followers: { some: { id: currentUserId } } } },
+              { authorId: currentUserId },
+            ],
+          },
     orderBy: { createdAt: "desc" },
     include: {
       author: { select: { id: true, username: true, displayName: true, photo: true } },
