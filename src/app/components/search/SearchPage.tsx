@@ -42,7 +42,7 @@ export default function SearchPage() {
         </div>
       )}
 
-      {!isFetching && results && results.length === 0 && debouncedQuery.trim() && (
+      {!isFetching && results?.length === 0 && debouncedQuery.trim() && (
         <p className="py-8 text-center text-sm text-neutral-500">No results for &ldquo;{debouncedQuery}&rdquo;</p>
       )}
 

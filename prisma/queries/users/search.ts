@@ -23,7 +23,7 @@ export async function searchUsers(query: string, limit = 20) {
   });
 }
 
-export async function getFollowerList(username: string, currentUserId: string) {
+export async function getFollowerList(username: string, _currentUserId: string) {
   const user = await prisma.user.findUnique({
     where: { username },
     select: {

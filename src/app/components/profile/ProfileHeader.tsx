@@ -198,6 +198,7 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
 
       {isOwnProfile && (
         <EditProfileModal
+          key={profile.id}
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           profile={profile}

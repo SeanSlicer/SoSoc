@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Modal from "~/app/components/ui/Modal";
 import { api } from "~/trpc/react";
 
@@ -28,16 +28,6 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
     isPrivate: profile.isPrivate,
     hideFollowLists: profile.hideFollowLists,
   });
-
-  useEffect(() => {
-    setForm({
-      displayName: profile.displayName ?? "",
-      bio: profile.bio ?? "",
-      username: profile.username,
-      isPrivate: profile.isPrivate,
-      hideFollowLists: profile.hideFollowLists,
-    });
-  }, [profile]);
 
   const { mutate: updateProfile, isPending, error } = api.user.updateProfile.useMutation({
     onSuccess: () => {

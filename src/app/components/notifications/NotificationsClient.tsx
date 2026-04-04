@@ -53,7 +53,7 @@ export default function NotificationsClient() {
         <div className="flex flex-col items-center justify-center py-24 text-center px-4">
           <Bell size={40} className="text-neutral-300 mb-3" />
           <p className="text-neutral-500 text-sm">No notifications yet.</p>
-          <p className="text-neutral-400 text-xs mt-1">When someone follows you, likes or comments on a post, it'll show up here.</p>
+          <p className="text-neutral-400 text-xs mt-1">When someone follows you, likes or comments on a post, it&apos;ll show up here.</p>
         </div>
       )}
 
