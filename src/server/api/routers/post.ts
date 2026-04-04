@@ -29,8 +29,8 @@ export const postRouter = createTRPCRouter({
   create: userProcedure
     .input(createPostSchema)
     .mutation(async ({ ctx, input }) => {
-      const type = input.images.length > 0 ? "PHOTO" : "CAPTION";
-      return createPost(ctx.userId, input.content, type, input.images);
+      const type = input.videoUrl ? "VIDEO" : input.images.length > 0 ? "PHOTO" : "CAPTION";
+      return createPost(ctx.userId, input.content, type, input.images, input.videoUrl);
     }),
 
   update: userProcedure

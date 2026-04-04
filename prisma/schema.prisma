@@ -48,15 +48,17 @@ model User {
     createdAt       DateTime  @default(now()) @map(name: "created_at")
     updatedAt       DateTime  @default(now()) @map(name: "updated_at")
 
-    followers              User[]          @relation(name: "Followers")
-    follows                User[]          @relation(name: "Followers")
-    notifications          Notification[]  @relation("NotificationRecipient")
-    triggeredNotifications Notification[]  @relation("NotificationActor")
+    followers              User[]               @relation(name: "Followers")
+    follows                User[]               @relation(name: "Followers")
+    notifications          Notification[]       @relation("NotificationRecipient")
+    triggeredNotifications Notification[]       @relation("NotificationActor")
     posts                  Post[]
     likes                  Like[]
     comments               Comment[]
-    sentFollowRequests     FollowRequest[] @relation("SentRequests")
-    receivedFollowRequests FollowRequest[] @relation("ReceivedRequests")
+    sentFollowRequests     FollowRequest[]      @relation("SentRequests")
+    receivedFollowRequests FollowRequest[]      @relation("ReceivedRequests")
+    conversations          ConversationMember[]
+    sentMessages           Message[]            @relation("SentMessages")
 
     @@map(name: "users")
 }
@@ -86,13 +88,56 @@ model Post {
     createdAt DateTime @default(now()) @map(name: "created_at")
     updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-    author   User      @relation(fields: [authorId], references: [id])
-    authorId String
-    likes    Like[]
-    comments Comment[]
+    author           User      @relation(fields: [authorId], references: [id])
+    authorId         String
+    likes            Like[]
+    comments         Comment[]
+    sharedInMessages Message[] @relation("SharedInMessages")
 
     @@index([authorId])
     @@map(name: "posts")
+}
+
+model Conversation {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+    name      String?
+
+    members  ConversationMember[]
+    messages Message[]
+
+    @@map(name: "conversations")
+}
+
+model ConversationMember {
+    userId         String
+    conversationId String
+    lastReadAt     DateTime? @map(name: "last_read_at")
+
+    user         User         @relation(fields: [userId], references: [id])
+    conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+    @@id([userId, conversationId])
+    @@index([userId])
+    @@map(name: "conversation_members")
+}
+
+model Message {
+    id             String   @id @default(cuid())
+    createdAt      DateTime @default(now()) @map(name: "created_at")
+    content        String?
+    senderId       String
+    conversationId String
+    sharedPostId   String?
+
+    sender       User         @relation("SentMessages", fields: [senderId], references: [id])
+    conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+    sharedPost   Post?        @relation("SharedInMessages", fields: [sharedPostId], references: [id], onDelete: SetNull)
+
+    @@index([conversationId, createdAt])
+    @@index([senderId])
+    @@map(name: "messages")
 }
 
 model Notification {

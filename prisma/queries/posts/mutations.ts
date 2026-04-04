@@ -2,13 +2,20 @@ import { prisma } from "~/server/db";
 import { type PostType } from "@prisma/client";
 import { createNotification } from "../notifications/notifications";
 
-export async function createPost(authorId: string, content: string, type: PostType, images: string[]) {
+export async function createPost(
+  authorId: string,
+  content: string,
+  type: PostType,
+  images: string[],
+  videoUrl?: string,
+) {
   return prisma.post.create({
     data: {
       content,
       type,
       images,
-      imageUrl: images[0] ?? null, // keep for backward compat with existing queries
+      imageUrl: images[0] ?? null,
+      videoUrl: videoUrl ?? null,
       authorId,
     },
     include: {
