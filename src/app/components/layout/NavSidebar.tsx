@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Bell, LogOut } from "lucide-react";
+import { Home, User, Bell, LogOut, Shield } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 
@@ -38,6 +38,9 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
     { href: "/feed", icon: Home, label: "Home", badge: 0 },
     { href: "/notifications", icon: Bell, label: "Notifications", badge: unreadCount },
     { href: `/profile/${user.username}`, icon: User, label: "Profile", badge: 0 },
+    ...(me?.role === "ADMIN"
+      ? [{ href: "/admin", icon: Shield, label: "Admin", badge: 0 }]
+      : []),
   ];
 
   const isActive = (href: string) =>
