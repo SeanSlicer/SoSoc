@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, UserPlus, Bell } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, Bell, UserCheck } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { timeAgo } from "~/lib/timeAgo";
@@ -15,6 +15,10 @@ function NotificationIcon({ type }: { type: NotificationType }) {
       return <MessageCircle size={14} className="text-indigo-500" />;
     case "NEW_FOLLOWER":
       return <UserPlus size={14} className="text-emerald-500" />;
+    case "FOLLOW_REQUEST":
+      return <UserPlus size={14} className="text-amber-500" />;
+    case "FOLLOW_REQUEST_ACCEPTED":
+      return <UserCheck size={14} className="text-emerald-500" />;
     default:
       return <Bell size={14} className="text-neutral-400" />;
   }

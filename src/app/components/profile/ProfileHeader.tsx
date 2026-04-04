@@ -102,7 +102,7 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
         </div>
 
         {/* Avatar row */}
-        <div className="flex items-end justify-between px-4 -mt-14 pb-4">
+        <div className="flex items-start justify-between px-4 -mt-14 pb-4">
           <div className="relative">
             <Avatar
               user={profile}
@@ -117,28 +117,31 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
             )}
           </div>
 
-          {isOwnProfile ? (
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              Edit profile
-            </button>
-          ) : (
-            <button
-              onClick={followAction}
-              disabled={actionPending}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
-                isFollowing
-                  ? "border border-neutral-200 bg-white text-neutral-700 hover:border-red-300 hover:text-red-600"
-                  : hasRequested
-                  ? "border border-neutral-200 bg-white text-neutral-500 hover:border-red-300 hover:text-red-500"
-                  : "bg-neutral-900 text-white hover:bg-neutral-700"
-              }`}
-            >
-              {actionPending ? "…" : followLabel}
-            </button>
-          )}
+          {/* Push button below banner edge: row top is 88px into page, banner ends at 144px, so mt-16 (64px) clears it */}
+          <div className="mt-16">
+            {isOwnProfile ? (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+              >
+                Edit profile
+              </button>
+            ) : (
+              <button
+                onClick={followAction}
+                disabled={actionPending}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                  isFollowing
+                    ? "border border-neutral-200 bg-white text-neutral-700 hover:border-red-300 hover:text-red-600"
+                    : hasRequested
+                    ? "border border-neutral-200 bg-white text-neutral-500 hover:border-red-300 hover:text-red-500"
+                    : "bg-neutral-900 text-white hover:bg-neutral-700"
+                }`}
+              >
+                {actionPending ? "…" : followLabel}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Bio / info */}
