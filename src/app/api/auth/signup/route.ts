@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const { username, email, password } = parsed.data;
     const user = await createUser(username, email, password);
 
-    const token = createAuthToken(user.id);
+    const token = createAuthToken(user.id, user.role);
     const response = NextResponse.json({ success: true });
     setAuthCookie(response.cookies, token);
     return response;

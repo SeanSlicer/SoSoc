@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
     }
 
-    const token = createAuthToken(user.id);
+    const token = createAuthToken(user.id, user.role);
     const response = NextResponse.json({ success: true });
     setAuthCookie(response.cookies, token);
     return response;
