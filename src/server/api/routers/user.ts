@@ -9,10 +9,10 @@ export const userRouter = createTRPCRouter({
   getMe: userProcedure.query(async ({ ctx }) => {
     const user = await ctx.db.user.findUnique({
       where: { id: ctx.userId },
-      select: { id: true, username: true, displayName: true, bio: true, photo: true },
+      select: { id: true, username: true, displayName: true, bio: true, photo: true, role: true },
     });
     if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-    return user;
+    return { ...user, isImpersonating: !!ctx.adminId };
   }),
 
   getProfile: userProcedure
