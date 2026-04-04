@@ -22,6 +22,8 @@ enum NotificationType {
     FRIEND_REQUEST
     NEW_LIKE
     NEW_COMMENT
+    FOLLOW_REQUEST
+    FOLLOW_REQUEST_ACCEPTED
 }
 
 enum PostType {
@@ -31,27 +33,47 @@ enum PostType {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    username      String    @unique
-    email         String    @unique
-    emailVerified DateTime?
-    password      String
-    role          UserRole  @default(USER)
-    photo         String?   @default("default.png")
-    bio           String?
-    displayName   String?
-    createdAt     DateTime  @default(now()) @map(name: "created_at")
-    updatedAt     DateTime  @default(now()) @map(name: "updated_at")
+    id              String    @id @default(cuid())
+    username        String    @unique
+    email           String    @unique
+    emailVerified   DateTime?
+    password        String
+    role            UserRole  @default(USER)
+    photo           String?   @default("default.png")
+    bannerUrl       String?
+    bio             String?
+    displayName     String?
+    isPrivate       Boolean   @default(false)
+    hideFollowLists Boolean   @default(false)
+    createdAt       DateTime  @default(now()) @map(name: "created_at")
+    updatedAt       DateTime  @default(now()) @map(name: "updated_at")
 
-    followers              User[]         @relation(name: "Followers")
-    follows                User[]         @relation(name: "Followers")
-    notifications          Notification[] @relation("NotificationRecipient")
-    triggeredNotifications Notification[] @relation("NotificationActor")
+    followers              User[]          @relation(name: "Followers")
+    follows                User[]          @relation(name: "Followers")
+    notifications          Notification[]  @relation("NotificationRecipient")
+    triggeredNotifications Notification[]  @relation("NotificationActor")
     posts                  Post[]
     likes                  Like[]
     comments               Comment[]
+    sentFollowRequests     FollowRequest[] @relation("SentRequests")
+    receivedFollowRequests FollowRequest[] @relation("ReceivedRequests")
 
     @@map(name: "users")
+}
+
+model FollowRequest {
+    id          String   @id @default(cuid())
+    createdAt   DateTime @default(now()) @map(name: "created_at")
+    requesterId String
+    targetId    String
+
+    requester User @relation("SentRequests", fields: [requesterId], references: [id])
+    target    User @relation("ReceivedRequests", fields: [targetId], references: [id])
+
+    @@unique([requesterId, targetId])
+    @@index([requesterId])
+    @@index([targetId])
+    @@map(name: "follow_requests")
 }
 
 model Post {

@@ -9,6 +9,9 @@ export async function getUserProfile(username: string) {
       displayName: true,
       bio: true,
       photo: true,
+      bannerUrl: true,
+      isPrivate: true,
+      hideFollowLists: true,
       createdAt: true,
       _count: { select: { posts: true, followers: true, follows: true } },
     },
@@ -17,7 +20,13 @@ export async function getUserProfile(username: string) {
 
 export async function updateUserProfile(
   userId: string,
-  data: { displayName?: string; bio?: string; username?: string },
+  data: {
+    displayName?: string;
+    bio?: string;
+    username?: string;
+    isPrivate?: boolean;
+    hideFollowLists?: boolean;
+  },
 ) {
   return prisma.user.update({
     where: { id: userId },
@@ -28,6 +37,9 @@ export async function updateUserProfile(
       displayName: true,
       bio: true,
       photo: true,
+      bannerUrl: true,
+      isPrivate: true,
+      hideFollowLists: true,
     },
   });
 }
@@ -37,5 +49,13 @@ export async function updateUserPhoto(userId: string, photo: string) {
     where: { id: userId },
     data: { photo, updatedAt: new Date() },
     select: { id: true, photo: true },
+  });
+}
+
+export async function updateUserBanner(userId: string, bannerUrl: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { bannerUrl, updatedAt: new Date() },
+    select: { id: true, bannerUrl: true },
   });
 }

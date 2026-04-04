@@ -1,4 +1,4 @@
-export type StorageBucket = "avatars" | "posts";
+export type StorageBucket = "avatars" | "posts" | "banners";
 
 /**
  * Provider-agnostic storage interface.
