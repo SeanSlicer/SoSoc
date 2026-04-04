@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Trash2, Edit2, X, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, MessageCircle, Trash2, Edit2, X, Check, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { api, type RouterOutputs } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import Lightbox from "~/app/components/ui/Lightbox";
@@ -12,60 +12,63 @@ export type FeedPost = RouterOutputs["post"]["getFeed"]["posts"][number];
 type PostCardProps = {
   post: FeedPost;
   currentUserId: string;
+  onShare?: (postId: string) => void;
 };
 
-// Inline carousel for post image collections
-function ImageCarousel({
-  images,
-  onImageClick,
-}: {
-  images: string[];
-  onImageClick: (index: number) => void;
-}) {
-  const [carouselIndex, setCarouselIndex] = useState(0);
+// ─── Slide carousel ────────────────────────────────────────────────────────────
+function ImageCarousel({ images, onImageClick }: { images: string[]; onImageClick: (i: number) => void }) {
+  const [index, setIndex] = useState(0);
+  const startX = useRef<number | null>(null);
 
   if (images.length === 0) return null;
 
-  if (images.length === 1) {
-    return (
-      <div
-        className="mt-3 cursor-zoom-in overflow-hidden rounded-xl border border-neutral-100"
-        onClick={() => onImageClick(0)}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={images[0]} alt="Post image" className="w-full max-h-96 object-cover" />
-      </div>
-    );
-  }
+  const goTo = (i: number) => setIndex(Math.max(0, Math.min(images.length - 1, i)));
+
+  // Touch swipe support
+  const onTouchStart = (e: React.TouchEvent) => { startX.current = e.touches[0]?.clientX ?? null; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (startX.current === null) return;
+    const diff = (e.changedTouches[0]?.clientX ?? 0) - startX.current;
+    if (Math.abs(diff) > 40) goTo(index + (diff < 0 ? 1 : -1));
+    startX.current = null;
+  };
 
   return (
-    <div className="mt-3 relative overflow-hidden rounded-xl border border-neutral-100">
+    <div
+      className="mt-3 relative overflow-hidden rounded-xl border border-neutral-100 cursor-zoom-in select-none"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onClick={() => onImageClick(index)}
+    >
+      {/* Sliding strip */}
       <div
-        className="cursor-zoom-in"
-        onClick={() => onImageClick(carouselIndex)}
+        className="flex transition-transform duration-300 ease-in-out"
+        style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={images[carouselIndex]}
-          alt={`Image ${carouselIndex + 1} of ${images.length}`}
-          className="w-full max-h-96 object-cover"
-        />
+        {images.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={i}
+            src={src}
+            alt={`Image ${i + 1} of ${images.length}`}
+            className="w-full shrink-0 max-h-96 object-cover"
+            draggable={false}
+          />
+        ))}
       </div>
 
-      {/* Prev */}
-      {carouselIndex > 0 && (
+      {/* Prev / Next */}
+      {index > 0 && (
         <button
-          onClick={(e) => { e.stopPropagation(); setCarouselIndex((i) => i - 1); }}
+          onClick={(e) => { e.stopPropagation(); goTo(index - 1); }}
           className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors"
         >
           <ChevronLeft size={18} />
         </button>
       )}
-
-      {/* Next */}
-      {carouselIndex < images.length - 1 && (
+      {index < images.length - 1 && (
         <button
-          onClick={(e) => { e.stopPropagation(); setCarouselIndex((i) => i + 1); }}
+          onClick={(e) => { e.stopPropagation(); goTo(index + 1); }}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors"
         >
           <ChevronRight size={18} />
@@ -73,29 +76,45 @@ function ImageCarousel({
       )}
 
       {/* Dot indicators */}
-      <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
-        {images.map((_, i) => (
-          <button
-            key={i}
-            onClick={(e) => { e.stopPropagation(); setCarouselIndex(i); }}
-            className={`h-1.5 w-1.5 rounded-full transition-colors ${
-              i === carouselIndex ? "bg-white" : "bg-white/50"
-            }`}
-          />
-        ))}
-      </div>
+      {images.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); goTo(i); }}
+              className={`h-1.5 rounded-full transition-all duration-200 ${i === index ? "w-4 bg-white" : "w-1.5 bg-white/50"}`}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Count badge */}
-      <span className="absolute right-2 top-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
-        {carouselIndex + 1}/{images.length}
-      </span>
+      {images.length > 1 && (
+        <span className="absolute right-2 top-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
+          {index + 1}/{images.length}
+        </span>
+      )}
     </div>
   );
 }
 
-export default function PostCard({ post, currentUserId }: PostCardProps) {
-  const utils = api.useUtils();
+// ─── Video player ───────────────────────────────────────────────────────────────
+function VideoPlayer({ src }: { src: string }) {
+  return (
+    <div className="mt-3 overflow-hidden rounded-xl border border-neutral-100 bg-black">
+      <video
+        src={src}
+        controls
+        preload="metadata"
+        className="w-full max-h-96"
+        playsInline
+      />
+    </div>
+  );
+}
 
+// ─── PostCard ──────────────────────────────────────────────────────────────────
+export default function PostCard({ post, currentUserId, onShare }: PostCardProps) {
+  const utils = api.useUtils();
   const [showComments, setShowComments] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -106,13 +125,8 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
   const isOwn = post.author.id === currentUserId;
 
-  // Resolve images: new posts use the images array; old posts fall back to imageUrl
   const postImages: string[] =
-    post.images && post.images.length > 0
-      ? post.images
-      : post.imageUrl
-        ? [post.imageUrl]
-        : [];
+    post.images?.length > 0 ? post.images : post.imageUrl ? [post.imageUrl] : [];
 
   const invalidatePosts = () => {
     void utils.post.getFeed.invalidate();
@@ -158,10 +172,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <Link
-                  href={`/profile/${post.author.username}`}
-                  className="font-semibold text-neutral-900 hover:underline text-sm"
-                >
+                <Link href={`/profile/${post.author.username}`} className="font-semibold text-neutral-900 hover:underline text-sm">
                   {post.author.displayName ?? post.author.username}
                 </Link>
                 <span className="text-neutral-500 text-sm">@{post.author.username}</span>
@@ -171,18 +182,10 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
               {isOwn && !isEditing && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
-                    title="Edit post"
-                  >
+                  <button onClick={() => setIsEditing(true)} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors" title="Edit post">
                     <Edit2 size={15} />
                   </button>
-                  <button
-                    onClick={() => deletePost({ postId: post.id })}
-                    className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                    title="Delete post"
-                  >
+                  <button onClick={() => deletePost({ postId: post.id })} className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Delete post">
                     <Trash2 size={15} />
                   </button>
                 </div>
@@ -199,39 +202,29 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
                   className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-colors"
                 />
                 <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => { setIsEditing(false); setEditContent(post.content); }}
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
-                  >
+                  <button onClick={() => { setIsEditing(false); setEditContent(post.content); }} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 transition-colors">
                     <X size={13} /> Cancel
                   </button>
-                  <button
-                    onClick={() => updatePost({ postId: post.id, content: editContent })}
-                    disabled={isUpdating || !editContent.trim()}
-                    className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
-                  >
+                  <button onClick={() => updatePost({ postId: post.id, content: editContent })} disabled={isUpdating || !editContent.trim()} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors">
                     <Check size={13} /> {isUpdating ? "Saving…" : "Save"}
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="mt-1.5 text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
-                {post.content}
-              </p>
+              <p className="mt-1.5 text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
             )}
 
-            {/* Images */}
+            {/* Media */}
             {!isEditing && postImages.length > 0 && (
               <ImageCarousel images={postImages} onImageClick={(i) => setLightboxIndex(i)} />
             )}
+            {!isEditing && post.videoUrl && <VideoPlayer src={post.videoUrl} />}
 
             {/* Actions */}
             <div className="mt-3 flex items-center gap-5">
               <button
                 onClick={() => toggleLike({ postId: post.id })}
-                className={`flex items-center gap-1.5 text-sm transition-colors ${
-                  liked ? "text-red-500" : "text-neutral-400 hover:text-red-400"
-                }`}
+                className={`flex items-center gap-1.5 text-sm transition-colors ${liked ? "text-red-500" : "text-neutral-400 hover:text-red-400"}`}
               >
                 <Heart size={17} className={liked ? "fill-red-500" : ""} />
                 <span>{likeCount}</span>
@@ -244,6 +237,16 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
                 <MessageCircle size={17} />
                 <span>{post._count.comments}</span>
               </button>
+
+              {onShare && (
+                <button
+                  onClick={() => onShare(post.id)}
+                  className="flex items-center gap-1.5 text-sm text-neutral-400 hover:text-indigo-500 transition-colors"
+                  title="Share via message"
+                >
+                  <Send size={16} />
+                </button>
+              )}
             </div>
 
             {/* Comments */}
@@ -280,10 +283,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
                           {comment.user.displayName ?? comment.user.username}
                         </span>
                         {comment.user.id === currentUserId && (
-                          <button
-                            onClick={() => deleteComment({ commentId: comment.id })}
-                            className="text-neutral-300 hover:text-red-400 transition-colors"
-                          >
+                          <button onClick={() => deleteComment({ commentId: comment.id })} className="text-neutral-300 hover:text-red-400 transition-colors">
                             <X size={13} />
                           </button>
                         )}
