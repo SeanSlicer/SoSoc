@@ -19,4 +19,6 @@ export const updateProfileSchema = z.object({
     .max(25)
     .regex(/^[a-zA-Z0-9_]*$/, "Only letters, numbers, and underscores")
     .optional(),
+  isPrivate: z.boolean().optional(),
+  hideFollowLists: z.boolean().optional(),
 });
