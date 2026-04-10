@@ -24,6 +24,7 @@ yarn format:check # Prettier check only
 yarn db:generate  # Generate Prisma migration (dev)
 yarn db:migrate   # Deploy migrations
 yarn db:push      # Push schema without migration
+yarn db:setup     # One-time Supabase setup (Realtime publication) — idempotent, safe to re-run
 yarn db:studio    # Open Prisma Studio GUI
 ```
 
