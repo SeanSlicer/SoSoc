@@ -22,7 +22,7 @@ export function useRealtimeNotifications() {
         {
           event: "INSERT",
           schema: "public",
-          table: "Notification", // Prisma model has no @@map, so DB table keeps the model name exactly
+          table: "notifications",
         },
         () => {
           void utils.notification.getUnreadCount.invalidate();

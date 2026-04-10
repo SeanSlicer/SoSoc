@@ -48,9 +48,8 @@ Replaced with Supabase Realtime (`postgres_changes` on `notifications` table). R
 
 **Recommended fix:**
 ```sql
--- Enable RLS (note: Notification table has no @@map so keeps the PascalCase name)
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "Notification" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Users can only receive messages from conversations they belong to
 CREATE POLICY "members can read messages"
@@ -65,7 +64,7 @@ CREATE POLICY "members can read messages"
 
 -- Users can only receive their own notifications
 CREATE POLICY "users can read own notifications"
-  ON "Notification" FOR SELECT
+  ON notifications FOR SELECT
   USING (user_id = auth.uid());
 ```
 Note: This requires Supabase Auth integration (auth.uid()) or a custom JWT verification approach.
