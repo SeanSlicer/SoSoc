@@ -63,7 +63,7 @@ export default function FeedClient() {
               <button
                 onClick={() => void fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
+                className="rounded-xl border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50 transition-colors"
               >
                 {isFetchingNextPage ? "Loading…" : "Load more"}
               </button>
@@ -85,9 +85,9 @@ function FeedHeader({
   onTabChange: (t: FeedType) => void;
 }) {
   return (
-    <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
+    <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-100 dark:border-neutral-800">
       <div className="px-4 pt-3 pb-0">
-        <h1 className="font-bold text-neutral-900">Home</h1>
+        <h1 className="font-bold text-neutral-900 dark:text-neutral-100">Home</h1>
       </div>
       <div className="flex">
         {(["all", "following"] as const).map((type) => (
@@ -97,7 +97,7 @@ function FeedHeader({
             className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
               feedType === type
                 ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-neutral-500 hover:text-neutral-700"
+                : "border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
             }`}
           >
             {type === "all" ? "For You" : "Following"}

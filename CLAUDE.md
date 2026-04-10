@@ -100,11 +100,34 @@ Provider-agnostic interface at `src/lib/storage/types.ts`. Buckets: `"avatars" |
 
 ### Dark Mode
 
+**Dark mode must be considered on every UI change.** Never write a light-mode-only class without its `dark:` counterpart.
+
 - Class-based dark mode via `@custom-variant dark` in `globals.css`. Apply `.dark` to `<html>` to enable.
 - `ThemeProvider` (`src/app/components/theme/ThemeProvider.tsx`) manages the `dark` class and stores preference in `localStorage`. Three modes: `light`, `dark`, `system`.
 - An inline `<script>` in `src/app/layout.tsx` runs before first paint to prevent flash of wrong theme.
 - Theme toggle (Sun/Monitor/Moon) is in the **desktop sidebar only**. Mobile follows system preference automatically.
-- When adding any new UI: always add `dark:` variants alongside light-mode classes. The color mapping is: `bg-white` → `dark:bg-neutral-900`, `bg-neutral-50` → `dark:bg-neutral-950`, `bg-neutral-100` → `dark:bg-neutral-800`, `border-neutral-200` → `dark:border-neutral-700`, `text-neutral-900` → `dark:text-neutral-100`, etc.
+
+**Color mapping — always pair these:**
+| Light | Dark |
+|---|---|
+| `bg-white` | `dark:bg-neutral-900` |
+| `bg-neutral-50` | `dark:bg-neutral-950` |
+| `bg-neutral-100` | `dark:bg-neutral-800` |
+| `bg-white/80` (sticky headers) | `dark:bg-neutral-900/80` |
+| `border-neutral-100` | `dark:border-neutral-800` |
+| `border-neutral-200` | `dark:border-neutral-700` |
+| `text-neutral-900` | `dark:text-neutral-100` |
+| `text-neutral-800` | `dark:text-neutral-200` |
+| `text-neutral-700` | `dark:text-neutral-300` |
+| `text-neutral-600` | `dark:text-neutral-400` |
+| `text-neutral-500` | `dark:text-neutral-400` |
+| `text-neutral-400` | `dark:text-neutral-500` |
+| `hover:bg-neutral-50` | `dark:hover:bg-neutral-800` |
+| `hover:bg-neutral-100` | `dark:hover:bg-neutral-700` |
+| `bg-indigo-50` | `dark:bg-indigo-950` |
+| `bg-indigo-100` | `dark:bg-indigo-900` |
+| `text-indigo-700` | `dark:text-indigo-300` |
+| inputs: add | `dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100` |
 
 ### Mobile Layout
 
