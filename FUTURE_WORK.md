@@ -33,16 +33,6 @@ Issues that are known, non-breaking, and not currently prioritised. Revisit when
 
 ## Real-time Features
 
-### ~~Polling → WebSockets / SSE for messages~~ ✅ Done
-Replaced with Supabase Realtime (`postgres_changes` on `messages` table). NavSidebar owns the global subscription; MessageThread adds a per-conversation subscription for instant in-thread delivery. Requires `ALTER PUBLICATION supabase_realtime ADD TABLE messages;` in Supabase.
-
----
-
-### ~~Notification polling → push~~ ✅ Done
-Replaced with Supabase Realtime (`postgres_changes` on `notifications` table). Requires `ALTER PUBLICATION supabase_realtime ADD TABLE notifications;`.
-
----
-
 ### RLS on messages and notifications tables
 **Issue:** Supabase Realtime broadcasts row data to all subscribers using the anon key. Without Row-Level Security (RLS), any connected client could receive message/notification payloads that belong to other users. The current implementation uses payloads only as cache invalidation triggers (data still fetches through auth-protected tRPC), but enabling RLS is the defense-in-depth fix.
 

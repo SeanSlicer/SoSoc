@@ -113,7 +113,10 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl px-3 py-2">
+          <Link
+            href={`/profile/${user.username}`}
+            className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
             <Avatar user={user} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -121,7 +124,7 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
               </p>
               <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">@{user.username}</p>
             </div>
-          </div>
+          </Link>
           <button
             onClick={() => void handleSignOut()}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -140,21 +143,30 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
         className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around border-t border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm px-2 pt-2"
         style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
       >
-        {coreNavItems.map(({ href, icon: Icon, label, badge }) => (
-          <Link
-            key={href}
-            href={href}
-            aria-label={label}
-            className={`relative flex items-center justify-center rounded-xl p-3 transition-colors ${
-              isActive(href)
-                ? "text-indigo-600 dark:text-indigo-400"
-                : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
-            }`}
-          >
-            <Icon size={24} strokeWidth={isActive(href) ? 2.5 : 2} />
-            <Badge count={badge} />
-          </Link>
-        ))}
+        {coreNavItems.map(({ href, icon: Icon, label, badge }) => {
+          const isProfile = label === "Profile";
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-label={label}
+              className={`relative flex items-center justify-center rounded-xl p-3 transition-colors ${
+                isActive(href)
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+            >
+              {isProfile ? (
+                <span className={`block rounded-full ${isActive(href) ? "ring-2 ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-neutral-900" : ""}`}>
+                  <Avatar user={user} size="sm" />
+                </span>
+              ) : (
+                <Icon size={24} strokeWidth={isActive(href) ? 2.5 : 2} />
+              )}
+              <Badge count={badge} />
+            </Link>
+          );
+        })}
         <button
           onClick={() => void handleSignOut()}
           aria-label="Sign out"
