@@ -49,17 +49,17 @@ export default function FollowListModal({ username, mode, isOpen, onClose }: Pro
       )}
 
       {result && !result.hidden && result.list.length > 0 && (
-        <ul className="divide-y divide-neutral-100 -mx-4">
+        <ul className="divide-y divide-neutral-100 dark:divide-neutral-800 -mx-4">
           {result.list.map((user) => (
             <li key={user.id}>
               <Link
                 href={`/profile/${user.username}`}
                 onClick={onClose}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 <Avatar user={user} size="md" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-neutral-900">
+                  <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                     {user.displayName ?? user.username}
                     {user.isPrivate && (
                       <span className="ml-1.5 text-xs font-normal text-neutral-400">Private</span>

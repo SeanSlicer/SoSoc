@@ -92,7 +92,7 @@ export default function NewConversationModal({ isOpen, onClose, onConversationRe
             placeholder="Group name"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
         )}
 
@@ -104,7 +104,7 @@ export default function NewConversationModal({ isOpen, onClose, onConversationRe
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people…"
-            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 pl-8 pr-3 text-sm focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 py-2.5 pl-8 pr-3 text-sm focus:border-indigo-400 focus:bg-white dark:focus:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-colors"
           />
         </div>
 
@@ -117,12 +117,12 @@ export default function NewConversationModal({ isOpen, onClose, onConversationRe
                 <li key={user.id}>
                   <button
                     onClick={() => toggle(user)}
-                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${isSelected ? "bg-indigo-50" : "hover:bg-neutral-50"}`}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${isSelected ? "bg-indigo-50 dark:bg-indigo-950" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"}`}
                   >
                     <Avatar user={user} size="sm" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-neutral-900">{user.displayName ?? user.username}</p>
-                      <p className="truncate text-xs text-neutral-500">@{user.username}</p>
+                      <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.displayName ?? user.username}</p>
+                      <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">@{user.username}</p>
                     </div>
                     {isSelected && <div className="h-4 w-4 shrink-0 rounded-full bg-indigo-600" />}
                   </button>
@@ -133,7 +133,7 @@ export default function NewConversationModal({ isOpen, onClose, onConversationRe
         )}
 
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={() => { onClose(); reset(); }} className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors">
+          <button onClick={() => { onClose(); reset(); }} className="rounded-xl border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
             Cancel
           </button>
           <button

@@ -4,6 +4,7 @@ import { type Metadata, type Viewport } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { ThemeProvider } from "~/app/components/theme/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "sosoc",
@@ -24,13 +25,26 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
+// Inline script runs before first paint to apply the correct theme class,
+// preventing a flash of the wrong theme on page load.
+const themeScript = `(function(){
+  var t=localStorage.getItem('theme');
+  var d=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(t==='dark'||((!t||t==='system')&&d))document.documentElement.classList.add('dark');
+})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
+    <html lang="en" className={geist.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );

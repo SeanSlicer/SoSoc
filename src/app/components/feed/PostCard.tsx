@@ -35,7 +35,7 @@ function ImageCarousel({ images, onImageClick }: { images: string[]; onImageClic
 
   return (
     <div
-      className="mt-3 relative overflow-hidden rounded-xl border border-neutral-100 cursor-zoom-in select-none"
+      className="mt-3 relative overflow-hidden rounded-xl border border-neutral-100 dark:border-neutral-800 cursor-zoom-in select-none"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       onClick={() => onImageClick(index)}
@@ -100,7 +100,7 @@ function ImageCarousel({ images, onImageClick }: { images: string[]; onImageClic
 // ─── Video player ───────────────────────────────────────────────────────────────
 function VideoPlayer({ src }: { src: string }) {
   return (
-    <div className="mt-3 overflow-hidden rounded-xl border border-neutral-100 bg-black">
+    <div className="mt-3 overflow-hidden rounded-xl border border-neutral-100 dark:border-neutral-800 bg-black">
       <video
         src={src}
         controls
@@ -162,7 +162,7 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
 
   return (
     <>
-      <article className="border-b border-neutral-100 px-4 py-5 hover:bg-neutral-50/50 transition-colors">
+      <article className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-5 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
         <div className="flex gap-3">
           <Link href={`/profile/${post.author.username}`} className="shrink-0">
             <Avatar user={post.author} size="md" />
@@ -172,20 +172,20 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <Link href={`/profile/${post.author.username}`} className="font-semibold text-neutral-900 hover:underline text-sm">
+                <Link href={`/profile/${post.author.username}`} className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline text-sm">
                   {post.author.displayName ?? post.author.username}
                 </Link>
-                <span className="text-neutral-500 text-sm">@{post.author.username}</span>
-                <span className="text-neutral-400 text-xs">·</span>
-                <span className="text-neutral-400 text-xs">{timeAgo(new Date(post.createdAt))}</span>
+                <span className="text-neutral-500 dark:text-neutral-400 text-sm">@{post.author.username}</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-xs">·</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-xs">{timeAgo(new Date(post.createdAt))}</span>
               </div>
 
               {isOwn && !isEditing && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => setIsEditing(true)} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors" title="Edit post">
+                  <button onClick={() => setIsEditing(true)} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Edit post">
                     <Edit2 size={15} />
                   </button>
-                  <button onClick={() => deletePost({ postId: post.id })} className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Delete post">
+                  <button onClick={() => deletePost({ postId: post.id })} className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-500 transition-colors" title="Delete post">
                     <Trash2 size={15} />
                   </button>
                 </div>
@@ -199,10 +199,10 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-colors"
+                  className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-colors"
                 />
                 <div className="flex justify-end gap-2">
-                  <button onClick={() => { setIsEditing(false); setEditContent(post.content); }} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 transition-colors">
+                  <button onClick={() => { setIsEditing(false); setEditContent(post.content); }} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
                     <X size={13} /> Cancel
                   </button>
                   <button onClick={() => updatePost({ postId: post.id, content: editContent })} disabled={isUpdating || !editContent.trim()} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors">
@@ -211,7 +211,7 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                 </div>
               </div>
             ) : (
-              <p className="mt-1.5 text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+              <p className="mt-1.5 text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
             )}
 
             {/* Media */}
@@ -257,7 +257,7 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Write a comment…"
-                    className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+                    className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey && commentText.trim()) {
                         e.preventDefault();
@@ -277,18 +277,18 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                 {comments?.map((comment) => (
                   <div key={comment.id} className="flex gap-2.5">
                     <Avatar user={comment.user} size="sm" />
-                    <div className="flex-1 rounded-xl bg-neutral-100 px-3 py-2">
+                    <div className="flex-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 px-3 py-2">
                       <div className="flex items-start justify-between">
-                        <span className="text-xs font-semibold text-neutral-900">
+                        <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                           {comment.user.displayName ?? comment.user.username}
                         </span>
                         {comment.user.id === currentUserId && (
-                          <button onClick={() => deleteComment({ commentId: comment.id })} className="text-neutral-300 hover:text-red-400 transition-colors">
+                          <button onClick={() => deleteComment({ commentId: comment.id })} className="text-neutral-300 dark:text-neutral-600 hover:text-red-400 transition-colors">
                             <X size={13} />
                           </button>
                         )}
                       </div>
-                      <p className="text-xs text-neutral-700 mt-0.5">{comment.content}</p>
+                      <p className="text-xs text-neutral-700 dark:text-neutral-300 mt-0.5">{comment.content}</p>
                     </div>
                   </div>
                 ))}

@@ -85,7 +85,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
     (mode === "photo" || !!videoUrl);
 
   return (
-    <div className="border-b border-neutral-100 px-4 py-4">
+    <div className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-4">
       <div className="flex gap-3">
         <Avatar user={user} size="md" />
         <div className="flex-1 space-y-3">
@@ -95,14 +95,14 @@ export default function CreatePost({ user }: { user: PostUser }) {
             onFocus={() => setIsFocused(true)}
             rows={isFocused ? 3 : 1}
             placeholder="What's on your mind?"
-            className="w-full resize-none rounded-xl border-0 bg-transparent py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none"
+            className="w-full resize-none rounded-xl border-0 bg-transparent py-2 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none"
           />
 
           {/* Image previews */}
           {mode === "photo" && images.length > 0 && (
             <div className={`grid gap-1.5 ${images.length === 1 ? "grid-cols-1" : images.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
               {images.map((url, i) => (
-                <div key={i} className="relative group aspect-square overflow-hidden rounded-xl border border-neutral-200">
+                <div key={i} className="relative group aspect-square overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Image ${i + 1}`} className="h-full w-full object-cover" />
                   <button
@@ -118,7 +118,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
 
           {/* Video preview */}
           {mode === "video" && videoUrl && (
-            <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100">
+            <div className="relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800">
               <video src={videoUrl} controls className="w-full max-h-64" preload="metadata" />
               <button
                 onClick={() => { setVideoUrl(null); }}
@@ -133,7 +133,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
           {mode === "video" && !videoUrl && !isUploading && isFocused && (
             <button
               onClick={() => videoRef.current?.click()}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neutral-200 py-8 text-sm text-neutral-400 hover:border-indigo-300 hover:text-indigo-500 transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 py-8 text-sm text-neutral-400 dark:text-neutral-500 hover:border-indigo-300 hover:text-indigo-500 transition-colors"
             >
               <Video size={20} />
               Click to upload a video (max {MAX_VIDEO_MB}MB)
@@ -143,7 +143,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
           {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
 
           {isFocused && (
-            <div className="flex items-center justify-between border-t border-neutral-100 pt-3">
+            <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-800 pt-3">
               <div className="flex items-center gap-1">
                 {/* Mode toggle */}
                 <button

@@ -36,10 +36,10 @@ export default function LoginForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-2xl bg-white p-8 shadow-sm border border-neutral-200">
+      <div className="rounded-2xl bg-white dark:bg-neutral-900 p-8 shadow-sm border border-neutral-200 dark:border-neutral-700">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-neutral-900">Welcome back</h1>
-          <p className="mt-1 text-sm text-neutral-500">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Welcome back</h1>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Sign in to your account</p>
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
@@ -48,7 +48,7 @@ export default function LoginForm() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
               Username or Email
             </label>
             <input
@@ -58,13 +58,13 @@ export default function LoginForm() {
               required
               value={input.usernameOrEmail}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Password</label>
             <input
               name="password"
               type="password"
@@ -72,7 +72,7 @@ export default function LoginForm() {
               required
               value={input.password}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
               placeholder="••••••••"
             />
           </div>
@@ -86,7 +86,7 @@ export default function LoginForm() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
             Sign up

@@ -95,16 +95,29 @@ Provider-agnostic interface at `src/lib/storage/types.ts`. Buckets: `"avatars" |
 ### Direct Messaging
 
 - Conversations are created via `messages.getOrCreateDM` (2-person) or `messages.createGroup`.
-- Messages poll every 3s on the thread view, 5s on the conversation list. Real-time upgrade path: Supabase Realtime (see `FUTURE_WORK.md`).
+- Messages update via Supabase Realtime (`postgres_changes` on `messages` table) — no polling. `NavSidebar` owns the global subscription; `MessageThread` adds a per-conversation subscription.
 - Post sharing: `PostCard` accepts an optional `onShare` prop. `FeedClient` passes `setSharingPostId` which opens `SharePostModal`.
 
+### Dark Mode
+
+- Class-based dark mode via `@custom-variant dark` in `globals.css`. Apply `.dark` to `<html>` to enable.
+- `ThemeProvider` (`src/app/components/theme/ThemeProvider.tsx`) manages the `dark` class and stores preference in `localStorage`. Three modes: `light`, `dark`, `system`.
+- An inline `<script>` in `src/app/layout.tsx` runs before first paint to prevent flash of wrong theme.
+- Theme toggle (Sun/Monitor/Moon) is in the **desktop sidebar only**. Mobile follows system preference automatically.
+- When adding any new UI: always add `dark:` variants alongside light-mode classes. The color mapping is: `bg-white` → `dark:bg-neutral-900`, `bg-neutral-50` → `dark:bg-neutral-950`, `bg-neutral-100` → `dark:bg-neutral-800`, `border-neutral-200` → `dark:border-neutral-700`, `text-neutral-900` → `dark:text-neutral-100`, etc.
+
 ### Mobile Layout
+
+**Always consider mobile when building UI.** The app targets phones (430px width, iPhone 14 Pro Max) as a primary use case.
 
 - Bottom tab bar is icon-only (no labels) so all 5 tabs fit at any phone width.
 - `viewport-fit=cover` is set in `src/app/layout.tsx` enabling `env(safe-area-inset-bottom)`.
 - Tab bar uses `style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}` for iPhone home indicator clearance.
 - Admin nav item is desktop sidebar only — not in mobile tab bar.
 - Main content uses `style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom))" }}` on mobile.
+- Test every new UI feature at 430px width. Avoid fixed widths that don't flex. Prefer `w-full`, `min-w-0`, and `flex-1` over fixed sizes in list/feed layouts.
+- Touch targets should be at least 44×44px (use `p-3` on icon buttons).
+- Modals use `p-4` container padding on mobile so they don't fill edge-to-edge.
 
 ### Adding a New Feature
 

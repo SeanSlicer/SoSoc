@@ -56,51 +56,51 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
         )}
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">Display name</label>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Display name</label>
           <input
             type="text"
             maxLength={50}
             value={form.displayName}
             onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             placeholder="Your name"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">Username</label>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Username</label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-3 flex items-center text-sm text-neutral-400">@</span>
+            <span className="absolute inset-y-0 left-3 flex items-center text-sm text-neutral-400 dark:text-neutral-500">@</span>
             <input
               type="text"
               maxLength={25}
               value={form.username}
               onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-              className="w-full rounded-xl border border-neutral-200 pl-7 pr-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 pl-7 pr-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-            Bio <span className="text-neutral-400">({160 - form.bio.length} left)</span>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            Bio <span className="text-neutral-400 dark:text-neutral-500">({160 - form.bio.length} left)</span>
           </label>
           <textarea
             rows={3}
             maxLength={160}
             value={form.bio}
             onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-colors"
             placeholder="Tell people about yourself"
           />
         </div>
 
         {/* Privacy settings */}
-        <div className="rounded-xl border border-neutral-200 divide-y divide-neutral-100">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-neutral-100 dark:divide-neutral-800">
           <label className="flex items-center justify-between px-4 py-3 cursor-pointer">
             <div>
-              <p className="text-sm font-medium text-neutral-800">Private account</p>
-              <p className="text-xs text-neutral-500">Only approved followers can see your posts</p>
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">Private account</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Only approved followers can see your posts</p>
             </div>
             <input
               type="checkbox"
@@ -111,8 +111,8 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
           </label>
           <label className="flex items-center justify-between px-4 py-3 cursor-pointer">
             <div>
-              <p className="text-sm font-medium text-neutral-800">Hide follow lists</p>
-              <p className="text-xs text-neutral-500">Others can&apos;t see who you follow or your followers</p>
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">Hide follow lists</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Others can&apos;t see who you follow or your followers</p>
             </div>
             <input
               type="checkbox"
@@ -127,7 +127,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaved }: 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+            className="rounded-xl border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
           >
             Cancel
           </button>

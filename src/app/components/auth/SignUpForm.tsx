@@ -45,10 +45,10 @@ export default function SignUpForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-8 shadow-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-neutral-900">Join sosoc</h1>
-          <p className="mt-1 text-sm text-neutral-500">Create your account</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Join sosoc</h1>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Create your account</p>
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
@@ -70,7 +70,7 @@ export default function SignUpForm() {
           )}
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Username</label>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Username</label>
             <input
               name="username"
               type="text"
@@ -78,13 +78,13 @@ export default function SignUpForm() {
               required
               value={formData.username}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
               placeholder="yourname"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Email</label>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</label>
             <input
               name="email"
               type="email"
@@ -92,13 +92,13 @@ export default function SignUpForm() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Password</label>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Password</label>
             <input
               name="password"
               type="password"
@@ -106,7 +106,7 @@ export default function SignUpForm() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
               placeholder="Min 8 chars, 1 uppercase, 1 number"
             />
           </div>
@@ -120,7 +120,7 @@ export default function SignUpForm() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           Already have an account?{" "}
           <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
             Sign in

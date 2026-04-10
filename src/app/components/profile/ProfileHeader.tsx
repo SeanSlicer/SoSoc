@@ -72,12 +72,12 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
     <>
       <div>
         {/* Sticky back header */}
-        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-neutral-100 px-4 py-3">
+        <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
           <div className="flex items-center gap-2">
-            <h1 className="font-bold text-neutral-900">{profile.displayName ?? profile.username}</h1>
+            <h1 className="font-bold text-neutral-900 dark:text-neutral-100">{profile.displayName ?? profile.username}</h1>
             {profile.isPrivate && <Lock size={13} className="text-neutral-400" />}
           </div>
-          <p className="text-xs text-neutral-500">{profile._count.posts} posts</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">{profile._count.posts} posts</p>
         </div>
 
         {/* Banner */}
@@ -122,7 +122,7 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
             {isOwnProfile ? (
               <button
                 onClick={() => setShowEditModal(true)}
-                className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+                className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
               >
                 Edit profile
               </button>
@@ -132,10 +132,10 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
                 disabled={actionPending}
                 className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
                   isFollowing
-                    ? "border border-neutral-200 bg-white text-neutral-700 hover:border-red-300 hover:text-red-600"
+                    ? "border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-red-300 hover:text-red-600"
                     : hasRequested
-                    ? "border border-neutral-200 bg-white text-neutral-500 hover:border-red-300 hover:text-red-500"
-                    : "bg-neutral-900 text-white hover:bg-neutral-700"
+                    ? "border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-red-300 hover:text-red-500"
+                    : "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-300"
                 }`}
               >
                 {actionPending ? "…" : followLabel}
@@ -147,18 +147,18 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
         {/* Bio / info */}
         <div className="px-4 pb-4">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-xl font-bold text-neutral-900">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
               {profile.displayName ?? profile.username}
             </h2>
-            {profile.isPrivate && <Lock size={15} className="text-neutral-400" />}
+            {profile.isPrivate && <Lock size={15} className="text-neutral-400 dark:text-neutral-500" />}
           </div>
-          <p className="text-sm text-neutral-500">@{profile.username}</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">@{profile.username}</p>
 
           {profile.bio && (
-            <p className="mt-2 text-sm text-neutral-700 leading-relaxed">{profile.bio}</p>
+            <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">{profile.bio}</p>
           )}
 
-          <div className="mt-2 flex items-center gap-1 text-xs text-neutral-400">
+          <div className="mt-2 flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
             <Calendar size={13} />
             <span>
               Joined{" "}
@@ -172,15 +172,15 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           <div className="mt-3 flex gap-4 text-sm">
             <button
               onClick={() => setFollowListMode("following")}
-              className="text-neutral-600 hover:underline"
+              className="text-neutral-600 dark:text-neutral-400 hover:underline"
             >
-              <strong className="text-neutral-900">{profile._count.follows}</strong> Following
+              <strong className="text-neutral-900 dark:text-neutral-100">{profile._count.follows}</strong> Following
             </button>
             <button
               onClick={() => setFollowListMode("followers")}
-              className="text-neutral-600 hover:underline"
+              className="text-neutral-600 dark:text-neutral-400 hover:underline"
             >
-              <strong className="text-neutral-900">{profile._count.followers}</strong> Followers
+              <strong className="text-neutral-900 dark:text-neutral-100">{profile._count.followers}</strong> Followers
             </button>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           </div>
         )}
 
-        <div className="border-b border-neutral-200 px-4">
+        <div className="border-b border-neutral-200 dark:border-neutral-800 px-4">
           <div className="inline-block border-b-2 border-indigo-600 pb-3 text-sm font-semibold text-indigo-600">
             Posts
           </div>

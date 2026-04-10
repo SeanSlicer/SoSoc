@@ -1,6 +1,22 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: Tailwind v4 uses @custom-variant.
+   Add .dark to <html> to enable — ThemeProvider handles this. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+  /* Every interactive element should show a pointer cursor. */
+  button,
+  [role="button"],
+  a,
+  label,
+  select,
+  summary {
+    cursor: pointer;
+  }
 }

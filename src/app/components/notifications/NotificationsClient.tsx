@@ -43,8 +43,8 @@ export default function NotificationsClient() {
   return (
     <div>
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-neutral-100 px-4 py-3">
-        <h1 className="font-bold text-neutral-900">Notifications</h1>
+      <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
+        <h1 className="font-bold text-neutral-900 dark:text-neutral-100">Notifications</h1>
       </div>
 
       {isLoading && (
@@ -61,12 +61,12 @@ export default function NotificationsClient() {
         </div>
       )}
 
-      <div className="divide-y divide-neutral-100">
+      <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
         {notifications?.map((n) => (
           <div
             key={n.id}
-            className={`flex items-start gap-3 px-4 py-4 transition-colors hover:bg-neutral-50 ${
-              !n.isRead ? "bg-indigo-50/50" : ""
+            className={`flex items-start gap-3 px-4 py-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${
+              !n.isRead ? "bg-indigo-50/50 dark:bg-indigo-950/30" : ""
             }`}
           >
             {/* Actor avatar */}
@@ -81,15 +81,15 @@ export default function NotificationsClient() {
                 </div>
               )}
               {/* Type badge */}
-              <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-neutral-100">
+              <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-neutral-800 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-700">
                 <NotificationIcon type={n.type} />
               </span>
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-neutral-800">{n.content}</p>
-              <p className="mt-0.5 text-xs text-neutral-400">{timeAgo(new Date(n.createdAt))}</p>
+              <p className="text-sm text-neutral-800 dark:text-neutral-200">{n.content}</p>
+              <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">{timeAgo(new Date(n.createdAt))}</p>
             </div>
 
             {/* Unread dot */}

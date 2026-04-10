@@ -22,14 +22,14 @@ function SharedPostPreview({ post }: { post: NonNullable<Message["sharedPost"]> 
   return (
     <Link
       href={`/profile/${post.author.username}`}
-      className="mt-1 block rounded-xl border border-neutral-200 bg-neutral-50 p-3 hover:bg-neutral-100 transition-colors"
+      className="mt-1 block rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-2 mb-1.5">
         <Avatar user={post.author} size="sm" />
-        <span className="text-xs font-semibold text-neutral-700">{post.author.displayName ?? post.author.username}</span>
+        <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{post.author.displayName ?? post.author.username}</span>
       </div>
-      <p className="text-xs text-neutral-600 line-clamp-2">{post.content}</p>
+      <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2">{post.content}</p>
       {post.images && post.images.length > 0 && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={post.images[0]} alt="Post" className="mt-1.5 w-full max-h-32 object-cover rounded-lg" />
@@ -89,13 +89,13 @@ export default function MessageThread({ conversationId, conversation, currentUse
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-neutral-100 px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
         <button onClick={onBack} className="md:hidden rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 transition-colors">
           <ArrowLeft size={18} />
         </button>
         {otherMembers[0]?.user && <Avatar user={otherMembers[0].user} size="sm" />}
         <div>
-          <p className="font-semibold text-sm text-neutral-900">{threadName}</p>
+          <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{threadName}</p>
           {otherMembers.length === 1 && otherMembers[0]?.user && (
             <p className="text-xs text-neutral-400">@{otherMembers[0].user.username}</p>
           )}
@@ -128,7 +128,7 @@ export default function MessageThread({ conversationId, conversation, currentUse
                   <div className={`rounded-2xl px-3.5 py-2 text-sm ${
                     isOwn
                       ? "rounded-br-sm bg-indigo-600 text-white"
-                      : "rounded-bl-sm bg-neutral-100 text-neutral-900"
+                      : "rounded-bl-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                   }`}>
                     {msg.content}
                   </div>
@@ -145,7 +145,7 @@ export default function MessageThread({ conversationId, conversation, currentUse
       </div>
 
       {/* Input */}
-      <div className="border-t border-neutral-100 px-4 py-3">
+      <div className="border-t border-neutral-100 dark:border-neutral-800 px-4 py-3">
         <div className="flex items-end gap-2">
           <textarea
             value={text}
@@ -158,7 +158,7 @@ export default function MessageThread({ conversationId, conversation, currentUse
             }}
             placeholder="Message…"
             rows={1}
-            className="flex-1 resize-none rounded-2xl border border-neutral-200 px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+            className="flex-1 resize-none rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
           <button
             onClick={handleSend}

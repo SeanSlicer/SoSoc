@@ -50,11 +50,11 @@ export default function SharePostModal({ postId, onClose }: Props) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search conversations or people…"
-            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 pl-8 pr-3 text-sm focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 py-2.5 pl-8 pr-3 text-sm focus:border-indigo-400 focus:bg-white dark:focus:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-colors"
           />
         </div>
 
-        <div className="max-h-72 overflow-y-auto -mx-4 divide-y divide-neutral-100">
+        <div className="max-h-72 overflow-y-auto -mx-4 divide-y divide-neutral-100 dark:divide-neutral-800">
           {/* Existing conversations when not searching */}
           {!query && convos?.map((c) => {
             const others = c.members.filter((m) => m.userId !== c.members[0]?.userId);
@@ -66,10 +66,10 @@ export default function SharePostModal({ postId, onClose }: Props) {
                 key={c.id}
                 onClick={() => sendToConvo(c.id)}
                 disabled={isSent}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 disabled:opacity-60 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-60 transition-colors"
               >
                 {others[0]?.user && <Avatar user={others[0].user} size="sm" />}
-                <span className="flex-1 truncate text-sm font-medium text-neutral-800">{displayName}</span>
+                <span className="flex-1 truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">{displayName}</span>
                 {isSent && <span className="text-xs text-emerald-600 font-medium">Sent</span>}
               </button>
             );

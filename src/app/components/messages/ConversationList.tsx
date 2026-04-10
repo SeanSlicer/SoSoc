@@ -16,10 +16,10 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
   const { data: convos, isLoading } = api.messages.getConversations.useQuery();
 
   return (
-    <div className="flex h-full flex-col border-r border-neutral-200">
+    <div className="flex h-full flex-col border-r border-neutral-200 dark:border-neutral-800">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
-        <h2 className="font-bold text-neutral-900">Messages</h2>
+      <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
+        <h2 className="font-bold text-neutral-900 dark:text-neutral-100">Messages</h2>
         <button
           onClick={onNewMessage}
           className="rounded-lg p-1.5 text-neutral-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
@@ -53,7 +53,7 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
               key={c.id}
               onClick={() => onSelect(c.id)}
               className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
-                isSelected ? "bg-indigo-50" : "hover:bg-neutral-50"
+                isSelected ? "bg-indigo-50 dark:bg-indigo-950" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
               }`}
             >
               {/* Avatar — show group indicator for multi-member */}
@@ -74,7 +74,7 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-1">
-                  <p className={`truncate text-sm ${c.unread > 0 ? "font-semibold text-neutral-900" : "font-medium text-neutral-800"}`}>
+                  <p className={`truncate text-sm ${c.unread > 0 ? "font-semibold text-neutral-900 dark:text-neutral-100" : "font-medium text-neutral-800 dark:text-neutral-200"}`}>
                     {name}
                   </p>
                   {lastMsg && (
@@ -82,7 +82,7 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
                   )}
                 </div>
                 {lastMsg && (
-                  <p className={`truncate text-xs ${c.unread > 0 ? "text-neutral-600" : "text-neutral-400"}`}>
+                  <p className={`truncate text-xs ${c.unread > 0 ? "text-neutral-600 dark:text-neutral-300" : "text-neutral-400 dark:text-neutral-500"}`}>
                     {lastMsg.senderId === currentUserId ? "You: " : ""}
                     {lastMsg.sharedPostId ? "📎 Shared a post" : (lastMsg.content ?? "")}
                   </p>
