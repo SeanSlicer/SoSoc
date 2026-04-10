@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { Home, User, Bell, LogOut, Shield, Search, MessageSquare } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
+import { useRealtimeConversations } from "~/hooks/useRealtimeMessages";
+import { useRealtimeNotifications } from "~/hooks/useRealtimeNotifications";
 
 type NavUser = {
   id: string;
@@ -25,12 +27,13 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
   const pathname = usePathname();
   const { data: me } = api.user.getMe.useQuery();
   const user = me ?? initialUser;
-  const { data: unreadCount = 0 } = api.notification.getUnreadCount.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
-  const { data: unreadMessages = 0 } = api.messages.getTotalUnread.useQuery(undefined, {
-    refetchInterval: 5_000,
-  });
+  // Event-driven updates via Supabase Realtime — no polling needed.
+  // NavSidebar is always mounted so it's the right place for global subscriptions.
+  useRealtimeConversations();
+  useRealtimeNotifications();
+
+  const { data: unreadCount = 0 } = api.notification.getUnreadCount.useQuery();
+  const { data: unreadMessages = 0 } = api.messages.getTotalUnread.useQuery();
 
   const handleSignOut = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

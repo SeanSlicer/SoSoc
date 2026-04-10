@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Send, ArrowLeft } from "lucide-react";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { useRealtimeMessages } from "~/hooks/useRealtimeMessages";
 import Avatar from "~/app/components/ui/Avatar";
 import { timeAgo } from "~/lib/timeAgo";
 import Link from "next/link";
@@ -45,10 +46,10 @@ export default function MessageThread({ conversationId, conversation, currentUse
   const [text, setText] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading } = api.messages.getMessages.useQuery(
-    { conversationId },
-    { refetchInterval: 3000 },
-  );
+  // Subscribe to real-time inserts for this conversation — no polling needed.
+  useRealtimeMessages(conversationId);
+
+  const { data, isLoading } = api.messages.getMessages.useQuery({ conversationId });
 
   const { mutate: send, isPending } = api.messages.send.useMutation({
     onSuccess: () => {

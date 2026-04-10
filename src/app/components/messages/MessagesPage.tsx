@@ -12,9 +12,8 @@ export default function MessagesPage({ currentUserId }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
 
-  const { data: convos } = api.messages.getConversations.useQuery(undefined, {
-    refetchInterval: 5000,
-  });
+  // Cache is invalidated by NavSidebar's useRealtimeConversations() subscription.
+  const { data: convos } = api.messages.getConversations.useQuery();
 
   const selectedConvo = convos?.find((c) => c.id === selectedId);
 

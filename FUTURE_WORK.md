@@ -33,19 +33,42 @@ Issues that are known, non-breaking, and not currently prioritised. Revisit when
 
 ## Real-time Features
 
-### Polling → WebSockets / SSE for messages
-**Issue:** Direct messages currently refresh on a polling interval (every 3 seconds). This means latency and wasted requests.
-
-**Recommended fix:** Upgrade to tRPC subscriptions with a WebSocket transport, or use Supabase Realtime (which already exists in the stack). Supabase Realtime can broadcast row inserts on the `messages` table directly to the client without a custom WebSocket server.
-
-**Files to touch:** `src/trpc/react.tsx`, `src/server/api/trpc.ts`, messages router
+### ~~Polling → WebSockets / SSE for messages~~ ✅ Done
+Replaced with Supabase Realtime (`postgres_changes` on `messages` table). NavSidebar owns the global subscription; MessageThread adds a per-conversation subscription for instant in-thread delivery. Requires `ALTER PUBLICATION supabase_realtime ADD TABLE messages;` in Supabase.
 
 ---
 
-### Notification polling → push
-**Issue:** Notification badge polls every 30 seconds via `refetchInterval`. 
+### ~~Notification polling → push~~ ✅ Done
+Replaced with Supabase Realtime (`postgres_changes` on `notifications` table). Requires `ALTER PUBLICATION supabase_realtime ADD TABLE notifications;`.
 
-**Recommended fix:** Same as above — Supabase Realtime or Web Push API for true push notifications.
+---
+
+### RLS on messages and notifications tables
+**Issue:** Supabase Realtime broadcasts row data to all subscribers using the anon key. Without Row-Level Security (RLS), any connected client could receive message/notification payloads that belong to other users. The current implementation uses payloads only as cache invalidation triggers (data still fetches through auth-protected tRPC), but enabling RLS is the defense-in-depth fix.
+
+**Recommended fix:**
+```sql
+-- Enable RLS
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- Users can only receive messages from conversations they belong to
+CREATE POLICY "members can read messages"
+  ON messages FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM conversation_members
+      WHERE conversation_members.conversation_id = messages.conversation_id
+        AND conversation_members.user_id = auth.uid()
+    )
+  );
+
+-- Users can only receive their own notifications
+CREATE POLICY "users can read own notifications"
+  ON notifications FOR SELECT
+  USING (user_id = auth.uid());
+```
+Note: This requires Supabase Auth integration (auth.uid()) or a custom JWT verification approach.
 
 ---
 

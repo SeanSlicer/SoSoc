@@ -12,9 +12,8 @@ type Props = {
 };
 
 export default function ConversationList({ selectedId, onSelect, onNewMessage, currentUserId }: Props) {
-  const { data: convos, isLoading } = api.messages.getConversations.useQuery(undefined, {
-    refetchInterval: 5000,
-  });
+  // NavSidebar's useRealtimeConversations() subscription handles cache invalidation.
+  const { data: convos, isLoading } = api.messages.getConversations.useQuery();
 
   return (
     <div className="flex h-full flex-col border-r border-neutral-200">
