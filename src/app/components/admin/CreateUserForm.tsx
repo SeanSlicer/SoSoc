@@ -22,8 +22,8 @@ export default function CreateUserForm({ onCreated }: Props) {
   });
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-      <h2 className="mb-5 text-base font-semibold text-neutral-900">Create test user</h2>
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
+      <h2 className="mb-5 text-base font-semibold text-neutral-900 dark:text-neutral-100">Create test user</h2>
 
       {(error ?? fieldError) && (
         <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -33,45 +33,45 @@ export default function CreateUserForm({ onCreated }: Props) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">Username</label>
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Username</label>
           <input
             type="text"
             value={form.username}
             onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
             placeholder="testuser"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">Email</label>
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</label>
           <input
             type="email"
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
             placeholder="test@example.com"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">Password</label>
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Password</label>
           <input
             type="text"
             value={form.password}
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
             placeholder="Min 8 characters"
           />
-          <p className="mt-1 text-xs text-neutral-400">Shown in plain text for easy testing</p>
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Shown in plain text for easy testing</p>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">Role</label>
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Role</label>
           <select
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as "USER" | "ADMIN" }))}
-            className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors bg-white"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
           >
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>

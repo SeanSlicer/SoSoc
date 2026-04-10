@@ -40,8 +40,8 @@ export default function MessagesPage({ currentUserId }: Props) {
               onBack={() => setSelectedId(null)}
             />
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 text-neutral-400">
-              <MessageSquare size={40} className="text-neutral-200" />
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 text-neutral-400 dark:text-neutral-500">
+              <MessageSquare size={40} className="text-neutral-300 dark:text-neutral-700" />
               <p className="text-sm">Select a conversation or start a new one</p>
             </div>
           )}

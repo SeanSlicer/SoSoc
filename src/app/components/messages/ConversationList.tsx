@@ -22,7 +22,7 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
         <h2 className="font-bold text-neutral-900 dark:text-neutral-100">Messages</h2>
         <button
           onClick={onNewMessage}
-          className="rounded-lg p-1.5 text-neutral-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+          className="rounded-lg p-1.5 text-neutral-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           title="New message"
         >
           <Edit size={18} />
@@ -61,7 +61,7 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
                 {displayUser ? (
                   <Avatar user={displayUser} size="md" />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 font-bold text-sm">
                     {name.charAt(0).toUpperCase()}
                   </div>
                 )}

@@ -55,7 +55,7 @@ export default function NotificationsClient() {
 
       {!isLoading && (!notifications || notifications.length === 0) && (
         <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-          <Bell size={40} className="text-neutral-300 mb-3" />
+          <Bell size={40} className="text-neutral-300 dark:text-neutral-600 mb-3" />
           <p className="text-neutral-500 text-sm">No notifications yet.</p>
           <p className="text-neutral-400 text-xs mt-1">When someone follows you, likes or comments on a post, it&apos;ll show up here.</p>
         </div>
@@ -76,8 +76,8 @@ export default function NotificationsClient() {
                   <Avatar user={n.actor} size="md" />
                 </Link>
               ) : (
-                <div className="h-10 w-10 rounded-full bg-neutral-200 flex items-center justify-center">
-                  <Bell size={16} className="text-neutral-400" />
+                <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+                  <Bell size={16} className="text-neutral-400 dark:text-neutral-500" />
                 </div>
               )}
               {/* Type badge */}

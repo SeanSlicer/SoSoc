@@ -19,4 +19,13 @@
   summary {
     cursor: pointer;
   }
+
+  /* Remove the browser's default square outline on form elements.
+     We provide our own focus ring via focus:ring-2 on each element,
+     which follows the element's border-radius correctly. */
+  input,
+  textarea,
+  select {
+    outline: none;
+  }
 }
