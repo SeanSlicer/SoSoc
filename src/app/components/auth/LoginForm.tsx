@@ -9,6 +9,7 @@ export default function LoginForm() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError("");
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -44,7 +45,7 @@ export default function LoginForm() {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           {error && (
-            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
+            <div className="rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-600 dark:text-red-400">{error}</div>
           )}
 
           <div>
@@ -58,7 +59,11 @@ export default function LoginForm() {
               required
               value={input.usernameOrEmail}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              className={`w-full rounded-xl border bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:outline-none transition-colors ${
+                error
+                  ? "border-red-400 dark:border-red-600 focus:border-red-400 focus:ring-red-500/20"
+                  : "border-neutral-200 dark:border-neutral-700 focus:border-indigo-500 focus:ring-indigo-500/20"
+              }`}
               placeholder="you@example.com"
             />
           </div>
@@ -72,7 +77,11 @@ export default function LoginForm() {
               required
               value={input.password}
               onChange={handleChange}
-              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              className={`w-full rounded-xl border bg-white dark:bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:outline-none transition-colors ${
+                error
+                  ? "border-red-400 dark:border-red-600 focus:border-red-400 focus:ring-red-500/20"
+                  : "border-neutral-200 dark:border-neutral-700 focus:border-indigo-500 focus:ring-indigo-500/20"
+              }`}
               placeholder="••••••••"
             />
           </div>
