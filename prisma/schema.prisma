@@ -59,6 +59,8 @@ model User {
     receivedFollowRequests FollowRequest[]      @relation("ReceivedRequests")
     conversations          ConversationMember[]
     sentMessages           Message[]            @relation("SentMessages")
+    passwordResetTokens    PasswordResetToken[]
+    emailVerificationTokens EmailVerificationToken[]
 
     @@map(name: "users")
 }
@@ -156,6 +158,33 @@ model Notification {
 
     @@index([userId])
     @@map(name: "notifications")
+}
+
+model PasswordResetToken {
+    id        String    @id @default(cuid())
+    userId    String
+    tokenHash String    @unique
+    expiresAt DateTime
+    usedAt    DateTime?
+    createdAt DateTime  @default(now()) @map("created_at")
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+    id        String   @id @default(cuid())
+    userId    String
+    tokenHash String   @unique
+    expiresAt DateTime
+    createdAt DateTime @default(now()) @map("created_at")
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@map("email_verification_tokens")
 }
 
 model Like {
