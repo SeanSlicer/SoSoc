@@ -19,6 +19,8 @@ yarn typecheck    # TypeScript type checking
 yarn check        # Lint + typecheck together
 yarn format:write # Prettier auto-format
 yarn format:check # Prettier check only
+yarn test         # Vitest unit tests (watch mode)
+yarn test:coverage # Vitest with coverage report
 
 # Database
 yarn db:generate  # Generate Prisma migration (dev)
@@ -160,6 +162,7 @@ Required (defined in `src/env.js`):
 - `NEXT_PUBLIC_APP_URL` — public app URL (client-accessible)
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase client
 - `SUPABASE_SERVICE_ROLE_KEY` — server-side uploads
+- `RESEND_API_KEY` — (optional) Resend API key for transactional email; if unset, email URLs are logged to the console instead
 - `NODE_ENV`
 
 See `.env.example` for the database URL format. Use `start-database.sh` to spin up a local PostgreSQL instance.
