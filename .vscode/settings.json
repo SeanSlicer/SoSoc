@@ -1,0 +1,7 @@
+{
+  // The VS Code Prisma extension ships v7 validation rules while this project
+  // uses Prisma v6. Disabling schema lint removes false-positive errors about
+  // `url`/`directUrl` being "unsupported" — they are valid in Prisma v6.
+  // All other Prisma extension features (formatting, IntelliSense) still work.
+  "prisma.lint": false
+}

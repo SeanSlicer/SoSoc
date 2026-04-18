@@ -1,7 +1,7 @@
 import { prisma } from "~/server/db";
 import bcrypt from "bcrypt";
 import type { UserRole } from "@prisma/client";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 export async function listAllUsers() {
   return prisma.user.findMany({
