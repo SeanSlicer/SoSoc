@@ -6,6 +6,7 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "qa", "production"]),
     // Data
     DATABASE_URL: z.string().min(1),
+    DIRECT_URL: z.string().min(1),
     //Auth
     JWT_SECRET_KEY: z.string().min(1),
     ADMIN_EMAIL: z.string().min(1),
@@ -27,6 +28,7 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     // Data
     DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_URL: process.env.DIRECT_URL,
     //Auth
     JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
