@@ -112,14 +112,16 @@ export async function consumePasswordResetToken(
 
   if (!record || record.expiresAt < new Date() || record.usedAt) return false;
 
+  const now = new Date();
   await prisma.$transaction([
     prisma.passwordResetToken.update({
       where: { id: record.id },
-      data: { usedAt: new Date() },
+      data: { usedAt: now },
     }),
+    // Update password AND bump tokenValidFrom — invalidates all existing sessions
     prisma.user.update({
       where: { id: record.userId },
-      data: { password: newHashedPassword },
+      data: { password: newHashedPassword, tokenValidFrom: now },
     }),
   ]);
 

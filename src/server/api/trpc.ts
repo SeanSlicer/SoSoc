@@ -35,7 +35,7 @@ function extractToken(ctx: Context) {
   return parse(ctx.headers.get("cookie") ?? "")["user-token"];
 }
 
-const isAuthenticated = t.middleware(({ ctx, next }) => {
+const isAuthenticated = t.middleware(async ({ ctx, next }) => {
   const token = extractToken(ctx);
   if (!token) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not signed in" });
 
@@ -43,6 +43,15 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
   try {
     payload = verifyAuth(token);
   } catch {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Session expired" });
+  }
+
+  // Reject tokens issued before tokenValidFrom (covers logout and password-change revocation)
+  const user = await ctx.db.user.findUnique({
+    where: { id: payload.sub },
+    select: { tokenValidFrom: true },
+  });
+  if (!user || payload.iat < user.tokenValidFrom.getTime() / 1000) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Session expired" });
   }
 
@@ -56,7 +65,7 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
   });
 });
 
-const isAdmin = t.middleware(({ ctx, next }) => {
+const isAdmin = t.middleware(async ({ ctx, next }) => {
   const token = extractToken(ctx);
   if (!token) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not signed in" });
 
@@ -69,6 +78,15 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 
   if (payload.role !== "ADMIN") {
     throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+  }
+
+  // Reject revoked tokens
+  const user = await ctx.db.user.findUnique({
+    where: { id: payload.sub },
+    select: { tokenValidFrom: true },
+  });
+  if (!user || payload.iat < user.tokenValidFrom.getTime() / 1000) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Session expired" });
   }
 
   return next({
