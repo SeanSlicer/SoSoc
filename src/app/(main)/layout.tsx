@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "~/lib/getCurrentUser";
 import NavSidebar from "~/app/components/layout/NavSidebar";
 import ImpersonationBanner from "~/app/components/layout/ImpersonationBanner";
+import VerifyEmailBanner from "~/app/components/layout/VerifyEmailBanner";
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -10,6 +11,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       <ImpersonationBanner />
+      {!user.emailVerified && <VerifyEmailBanner />
       <div className="mx-auto max-w-6xl flex">
         <NavSidebar user={{ id: user.id, username: user.username, displayName: user.displayName, photo: user.photo }} />
         <main

@@ -24,7 +24,7 @@ export default function SignUpForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      const data = await res.json() as { error?: string | Record<string, string[]> };
+      const data = await res.json() as { error?: string | Record<string, string[]>; pendingVerification?: boolean };
       if (!res.ok) {
         if (typeof data.error === "object") {
           setFieldErrors(data.error);
@@ -33,7 +33,7 @@ export default function SignUpForm() {
         }
         return;
       }
-      window.location.href = "/feed";
+      window.location.href = data.pendingVerification ? "/verify-email" : "/feed";
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
