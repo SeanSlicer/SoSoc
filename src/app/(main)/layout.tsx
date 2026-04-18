@@ -11,7 +11,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       <ImpersonationBanner />
-      {!user.emailVerified && <VerifyEmailBanner />
+      {!user.emailVerified && <VerifyEmailBanner />}
       <div className="mx-auto max-w-6xl flex">
         <NavSidebar user={{ id: user.id, username: user.username, displayName: user.displayName, photo: user.photo }} />
         <main
