@@ -45,6 +45,7 @@ model User {
     displayName     String?
     isPrivate       Boolean   @default(false)
     hideFollowLists Boolean   @default(false)
+    tokenValidFrom  DateTime  @default(now()) @map("token_valid_from")
     createdAt       DateTime  @default(now()) @map(name: "created_at")
     updatedAt       DateTime  @default(now()) @map(name: "updated_at")
 

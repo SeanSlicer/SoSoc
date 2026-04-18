@@ -23,7 +23,13 @@ export const verifyAuth = (token: string): UserJwtPayload => {
 export const getUserByToken = async (token: string) => {
   try {
     const payload = verifyAuth(token);
-    return getUserById(payload.sub);
+    const user = await getUserById(payload.sub);
+    if (!user) throw new Error("User not found.");
+    // Reject tokens issued before the user's tokenValidFrom (e.g. after logout or password reset)
+    if (payload.iat < user.tokenValidFrom.getTime() / 1000) {
+      throw new Error("Token has been revoked.");
+    }
+    return user;
   } catch {
     throw new Error("Your token has expired.");
   }
