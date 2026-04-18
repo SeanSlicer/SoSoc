@@ -4,23 +4,14 @@ import { Pool } from "pg";
 
 import { env } from "~/env";
 
-/**
- * Strip Prisma-specific query params that pg doesn't understand and would
- * cause the connection to be rejected by PgBouncer or Postgres.
- */
-function cleanConnectionString(url: string): string {
-  const parsed = new URL(url);
-  parsed.searchParams.delete("pgbouncer");
-  parsed.searchParams.delete("connection_limit");
-  return parsed.toString();
-}
-
 const createPrismaClient = () => {
+  // Use the direct URL (not the PgBouncer pooler) — the pooler requires the
+  // username format postgres.PROJECT_REF which pg doesn't handle automatically.
+  // Direct connections use plain postgres credentials and SSL.
   const pool = new Pool({
-    connectionString: cleanConnectionString(env.DATABASE_URL),
-    // Supabase requires SSL in production; rejectUnauthorized: false accepts
-    // the self-signed cert used by the PgBouncer pooler.
+    connectionString: env.DIRECT_URL,
     ssl: env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    max: 1, // one connection per serverless instance keeps Supabase within limits
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
