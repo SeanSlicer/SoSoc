@@ -12,6 +12,8 @@ export const env = createEnv({
     ADMIN_PASSWORD: z.string().min(1),
     // Supabase (server-only service role — bypasses RLS)
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+    // Email — optional: if unset, emails are logged to console instead of sent
+    RESEND_API_KEY: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -30,5 +32,6 @@ export const env = createEnv({
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
   },
 });
