@@ -12,10 +12,15 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
+const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
+
+function setThemeCookie(value: string) {
+  document.cookie = `theme=${value};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Strict`;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
 
-  // Load stored preference once on mount
   useEffect(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored === "light" || stored === "dark" || stored === "system") {
@@ -23,7 +28,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Apply the dark class to <html> whenever theme or system preference changes
   useEffect(() => {
     const root = document.documentElement;
     const applyDark = (dark: boolean) => root.classList.toggle("dark", dark);
@@ -36,7 +40,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       applyDark(false);
       return;
     }
-    // "system" — follow media query
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     applyDark(mq.matches);
     const handler = (e: MediaQueryListEvent) => applyDark(e.matches);
@@ -47,6 +50,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (t: Theme) => {
     setThemeState(t);
     localStorage.setItem("theme", t);
+    setThemeCookie(t);
   };
 
   return (
