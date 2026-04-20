@@ -10,12 +10,24 @@ export async function followUser(
   followerId: string,
   followingId: string,
 ): Promise<{ requested: true } | { requested: false }> {
-  const target = await prisma.user.findUnique({
-    where: { id: followingId },
-    select: { isPrivate: true, username: true, displayName: true },
-  });
+  const [target, block] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: followingId },
+      select: { isPrivate: true, username: true, displayName: true },
+    }),
+    prisma.blockedUser.findFirst({
+      where: {
+        OR: [
+          { blockerId: followerId, blockedId: followingId },
+          { blockerId: followingId, blockedId: followerId },
+        ],
+      },
+      select: { blockerId: true },
+    }),
+  ]);
 
   if (!target) throw new Error("User not found");
+  if (block) throw new Error("Cannot follow a blocked user");
 
   if (target.isPrivate) {
     await sendFollowRequest(followerId, followingId);
