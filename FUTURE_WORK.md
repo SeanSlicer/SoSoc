@@ -16,7 +16,7 @@ Issues that are known, non-breaking, and not currently prioritised. Ranked from 
 
 A `requesting_user_id()` helper reads the `sub` claim from the request JWT so policies work with our custom JWT rather than requiring Supabase Auth. The browser Realtime client is authenticated via `/api/auth/realtime-token`, which issues a short-lived Supabase-compatible JWT.
 
-**Required:** Add `SUPABASE_JWT_SECRET` to your environment (value is in Supabase dashboard → Settings → API → JWT Secret). When unset, Realtime continues working via the anon key with no RLS filtering (same behaviour as before).
+**Required:** `JWT_SECRET_KEY` must match the Supabase project JWT secret (Supabase dashboard → Settings → API → JWT Secret). If they already match, no env changes needed.
 
 ---
 
