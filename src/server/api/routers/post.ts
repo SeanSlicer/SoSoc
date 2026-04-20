@@ -54,8 +54,8 @@ export const postRouter = createTRPCRouter({
     .mutation(({ ctx, input }) => toggleLike(ctx.userId, input.postId)),
 
   getComments: userProcedure
-    .input(z.object({ postId: z.string() }))
-    .query(({ input }) => getComments(input.postId)),
+    .input(z.object({ postId: z.string(), cursor: z.string().optional(), limit: z.number().int().min(1).max(50).default(10) }))
+    .query(({ input }) => getComments(input.postId, input.cursor, input.limit)),
 
   addComment: userProcedure
     .input(z.object({ postId: z.string(), content: z.string().min(1).max(300) }))

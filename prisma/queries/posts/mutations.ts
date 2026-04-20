@@ -61,14 +61,23 @@ export async function toggleLike(userId: string, postId: string) {
   return true;
 }
 
-export async function getComments(postId: string) {
-  return prisma.comment.findMany({
+export async function getComments(postId: string, cursor?: string, limit = 10) {
+  const comments = await prisma.comment.findMany({
+    take: limit + 1,
+    ...(cursor && { cursor: { id: cursor }, skip: 1 }),
     where: { postId },
     orderBy: { createdAt: "asc" },
     include: {
       user: { select: { id: true, username: true, displayName: true, photo: true } },
     },
   });
+
+  let nextCursor: string | undefined;
+  if (comments.length > limit) {
+    nextCursor = comments.pop()!.id;
+  }
+
+  return { comments, nextCursor };
 }
 
 export async function createComment(userId: string, postId: string, content: string) {
