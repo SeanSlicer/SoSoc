@@ -29,7 +29,8 @@ export async function adminCreateUser(data: {
   try {
     return await prisma.user.create({
       data: {
-        username: data.username.trim().toLowerCase(),
+        username: data.username.trim(),
+        usernameNormalized: data.username.trim().toLowerCase(),
         email: data.email.trim().toLowerCase(),
         password: hashedPassword,
         role: data.role,

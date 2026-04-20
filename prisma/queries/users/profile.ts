@@ -2,7 +2,7 @@ import { prisma } from "~/server/db";
 
 export async function getUserProfile(username: string) {
   return prisma.user.findUnique({
-    where: { username: username.toLowerCase() },
+    where: { usernameNormalized: username.toLowerCase() },
     select: {
       id: true,
       username: true,
@@ -32,7 +32,7 @@ export async function updateUserProfile(
     where: { id: userId },
     data: {
       ...data,
-      ...(data.username !== undefined ? { username: data.username.toLowerCase() } : {}),
+      ...(data.username !== undefined ? { usernameNormalized: data.username.toLowerCase() } : {}),
       updatedAt: new Date(),
     },
     select: {
