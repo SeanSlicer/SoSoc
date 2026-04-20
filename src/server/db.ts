@@ -41,16 +41,6 @@ function buildPoolConfig(): PoolConfig {
 
 const createPrismaClient = () => {
   const cfg = buildPoolConfig();
-  if (env.NODE_ENV === "production") {
-    // Diagnostic: appears once per cold start in Vercel logs. No password logged.
-    console.log("[db] pool config", {
-      host: cfg.host,
-      port: cfg.port,
-      user: cfg.user,
-      database: cfg.database,
-      ssl: !!cfg.ssl,
-    });
-  }
   const pool = new Pool(cfg);
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
