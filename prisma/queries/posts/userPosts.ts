@@ -1,5 +1,13 @@
 import { prisma } from "~/server/db";
 
+/**
+ * Returns all posts for a given user profile.
+ * Enforces privacy — returns `{ posts: [], locked: true }` if the profile is private
+ * and the viewer is not a follower.
+ *
+ * @param username       Case-insensitive username of the profile to view
+ * @param currentUserId  Viewer's user ID
+ */
 export async function getUserPosts(username: string, currentUserId: string) {
   const author = await prisma.user.findUnique({
     where: { usernameNormalized: username.toLowerCase() },

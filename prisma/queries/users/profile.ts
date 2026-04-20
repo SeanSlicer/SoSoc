@@ -1,5 +1,11 @@
 import { prisma } from "~/server/db";
 
+/**
+ * Returns the public profile data for a user by username.
+ * Returns null if no user is found.
+ *
+ * @param username  Case-insensitive username to look up
+ */
 export async function getUserProfile(username: string) {
   return prisma.user.findUnique({
     where: { usernameNormalized: username.toLowerCase() },
@@ -18,6 +24,13 @@ export async function getUserProfile(username: string) {
   });
 }
 
+/**
+ * Updates mutable profile fields for a user.
+ * Also updates `usernameNormalized` when `username` is changed.
+ *
+ * @param userId  User to update
+ * @param data    Fields to update (all optional)
+ */
 export async function updateUserProfile(
   userId: string,
   data: {
@@ -48,6 +61,12 @@ export async function updateUserProfile(
   });
 }
 
+/**
+ * Updates the profile photo URL for a user.
+ *
+ * @param userId  User to update
+ * @param photo   New photo URL
+ */
 export async function updateUserPhoto(userId: string, photo: string) {
   return prisma.user.update({
     where: { id: userId },
@@ -56,6 +75,12 @@ export async function updateUserPhoto(userId: string, photo: string) {
   });
 }
 
+/**
+ * Updates the banner image URL for a user.
+ *
+ * @param userId     User to update
+ * @param bannerUrl  New banner URL
+ */
 export async function updateUserBanner(userId: string, bannerUrl: string) {
   return prisma.user.update({
     where: { id: userId },

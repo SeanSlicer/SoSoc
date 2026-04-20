@@ -1,10 +1,21 @@
 import Link from "next/link";
-import { ChevronRight, ShieldOff } from "lucide-react";
+import { ChevronRight, ShieldOff, Bell } from "lucide-react";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = { title: "Settings — sosoc" };
 
 const sections = [
+  {
+    title: "Notifications",
+    items: [
+      {
+        href: "/settings/notifications",
+        icon: Bell,
+        label: "Notification preferences",
+        description: "Choose which notifications you receive",
+      },
+    ],
+  },
   {
     title: "Privacy & Safety",
     items: [

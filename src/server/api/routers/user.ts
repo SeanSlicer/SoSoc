@@ -9,6 +9,7 @@ import {
 } from "~/../prisma/queries/users/profile";
 import { followUser, unfollowUser, isFollowing } from "~/../prisma/queries/users/follows";
 import { isFriends } from "~/../prisma/queries/users/friends";
+import { checkRateLimit, getRateLimitConfig } from "~/lib/server/rateLimit";
 import {
   cancelFollowRequest,
   acceptFollowRequest,
@@ -86,9 +87,14 @@ export const userRouter = createTRPCRouter({
 
   follow: userProcedure
     .input(z.object({ userId: z.string() }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (ctx.userId === input.userId) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot follow yourself" });
+      }
+      const cfg = await getRateLimitConfig("user.follow", 100, 60 * 60 * 1000);
+      const rl = checkRateLimit(`user.follow:${ctx.userId}`, cfg.maxRequests, cfg.windowMs);
+      if (!rl.allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many follow actions. Try again soon." });
       }
       return followUser(ctx.userId, input.userId);
     }),
