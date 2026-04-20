@@ -11,38 +11,17 @@ Issues that are known, non-breaking, and not currently prioritised. Ranked from 
 
 ---
 
-## 2. RLS on messages and notifications tables 🔒 Security
-**Issue:** Supabase Realtime broadcasts row data to all subscribers using the anon key. Without Row-Level Security (RLS), any connected client could receive message/notification payloads that belong to other users. The current implementation uses payloads only as cache invalidation triggers (data still fetches through auth-protected tRPC), but enabling RLS is the defense-in-depth fix.
+## 2. ✅ RLS on messages and notifications tables 🔒 Security
+**Implemented.** RLS policies are in `prisma/setup.sql`. Run `yarn db:setup` to apply.
 
-**Recommended fix:**
-```sql
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+A `requesting_user_id()` helper reads the `sub` claim from the request JWT so policies work with our custom JWT rather than requiring Supabase Auth. The browser Realtime client is authenticated via `/api/auth/realtime-token`, which issues a short-lived Supabase-compatible JWT.
 
--- Users can only receive messages from conversations they belong to
-CREATE POLICY "members can read messages"
-  ON messages FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM conversation_members
-      WHERE conversation_members.conversation_id = messages.conversation_id
-        AND conversation_members.user_id = auth.uid()
-    )
-  );
-
--- Users can only receive their own notifications
-CREATE POLICY "users can read own notifications"
-  ON notifications FOR SELECT
-  USING (user_id = auth.uid());
-```
-Note: This requires Supabase Auth integration (auth.uid()) or a custom JWT verification approach.
+**Required:** Add `SUPABASE_JWT_SECRET` to your environment (value is in Supabase dashboard → Settings → API → JWT Secret). When unset, Realtime continues working via the anon key with no RLS filtering (same behaviour as before).
 
 ---
 
-## 3. Comment pagination 📈 Performance
-**Issue:** All comments on a post are fetched in a single query. A viral post could have thousands.
-
-**Recommended fix:** Cursor-based pagination on `getComments`, same pattern as the feed.
+## 3. ✅ Comment pagination 📈 Performance
+**Implemented.** `getComments` now uses cursor-based pagination (10 per page). PostCard shows a "Load more comments" button when more exist, using `useInfiniteQuery` — same pattern as the feed.
 
 ---
 
