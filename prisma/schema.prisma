@@ -30,6 +30,12 @@ enum PostType {
     VIDEO
 }
 
+enum ConversationMemberStatus {
+    ACTIVE
+    REQUEST
+    HIDDEN
+}
+
 model User {
     id              String    @id @default(cuid())
     username           String    @map("username")
@@ -129,7 +135,8 @@ model Conversation {
 model ConversationMember {
     userId         String
     conversationId String
-    lastReadAt     DateTime? @map(name: "last_read_at")
+    lastReadAt     DateTime?               @map(name: "last_read_at")
+    status         ConversationMemberStatus @default(ACTIVE)
 
     user         User         @relation(fields: [userId], references: [id])
     conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)

@@ -3,17 +3,30 @@ import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   getConversations,
+  getRequests,
   getOrCreateDM,
   createGroup,
+  acceptRequest,
+  declineRequest,
+  hideConversation,
   markConversationRead,
   getTotalUnread,
+  getRequestCount,
 } from "~/../prisma/queries/messages/conversations";
 import { getMessages, sendMessage } from "~/../prisma/queries/messages/messages";
 import { prisma } from "~/server/db";
 
 export const messagesRouter = createTRPCRouter({
+  /** All ACTIVE conversations for the current user. */
   getConversations: userProcedure.query(({ ctx }) => getConversations(ctx.userId)),
 
+  /** All REQUEST (pending) conversations for the current user. */
+  getRequests: userProcedure.query(({ ctx }) => getRequests(ctx.userId)),
+
+  /** Count of pending message requests (for badge display). */
+  getRequestCount: userProcedure.query(({ ctx }) => getRequestCount(ctx.userId)),
+
+  /** Total unread count across ACTIVE conversations only. */
   getTotalUnread: userProcedure.query(({ ctx }) => getTotalUnread(ctx.userId)),
 
   getOrCreateDM: userProcedure
@@ -35,7 +48,6 @@ export const messagesRouter = createTRPCRouter({
   getMessages: userProcedure
     .input(z.object({ conversationId: z.string(), cursor: z.string().optional() }))
     .query(async ({ ctx, input }) => {
-      // Verify the user is a member
       const member = await prisma.conversationMember.findUnique({
         where: { userId_conversationId: { userId: ctx.userId, conversationId: input.conversationId } },
       });
@@ -63,4 +75,19 @@ export const messagesRouter = createTRPCRouter({
   markRead: userProcedure
     .input(z.object({ conversationId: z.string() }))
     .mutation(({ ctx, input }) => markConversationRead(input.conversationId, ctx.userId)),
+
+  /** Accept a message request — moves the conversation to the main Messages tab. */
+  acceptRequest: userProcedure
+    .input(z.object({ conversationId: z.string() }))
+    .mutation(({ ctx, input }) => acceptRequest(input.conversationId, ctx.userId)),
+
+  /** Decline a message request — silently hides the conversation. */
+  declineRequest: userProcedure
+    .input(z.object({ conversationId: z.string() }))
+    .mutation(({ ctx, input }) => declineRequest(input.conversationId, ctx.userId)),
+
+  /** Hide an existing conversation (soft-delete for one user only). */
+  hideConversation: userProcedure
+    .input(z.object({ conversationId: z.string() }))
+    .mutation(({ ctx, input }) => hideConversation(input.conversationId, ctx.userId)),
 });

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Calendar, Lock, MoreHorizontal, Settings } from "lucide-react";
+import { Calendar, Lock, MoreHorizontal, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "~/trpc/react";
@@ -80,6 +80,7 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
   const isOwnProfile = profile.id === currentUserId;
   const isFollowing = followStatus?.following ?? false;
   const hasRequested = followStatus?.requested ?? false;
+  const isFriend = followStatus?.friends ?? false;
   const actionPending = isFollowPending || isUnfollowPending || isCancelPending || followStatusLoading;
 
   // Determine button label / action for follow button
@@ -216,11 +217,17 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
 
         {/* Bio / info */}
         <div className="px-4 pb-4">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
               {profile.displayName ?? profile.username}
             </h2>
             {profile.isPrivate && <Lock size={15} className="text-neutral-400 dark:text-neutral-500" />}
+            {isFriend && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 dark:bg-indigo-900 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                <Users size={11} />
+                Friends
+              </span>
+            )}
           </div>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">@{profile.username}</p>
 
