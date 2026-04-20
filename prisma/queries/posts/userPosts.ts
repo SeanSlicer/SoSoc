@@ -2,7 +2,7 @@ import { prisma } from "~/server/db";
 
 export async function getUserPosts(username: string, currentUserId: string) {
   const author = await prisma.user.findUnique({
-    where: { username },
+    where: { usernameNormalized: username.toLowerCase() },
     select: {
       id: true,
       isPrivate: true,
