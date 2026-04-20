@@ -25,7 +25,7 @@ export async function searchUsers(query: string, limit = 20) {
 
 export async function getFollowerList(username: string, _currentUserId: string) {
   const user = await prisma.user.findUnique({
-    where: { username },
+    where: { username: username.toLowerCase() },
     select: {
       hideFollowLists: true,
       followers: {
@@ -48,7 +48,7 @@ export async function getFollowerList(username: string, _currentUserId: string) 
 
 export async function getFollowingList(username: string) {
   const user = await prisma.user.findUnique({
-    where: { username },
+    where: { username: username.toLowerCase() },
     select: {
       hideFollowLists: true,
       follows: {
