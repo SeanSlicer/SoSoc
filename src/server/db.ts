@@ -16,10 +16,10 @@ import { env } from "~/env";
  * Vercel with "Tenant or user not found".
  */
 function buildPoolConfig(): PoolConfig {
-  const pooler = new URL(env.DATABASE_URL);
-  const direct = new URL(env.DIRECT_URL);
+  const pooler = new URL(env.DATABASE_URL.trim());
+  const direct = new URL(env.DIRECT_URL.trim());
 
-  let user = decodeURIComponent(pooler.username);
+  let user = decodeURIComponent(pooler.username).trim();
   // Supabase pooler requires postgres.PROJECT_REF. Direct URL hostname is
   // either db.PROJECT_REF.supabase.co (legacy) or PROJECT_REF.supabase.co.
   if (pooler.hostname.includes("pooler.supabase.com") && !user.includes(".")) {
@@ -29,18 +29,29 @@ function buildPoolConfig(): PoolConfig {
   }
 
   return {
-    host: pooler.hostname,
+    host: pooler.hostname.trim(),
     port: pooler.port ? Number(pooler.port) : 5432,
     user,
     password: decodeURIComponent(pooler.password),
-    database: pooler.pathname.replace(/^\//, "") || "postgres",
+    database: pooler.pathname.replace(/^\//, "").trim() || "postgres",
     ssl: env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
     max: 1,
   };
 }
 
 const createPrismaClient = () => {
-  const pool = new Pool(buildPoolConfig());
+  const cfg = buildPoolConfig();
+  if (env.NODE_ENV === "production") {
+    // Diagnostic: appears once per cold start in Vercel logs. No password logged.
+    console.log("[db] pool config", {
+      host: cfg.host,
+      port: cfg.port,
+      user: cfg.user,
+      database: cfg.database,
+      ssl: !!cfg.ssl,
+    });
+  }
+  const pool = new Pool(cfg);
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
     adapter,
