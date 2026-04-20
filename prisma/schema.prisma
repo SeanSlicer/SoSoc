@@ -54,6 +54,14 @@ model User {
     createdAt       DateTime  @default(now()) @map(name: "created_at")
     updatedAt       DateTime  @default(now()) @map(name: "updated_at")
 
+    // Notification preferences — all default ON
+    notifyNewFollower     Boolean @default(true) @map("notify_new_follower")
+    notifyNewLike         Boolean @default(true) @map("notify_new_like")
+    notifyNewComment      Boolean @default(true) @map("notify_new_comment")
+    notifyFollowRequest   Boolean @default(true) @map("notify_follow_request")
+    notifyFollowAccepted  Boolean @default(true) @map("notify_follow_accepted")
+    notifyNewMessage      Boolean @default(true) @map("notify_new_message")
+
     followers              User[]               @relation(name: "Followers")
     follows                User[]               @relation(name: "Followers")
     notifications          Notification[]       @relation("NotificationRecipient")
@@ -206,6 +214,15 @@ model EmailVerificationToken {
 
     @@index([userId])
     @@map("email_verification_tokens")
+}
+
+model RateLimitConfig {
+    action      String   @id
+    maxRequests Int      @map("max_requests")
+    windowMs    Int      @map("window_ms")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    @@map("rate_limit_configs")
 }
 
 model Like {

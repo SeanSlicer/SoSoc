@@ -19,10 +19,18 @@ const sharedPostSelect = {
   _count: { select: { likes: true, comments: true } },
 } as const;
 
+/**
+ * Returns a cursor-paginated list of messages for a conversation, oldest first.
+ * Uses a negative take to fetch from the tail (newest end) of the list.
+ *
+ * @param conversationId  Conversation to fetch messages for
+ * @param cursor          ID of the oldest message from the previous page (for older-message pagination)
+ * @param limit           Messages per page (default 30)
+ */
 export async function getMessages(conversationId: string, cursor?: string, limit = 30) {
   const messages = await prisma.message.findMany({
     where: { conversationId },
-    take: -(limit + 1), // negative take = fetch from the end (newest last)
+    take: -(limit + 1),
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     orderBy: { createdAt: "asc" },
     include: {
@@ -33,19 +41,29 @@ export async function getMessages(conversationId: string, cursor?: string, limit
 
   let prevCursor: string | undefined;
   if (messages.length > limit) {
-    prevCursor = messages.shift()!.id; // remove the extra one from the front
+    prevCursor = messages.shift()!.id;
   }
 
   return { messages, prevCursor };
 }
 
+/**
+ * Sends a message in a conversation.
+ * - Rejects if a block exists between participants in a 1-on-1 DM.
+ * - Bumps the conversation's `updatedAt` so it sorts to the top of the list.
+ * - Restores any HIDDEN member statuses to REQUEST so the conversation resurfaces.
+ *
+ * @param conversationId  Target conversation
+ * @param senderId        User sending the message
+ * @param content         Optional text content
+ * @param sharedPostId    Optional shared post ID
+ */
 export async function sendMessage(
   conversationId: string,
   senderId: string,
   content?: string,
   sharedPostId?: string,
 ) {
-  // For DMs (no name = 2-person), reject if a block exists between the two participants.
   const convo = await prisma.conversation.findUnique({
     where: { id: conversationId },
     select: { name: true, members: { select: { userId: true } } },
@@ -74,7 +92,6 @@ export async function sendMessage(
     },
   });
 
-  // Bump conversation updatedAt so it sorts to top of list
   await prisma.conversation.update({
     where: { id: conversationId },
     data: { updatedAt: new Date() },

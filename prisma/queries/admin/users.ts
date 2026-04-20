@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import type { UserRole } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
+/** Returns all users, ordered newest first, with post/follower/following counts. */
 export async function listAllUsers() {
   return prisma.user.findMany({
     select: {
@@ -19,6 +20,12 @@ export async function listAllUsers() {
   });
 }
 
+/**
+ * Creates a user account from the admin dashboard.
+ * Throws a human-readable error if the username or email is already taken.
+ *
+ * @param data  Username, email, plaintext password, and role
+ */
 export async function adminCreateUser(data: {
   username: string;
   email: string;
@@ -45,6 +52,12 @@ export async function adminCreateUser(data: {
   }
 }
 
+/**
+ * Returns minimal user info for impersonation purposes.
+ * Returns null if the user does not exist.
+ *
+ * @param userId  User to look up
+ */
 export async function getUserForImpersonation(userId: string) {
   return prisma.user.findUnique({
     where: { id: userId },
