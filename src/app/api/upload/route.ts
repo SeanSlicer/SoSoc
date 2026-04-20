@@ -3,6 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import { env } from "~/env";
 import { getCurrentUser } from "~/lib/getCurrentUser";
 
+// Module-level singleton — avoids creating a new GoTrueClient per request,
+// which triggers the "multiple GoTrueClient instances" browser warning.
+const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
+
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,11 +21,6 @@ export async function POST(req: NextRequest) {
   if (!file || !bucket || !path) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY,
-  );
 
   const bytes = await file.arrayBuffer();
   const { data, error } = await supabase.storage
