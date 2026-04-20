@@ -1,5 +1,6 @@
 "use client";
-import { Edit } from "lucide-react";
+import { useState } from "react";
+import { Edit, EyeOff } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { timeAgo } from "~/lib/timeAgo";
@@ -12,12 +13,17 @@ type Props = {
 };
 
 export default function ConversationList({ selectedId, onSelect, onNewMessage, currentUserId }: Props) {
-  // NavSidebar's useRealtimeConversations() subscription handles cache invalidation.
+  const utils = api.useUtils();
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   const { data: convos, isLoading } = api.messages.getConversations.useQuery();
 
+  const { mutate: hide } = api.messages.hideConversation.useMutation({
+    onSuccess: () => void utils.messages.getConversations.invalidate(),
+  });
+
   return (
-    <div className="flex h-full flex-col border-r border-neutral-200 dark:border-neutral-800">
-      {/* Header */}
+    <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
         <h2 className="font-bold text-neutral-900 dark:text-neutral-100">Messages</h2>
         <button
@@ -29,7 +35,6 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
         </button>
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {isLoading && (
           <div className="flex justify-center py-12">
@@ -47,48 +52,65 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
           const name = c.name ?? displayUser?.displayName ?? displayUser?.username ?? "Unknown";
           const lastMsg = c.messages[0];
           const isSelected = selectedId === c.id;
+          const isHovered = hoveredId === c.id;
 
           return (
-            <button
+            <div
               key={c.id}
-              onClick={() => onSelect(c.id)}
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
-                isSelected ? "bg-indigo-50 dark:bg-indigo-950" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
-              }`}
+              className="relative"
+              onMouseEnter={() => setHoveredId(c.id)}
+              onMouseLeave={() => setHoveredId(null)}
             >
-              {/* Avatar — show group indicator for multi-member */}
-              <div className="relative shrink-0">
-                {displayUser ? (
-                  <Avatar user={displayUser} size="md" />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 font-bold text-sm">
-                    {name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                {c.unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white">
-                    {c.unread > 99 ? "99+" : c.unread}
-                  </span>
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-1">
-                  <p className={`truncate text-sm ${c.unread > 0 ? "font-semibold text-neutral-900 dark:text-neutral-100" : "font-medium text-neutral-800 dark:text-neutral-200"}`}>
-                    {name}
-                  </p>
-                  {lastMsg && (
-                    <span className="shrink-0 text-xs text-neutral-400">{timeAgo(new Date(lastMsg.createdAt))}</span>
+              <button
+                onClick={() => onSelect(c.id)}
+                className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
+                  isSelected ? "bg-indigo-50 dark:bg-indigo-950" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                }`}
+              >
+                <div className="relative shrink-0">
+                  {displayUser ? (
+                    <Avatar user={displayUser} size="md" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 font-bold text-sm">
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {c.unread > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white">
+                      {c.unread > 99 ? "99+" : c.unread}
+                    </span>
                   )}
                 </div>
-                {lastMsg && (
-                  <p className={`truncate text-xs ${c.unread > 0 ? "text-neutral-600 dark:text-neutral-300" : "text-neutral-400 dark:text-neutral-500"}`}>
-                    {lastMsg.senderId === currentUserId ? "You: " : ""}
-                    {lastMsg.sharedPostId ? "📎 Shared a post" : (lastMsg.content ?? "")}
-                  </p>
-                )}
-              </div>
-            </button>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-1">
+                    <p className={`truncate text-sm ${c.unread > 0 ? "font-semibold text-neutral-900 dark:text-neutral-100" : "font-medium text-neutral-800 dark:text-neutral-200"}`}>
+                      {name}
+                    </p>
+                    {lastMsg && (
+                      <span className="shrink-0 text-xs text-neutral-400">{timeAgo(new Date(lastMsg.createdAt))}</span>
+                    )}
+                  </div>
+                  {lastMsg && (
+                    <p className={`truncate text-xs ${c.unread > 0 ? "text-neutral-600 dark:text-neutral-300" : "text-neutral-400 dark:text-neutral-500"}`}>
+                      {lastMsg.senderId === currentUserId ? "You: " : ""}
+                      {lastMsg.sharedPostId ? "📎 Shared a post" : (lastMsg.content ?? "")}
+                    </p>
+                  )}
+                </div>
+              </button>
+
+              {/* Hide button — appears on hover */}
+              {isHovered && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); hide({ conversationId: c.id }); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                  title="Hide conversation"
+                >
+                  <EyeOff size={14} />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>

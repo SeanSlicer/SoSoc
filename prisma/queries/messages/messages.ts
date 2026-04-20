@@ -80,5 +80,11 @@ export async function sendMessage(
     data: { updatedAt: new Date() },
   });
 
+  // If the recipient previously hid or declined this conversation, surface it as a new request
+  await prisma.conversationMember.updateMany({
+    where: { conversationId, userId: { not: senderId }, status: "HIDDEN" },
+    data: { status: "REQUEST" },
+  });
+
   return message;
 }
