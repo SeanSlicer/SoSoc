@@ -40,8 +40,19 @@ export async function getConversations(userId: string) {
   );
 }
 
-/** Find an existing 1-on-1 DM or create a new one. */
+/** Find an existing 1-on-1 DM or create a new one. Throws if either user has blocked the other. */
 export async function getOrCreateDM(userId1: string, userId2: string) {
+  const block = await prisma.blockedUser.findFirst({
+    where: {
+      OR: [
+        { blockerId: userId1, blockedId: userId2 },
+        { blockerId: userId2, blockedId: userId1 },
+      ],
+    },
+    select: { blockerId: true },
+  });
+  if (block) throw new Error("Cannot message a blocked user");
+
   // Look for a conversation where both users are the ONLY members
   const existing = await prisma.conversation.findFirst({
     where: {

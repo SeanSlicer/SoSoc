@@ -61,8 +61,22 @@ model User {
     sentMessages           Message[]            @relation("SentMessages")
     passwordResetTokens    PasswordResetToken[]
     emailVerificationTokens EmailVerificationToken[]
+    blocking               BlockedUser[]         @relation("BlockerRelation")
+    blockedBy              BlockedUser[]         @relation("BlockedRelation")
 
     @@map(name: "users")
+}
+
+model BlockedUser {
+    id        String   @id @default(cuid())
+    blocker   User     @relation("BlockerRelation", fields: [blockerId], references: [id], onDelete: Cascade)
+    blockerId String   @map("blocker_id")
+    blocked   User     @relation("BlockedRelation", fields: [blockedId], references: [id], onDelete: Cascade)
+    blockedId String   @map("blocked_id")
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@unique([blockerId, blockedId])
+    @@map("blocked_users")
 }
 
 model FollowRequest {

@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
-import { Calendar, Lock } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Calendar, Lock, MoreHorizontal, Settings } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
@@ -20,7 +21,19 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
   const [followListMode, setFollowListMode] = useState<"followers" | "following" | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const utils = api.useUtils();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const { data: profile, isLoading } = api.user.getProfile.useQuery({ username });
 
@@ -29,9 +42,15 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
     { enabled: !!profile && profile.id !== currentUserId },
   );
 
+  const { data: isBlockedByMe } = api.user.getBlockStatus.useQuery(
+    { userId: profile?.id ?? "" },
+    { enabled: !!profile && profile.id !== currentUserId },
+  );
+
   const invalidateProfile = () => {
     void utils.user.getProfile.invalidate({ username });
     void utils.user.getFollowStatus.invalidate({ userId: profile?.id });
+    void utils.user.getBlockStatus.invalidate({ userId: profile?.id });
   };
 
   const { mutate: follow, isPending: isFollowPending } = api.user.follow.useMutation({
@@ -42,6 +61,12 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
   });
   const { mutate: cancelRequest, isPending: isCancelPending } = api.user.cancelFollowRequest.useMutation({
     onSuccess: invalidateProfile,
+  });
+  const { mutate: block, isPending: isBlockPending } = api.user.block.useMutation({
+    onSuccess: () => { setShowMenu(false); invalidateProfile(); },
+  });
+  const { mutate: unblock, isPending: isUnblockPending } = api.user.unblock.useMutation({
+    onSuccess: () => { setShowMenu(false); invalidateProfile(); },
   });
 
   if (isLoading || !profile) {
@@ -118,28 +143,73 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           </div>
 
           {/* Push button below banner edge: row top is 88px into page, banner ends at 144px, so mt-16 (64px) clears it */}
-          <div className="mt-16">
+          <div className="mt-16 flex items-center gap-2">
             {isOwnProfile ? (
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-              >
-                Edit profile
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  Edit profile
+                </button>
+                <Link
+                  href="/settings"
+                  className="md:hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                  aria-label="Settings"
+                >
+                  <Settings size={18} />
+                </Link>
+              </div>
             ) : (
-              <button
-                onClick={followAction}
-                disabled={actionPending}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
-                  isFollowing
-                    ? "border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-red-300 hover:text-red-600"
-                    : hasRequested
-                    ? "border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-red-300 hover:text-red-500"
-                    : "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-300"
-                }`}
-              >
-                {actionPending ? "…" : followLabel}
-              </button>
+              <>
+                {!isBlockedByMe && (
+                  <button
+                    onClick={followAction}
+                    disabled={actionPending}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                      isFollowing
+                        ? "border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-red-300 hover:text-red-600"
+                        : hasRequested
+                        ? "border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-red-300 hover:text-red-500"
+                        : "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-300"
+                    }`}
+                  >
+                    {actionPending ? "…" : followLabel}
+                  </button>
+                )}
+
+                {/* More options menu */}
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setShowMenu((v) => !v)}
+                    className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                    aria-label="More options"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                  {showMenu && (
+                    <div className="absolute right-0 top-10 z-20 w-40 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
+                      {isBlockedByMe ? (
+                        <button
+                          onClick={() => unblock({ userId: profile.id })}
+                          disabled={isUnblockPending}
+                          className="w-full px-4 py-3 text-left text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-60"
+                        >
+                          Unblock
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => block({ userId: profile.id })}
+                          disabled={isBlockPending}
+                          className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-60"
+                        >
+                          Block
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
