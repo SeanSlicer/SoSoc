@@ -1,43 +1,46 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import { Pool, type PoolConfig } from "pg";
 
 import { env } from "~/env";
 
 /**
- * Build a pg-compatible connection string from DATABASE_URL.
+ * Build explicit pg Pool config from DATABASE_URL.
  *
  * Supabase's PgBouncer pooler (port 6543) requires the username to be in the
  * format `postgres.PROJECT_REF`. Prisma v6 injected this automatically via the
  * `?pgbouncer=true` hint; with the raw pg adapter we have to do it ourselves.
- * We extract the project ref from DIRECT_URL which always contains it.
  *
- * Also strips Prisma-specific params that pg doesn't understand.
+ * We pass fields explicitly (not connectionString) to avoid any URL re-encoding
+ * of the dot in the username — a previous attempt using toString() failed on
+ * Vercel with "Tenant or user not found".
  */
-function buildConnectionString(): string {
+function buildPoolConfig(): PoolConfig {
   const pooler = new URL(env.DATABASE_URL);
   const direct = new URL(env.DIRECT_URL);
 
-  // Strip Prisma-only params
-  pooler.searchParams.delete("pgbouncer");
-  pooler.searchParams.delete("connection_limit");
-
-  // Fix username for Supabase pooler: postgres → postgres.PROJECT_REF
-  // Direct URL format: db.PROJECT_REF.supabase.co
-  if (pooler.hostname.includes("pooler.supabase.com") && !pooler.username.includes(".")) {
-    const projectRef = direct.hostname.split(".")[1]; // "db.PROJECT_REF.supabase.co"
-    if (projectRef) pooler.username = `${pooler.username}.${projectRef}`;
+  let user = decodeURIComponent(pooler.username);
+  // Supabase pooler requires postgres.PROJECT_REF. Direct URL hostname is
+  // either db.PROJECT_REF.supabase.co (legacy) or PROJECT_REF.supabase.co.
+  if (pooler.hostname.includes("pooler.supabase.com") && !user.includes(".")) {
+    const parts = direct.hostname.split(".");
+    const projectRef = parts[0] === "db" ? parts[1] : parts[0];
+    if (projectRef) user = `${user}.${projectRef}`;
   }
 
-  return pooler.toString();
+  return {
+    host: pooler.hostname,
+    port: pooler.port ? Number(pooler.port) : 5432,
+    user,
+    password: decodeURIComponent(pooler.password),
+    database: pooler.pathname.replace(/^\//, "") || "postgres",
+    ssl: env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    max: 1,
+  };
 }
 
 const createPrismaClient = () => {
-  const pool = new Pool({
-    connectionString: buildConnectionString(),
-    ssl: env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-    max: 1,
-  });
+  const pool = new Pool(buildPoolConfig());
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
     adapter,
