@@ -16,7 +16,7 @@ export function useRealtimeAuth() {
 
     async function fetchAndSet() {
       const res = await fetch("/api/auth/realtime-token");
-      if (!res.ok) return; // RLS not configured or not logged in — no-op
+      if (!res.ok) return;
 
       const data = (await res.json()) as { token: string; expiresIn: number };
       await supabase.realtime.setAuth(data.token);

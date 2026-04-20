@@ -15,9 +15,6 @@ export const env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     // Email — optional: if unset, emails are logged to console instead of sent
     RESEND_API_KEY: z.string().min(1).optional(),
-    // Supabase JWT secret — optional: enables RLS on Realtime when set.
-    // Must match the value in Supabase dashboard → Settings → API → JWT Secret.
-    SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -38,6 +35,5 @@ export const env = createEnv({
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
   },
 });
