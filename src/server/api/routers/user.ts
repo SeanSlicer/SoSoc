@@ -8,6 +8,7 @@ import {
   updateUserBanner,
 } from "~/../prisma/queries/users/profile";
 import { followUser, unfollowUser, isFollowing } from "~/../prisma/queries/users/follows";
+import { isFriends } from "~/../prisma/queries/users/friends";
 import {
   cancelFollowRequest,
   acceptFollowRequest,
@@ -114,11 +115,12 @@ export const userRouter = createTRPCRouter({
   getFollowStatus: userProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const [following, requested] = await Promise.all([
+      const [following, requested, friends] = await Promise.all([
         isFollowing(ctx.userId, input.userId),
         hasPendingRequest(ctx.userId, input.userId),
+        isFriends(ctx.userId, input.userId),
       ]);
-      return { following, requested };
+      return { following, requested, friends };
     }),
 
   isFollowing: userProcedure

@@ -1,4 +1,5 @@
 import { prisma } from "~/server/db";
+import { isFriends } from "../users/friends";
 
 const lastMessageSelect = {
   id: true,
@@ -8,19 +9,28 @@ const lastMessageSelect = {
   sharedPostId: true,
 } as const;
 
-/** All conversations for a user, sorted by most recent message. */
+const memberUserSelect = {
+  id: true,
+  username: true,
+  displayName: true,
+  photo: true,
+} as const;
+
+/**
+ * Returns all ACTIVE conversations for a user, sorted by most recent message.
+ * REQUEST and HIDDEN conversations are excluded — use getRequests() for those.
+ */
 export async function getConversations(userId: string) {
   const convos = await prisma.conversation.findMany({
-    where: { members: { some: { userId } } },
+    where: { members: { some: { userId, status: "ACTIVE" } } },
     orderBy: { updatedAt: "desc" },
     include: {
-      members: { include: { user: { select: { id: true, username: true, displayName: true, photo: true } } } },
+      members: { include: { user: { select: memberUserSelect } } },
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: lastMessageSelect },
       _count: { select: { messages: true } },
     },
   });
 
-  // Attach unread count per conversation
   return Promise.all(
     convos.map(async (c) => {
       const member = c.members.find((m) => m.userId === userId);
@@ -40,7 +50,45 @@ export async function getConversations(userId: string) {
   );
 }
 
-/** Find an existing 1-on-1 DM or create a new one. Throws if either user has blocked the other. */
+/**
+ * Returns all REQUEST conversations for a user (DMs from non-friends awaiting acceptance).
+ * Includes unread count so the same Conversation type can be used in the UI.
+ */
+export async function getRequests(userId: string) {
+  const convos = await prisma.conversation.findMany({
+    where: { members: { some: { userId, status: "REQUEST" } } },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      members: { include: { user: { select: memberUserSelect } } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1, select: lastMessageSelect },
+      _count: { select: { messages: true } },
+    },
+  });
+
+  return Promise.all(
+    convos.map(async (c) => {
+      const member = c.members.find((m) => m.userId === userId);
+      const unread = member?.lastReadAt
+        ? await prisma.message.count({
+            where: {
+              conversationId: c.id,
+              createdAt: { gt: member.lastReadAt },
+              senderId: { not: userId },
+            },
+          })
+        : await prisma.message.count({
+            where: { conversationId: c.id, senderId: { not: userId } },
+          });
+      return { ...c, unread };
+    }),
+  );
+}
+
+/**
+ * Find an existing 1-on-1 DM or create a new one.
+ * If the users are not friends and this is a new DM, the recipient's status is set to REQUEST.
+ * Throws if either user has blocked the other.
+ */
 export async function getOrCreateDM(userId1: string, userId2: string) {
   const block = await prisma.blockedUser.findFirst({
     where: {
@@ -59,44 +107,74 @@ export async function getOrCreateDM(userId1: string, userId2: string) {
       AND: [
         { members: { some: { userId: userId1 } } },
         { members: { some: { userId: userId2 } } },
-        { name: null }, // DMs have no name; groups do
+        { name: null },
       ],
     },
     include: {
-      members: { include: { user: { select: { id: true, username: true, displayName: true, photo: true } } } },
+      members: { include: { user: { select: memberUserSelect } } },
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: lastMessageSelect },
     },
   });
 
-  // Verify it's truly a 2-person conversation (no extra members)
+  // Existing 2-person DM — return as is, preserving member statuses
   if (existing?.members.length === 2) return existing;
 
-  // Create a new DM
+  // Determine if the two users are friends; if not, recipient gets REQUEST status
+  const friends = await isFriends(userId1, userId2);
+  const recipientStatus = friends ? "ACTIVE" : "REQUEST";
+
   return prisma.conversation.create({
     data: {
       members: {
-        create: [{ userId: userId1 }, { userId: userId2 }],
+        create: [
+          { userId: userId1, status: "ACTIVE" },
+          { userId: userId2, status: recipientStatus },
+        ],
       },
     },
     include: {
-      members: { include: { user: { select: { id: true, username: true, displayName: true, photo: true } } } },
+      members: { include: { user: { select: memberUserSelect } } },
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: lastMessageSelect },
     },
   });
 }
 
-/** Create a named group conversation. */
+/** Create a named group conversation. All members start as ACTIVE. */
 export async function createGroup(creatorId: string, memberIds: string[], name: string) {
   const allMembers = Array.from(new Set([creatorId, ...memberIds]));
   return prisma.conversation.create({
     data: {
       name,
-      members: { create: allMembers.map((uid) => ({ userId: uid })) },
+      members: { create: allMembers.map((uid) => ({ userId: uid, status: "ACTIVE" as const })) },
     },
     include: {
-      members: { include: { user: { select: { id: true, username: true, displayName: true, photo: true } } } },
+      members: { include: { user: { select: memberUserSelect } } },
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: lastMessageSelect },
     },
+  });
+}
+
+/** Accept a message request — move the conversation to the user's main Messages tab. */
+export async function acceptRequest(conversationId: string, userId: string) {
+  await prisma.conversationMember.updateMany({
+    where: { conversationId, userId, status: "REQUEST" },
+    data: { status: "ACTIVE" },
+  });
+}
+
+/** Decline a message request — silently hide the conversation for this user. */
+export async function declineRequest(conversationId: string, userId: string) {
+  await prisma.conversationMember.updateMany({
+    where: { conversationId, userId, status: "REQUEST" },
+    data: { status: "HIDDEN" },
+  });
+}
+
+/** Hide an existing conversation for one user only (soft-delete). */
+export async function hideConversation(conversationId: string, userId: string) {
+  await prisma.conversationMember.updateMany({
+    where: { conversationId, userId },
+    data: { status: "HIDDEN" },
   });
 }
 
@@ -108,10 +186,13 @@ export async function markConversationRead(conversationId: string, userId: strin
   });
 }
 
-/** Total unread message count across all conversations. */
+/**
+ * Total unread message count across all ACTIVE conversations.
+ * REQUEST conversations are not counted here (shown separately as a badge on the Requests tab).
+ */
 export async function getTotalUnread(userId: string) {
   const members = await prisma.conversationMember.findMany({
-    where: { userId },
+    where: { userId, status: "ACTIVE" },
     select: { conversationId: true, lastReadAt: true },
   });
 
@@ -127,4 +208,9 @@ export async function getTotalUnread(userId: string) {
     total += count;
   }
   return total;
+}
+
+/** Count of pending message requests (conversations in REQUEST status for a user). */
+export async function getRequestCount(userId: string): Promise<number> {
+  return prisma.conversationMember.count({ where: { userId, status: "REQUEST" } });
 }
