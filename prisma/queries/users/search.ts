@@ -1,13 +1,19 @@
 import { prisma } from "~/server/db";
 
-export async function searchUsers(query: string, limit = 20) {
+export async function searchUsers(query: string, currentUserId: string, limit = 20) {
   if (!query.trim()) return [];
 
   return prisma.user.findMany({
     where: {
-      OR: [
-        { username: { contains: query, mode: "insensitive" } },
-        { displayName: { contains: query, mode: "insensitive" } },
+      AND: [
+        { blocking: { none: { blockedId: currentUserId } } },
+        { blockedBy: { none: { blockerId: currentUserId } } },
+        {
+          OR: [
+            { username: { contains: query, mode: "insensitive" } },
+            { displayName: { contains: query, mode: "insensitive" } },
+          ],
+        },
       ],
     },
     select: {

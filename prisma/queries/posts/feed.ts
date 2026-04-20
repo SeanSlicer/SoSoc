@@ -11,12 +11,24 @@ export async function getFeed(
     ...(cursor && { cursor: { id: cursor }, skip: 1 }),
     where:
       feedType === "following"
-        ? { author: { followers: { some: { id: currentUserId } } } }
+        ? {
+            author: {
+              followers: { some: { id: currentUserId } },
+              blocking: { none: { blockedId: currentUserId } },
+              blockedBy: { none: { blockerId: currentUserId } },
+            },
+          }
         : {
-            OR: [
-              { author: { isPrivate: false } },
-              { author: { followers: { some: { id: currentUserId } } } },
-              { authorId: currentUserId },
+            AND: [
+              { author: { blocking: { none: { blockedId: currentUserId } } } },
+              { author: { blockedBy: { none: { blockerId: currentUserId } } } },
+              {
+                OR: [
+                  { author: { isPrivate: false } },
+                  { author: { followers: { some: { id: currentUserId } } } },
+                  { authorId: currentUserId },
+                ],
+              },
             ],
           },
     orderBy: { createdAt: "desc" },
