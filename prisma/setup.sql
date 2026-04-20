@@ -57,8 +57,8 @@ CREATE POLICY "members can read messages"
   USING (
     EXISTS (
       SELECT 1 FROM conversation_members
-      WHERE conversation_members.conversation_id = messages.conversation_id
-        AND conversation_members.user_id = public.requesting_user_id()
+      WHERE conversation_members."conversationId" = messages."conversationId"
+        AND conversation_members."userId" = public.requesting_user_id()
     )
   );
 
@@ -68,4 +68,4 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "users can read own notifications" ON notifications;
 CREATE POLICY "users can read own notifications"
   ON notifications FOR SELECT
-  USING (user_id = public.requesting_user_id());
+  USING ("userId" = public.requesting_user_id());
