@@ -72,14 +72,28 @@ export async function getComments(postId: string) {
 }
 
 export async function createComment(userId: string, postId: string, content: string) {
-  const [comment, post, commenter] = await Promise.all([
-    prisma.comment.create({
-      data: { userId, postId, content },
-      include: { user: { select: { id: true, username: true, displayName: true, photo: true } } },
-    }),
+  const [post, commenter] = await Promise.all([
     prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } }),
     prisma.user.findUnique({ where: { id: userId }, select: { username: true, displayName: true } }),
   ]);
+
+  if (post && post.authorId !== userId) {
+    const block = await prisma.blockedUser.findFirst({
+      where: {
+        OR: [
+          { blockerId: userId, blockedId: post.authorId },
+          { blockerId: post.authorId, blockedId: userId },
+        ],
+      },
+      select: { blockerId: true },
+    });
+    if (block) throw new Error("Cannot comment on this post");
+  }
+
+  const comment = await prisma.comment.create({
+    data: { userId, postId, content },
+    include: { user: { select: { id: true, username: true, displayName: true, photo: true } } },
+  });
 
   if (post) {
     const name = commenter?.displayName ?? commenter?.username ?? "Someone";
