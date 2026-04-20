@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Calendar, Lock, MoreHorizontal } from "lucide-react";
+import { Calendar, Lock, MoreHorizontal, Settings } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
@@ -144,12 +145,21 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
           {/* Push button below banner edge: row top is 88px into page, banner ends at 144px, so mt-16 (64px) clears it */}
           <div className="mt-16 flex items-center gap-2">
             {isOwnProfile ? (
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-              >
-                Edit profile
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  Edit profile
+                </button>
+                <Link
+                  href="/settings"
+                  className="md:hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                  aria-label="Settings"
+                >
+                  <Settings size={18} />
+                </Link>
+              </div>
             ) : (
               <>
                 {!isBlockedByMe && (

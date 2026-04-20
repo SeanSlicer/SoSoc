@@ -14,7 +14,7 @@ export default function BlockedUsersPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900">
       <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-100 dark:border-neutral-800 px-4 py-3 flex items-center gap-3">
-        <Link href="/feed" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200">
+        <Link href="/settings" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200">
           <ArrowLeft size={20} />
         </Link>
         <h1 className="font-bold text-neutral-900 dark:text-neutral-100">Blocked accounts</h1>
