@@ -4,10 +4,8 @@ Issues that are known, non-breaking, and not currently prioritised. Ranked from 
 
 ---
 
-## 1. Block / mute users 🔒 Security
-**Issue:** No way to block harassment or mute noisy accounts.
-
-**Recommended fix:** Add `BlockedUser` model (blocker ↔ blocked). Filter blocked users from feed, search, and follow lists.
+## 1. ✅ Block / mute users 🔒 Security
+**Implemented.** `BlockedUser` model added. Blocked users are filtered from feed, search, follow lists, comments, and DMs. Block/unblock UI on profile pages and a `/settings/blocked` management page.
 
 ---
 
