@@ -17,6 +17,7 @@ import {
   acceptAllPendingRequests,
 } from "~/../prisma/queries/users/followRequests";
 import { searchUsers, getFollowerList, getFollowingList } from "~/../prisma/queries/users/search";
+import { blockUser, unblockUser, isBlocked, getBlockedUsers } from "~/../prisma/queries/users/blocks";
 import { updateProfileSchema } from "~/validation/post/post";
 
 export const userRouter = createTRPCRouter({
@@ -64,7 +65,7 @@ export const userRouter = createTRPCRouter({
 
   search: userProcedure
     .input(z.object({ query: z.string(), limit: z.number().int().min(1).max(50).default(20) }))
-    .query(({ input }) => searchUsers(input.query, input.limit)),
+    .query(({ ctx, input }) => searchUsers(input.query, ctx.userId, input.limit)),
 
   getFollowers: userProcedure
     .input(z.object({ username: z.string() }))
@@ -123,4 +124,24 @@ export const userRouter = createTRPCRouter({
   isFollowing: userProcedure
     .input(z.object({ userId: z.string() }))
     .query(({ ctx, input }) => isFollowing(ctx.userId, input.userId)),
+
+  block: userProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.userId === input.userId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot block yourself" });
+      }
+      await blockUser(ctx.userId, input.userId);
+    }),
+
+  unblock: userProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(({ ctx, input }) => unblockUser(ctx.userId, input.userId)),
+
+  getBlockStatus: userProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(({ ctx, input }) => isBlocked(ctx.userId, input.userId)),
+
+  getBlockedUsers: userProcedure
+    .query(({ ctx }) => getBlockedUsers(ctx.userId)),
 });

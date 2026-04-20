@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Bell, LogOut, Shield, Search, MessageSquare, Sun, Moon, Monitor } from "lucide-react";
+import { Home, User, Bell, LogOut, Shield, Search, MessageSquare, Sun, Moon, Monitor, Settings } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { useRealtimeConversations } from "~/hooks/useRealtimeMessages";
@@ -58,9 +58,10 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
     { href: `/profile/${user.username}`, icon: User, label: "Profile", badge: 0 },
   ];
 
-  // Admin link only in desktop sidebar — rare use case, doesn't belong in mobile tab bar
+  // Settings and Admin links only in desktop sidebar
   const allNavItems = [
     ...coreNavItems,
+    { href: "/settings", icon: Settings, label: "Settings", badge: 0 },
     ...(me?.role === "ADMIN" ? [{ href: "/admin", icon: Shield, label: "Admin", badge: 0 }] : []),
   ];
 
