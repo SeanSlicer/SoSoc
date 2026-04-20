@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { useRealtimeConversations } from "~/hooks/useRealtimeMessages";
 import { useRealtimeNotifications } from "~/hooks/useRealtimeNotifications";
+import { useRealtimeAuth } from "~/hooks/useRealtimeAuth";
 import { useTheme, type Theme } from "~/app/components/theme/ThemeProvider";
 
 type NavUser = {
@@ -38,6 +39,7 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
 
   // Event-driven updates via Supabase Realtime — no polling needed.
   // NavSidebar is always mounted so it's the right place for global subscriptions.
+  useRealtimeAuth();
   useRealtimeConversations();
   useRealtimeNotifications();
 

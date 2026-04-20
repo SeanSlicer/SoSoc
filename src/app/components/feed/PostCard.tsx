@@ -147,10 +147,18 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
     onSuccess: () => { invalidatePosts(); setIsEditing(false); },
   });
 
-  const { data: comments, refetch: refetchComments } = api.post.getComments.useQuery(
+  const {
+    data: commentPages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchComments,
+  } = api.post.getComments.useInfiniteQuery(
     { postId: post.id },
-    { enabled: showComments },
+    { enabled: showComments, getNextPageParam: (page) => page.nextCursor },
   );
+
+  const comments = commentPages?.pages.flatMap((p) => p.comments) ?? [];
 
   const { mutate: addComment, isPending: isAddingComment } = api.post.addComment.useMutation({
     onSuccess: () => { setCommentText(""); void refetchComments(); },
@@ -274,7 +282,7 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                   </button>
                 </div>
 
-                {comments?.map((comment) => (
+                {comments.map((comment) => (
                   <div key={comment.id} className="flex gap-2.5">
                     <Avatar user={comment.user} size="sm" />
                     <div className="flex-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 px-3 py-2">
@@ -292,6 +300,16 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                     </div>
                   </div>
                 ))}
+
+                {hasNextPage && (
+                  <button
+                    onClick={() => void fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-60"
+                  >
+                    {isFetchingNextPage ? "Loading…" : "Load more comments"}
+                  </button>
+                )}
               </div>
             )}
           </div>
