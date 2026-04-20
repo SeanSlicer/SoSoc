@@ -45,6 +45,27 @@ export async function sendMessage(
   content?: string,
   sharedPostId?: string,
 ) {
+  // For DMs (no name = 2-person), reject if a block exists between the two participants.
+  const convo = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: { name: true, members: { select: { userId: true } } },
+  });
+  if (convo && convo.name === null && convo.members.length === 2) {
+    const otherId = convo.members.find((m) => m.userId !== senderId)?.userId;
+    if (otherId) {
+      const block = await prisma.blockedUser.findFirst({
+        where: {
+          OR: [
+            { blockerId: senderId, blockedId: otherId },
+            { blockerId: otherId, blockedId: senderId },
+          ],
+        },
+        select: { blockerId: true },
+      });
+      if (block) throw new Error("Cannot message a blocked user");
+    }
+  }
+
   const message = await prisma.message.create({
     data: { conversationId, senderId, content: content ?? null, sharedPostId: sharedPostId ?? null },
     include: {
