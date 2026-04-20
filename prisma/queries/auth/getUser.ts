@@ -24,7 +24,7 @@ export async function getUserByUsernameOrEmailAndPassword(
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        { username: normalized },
+        { usernameNormalized: normalized },
         { email: normalized },
       ],
     },

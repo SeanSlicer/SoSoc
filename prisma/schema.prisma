@@ -32,8 +32,9 @@ enum PostType {
 
 model User {
     id              String    @id @default(cuid())
-    username        String    @unique
-    email           String    @unique
+    username           String    @map("username")
+    usernameNormalized String?   @unique @map("username_normalized")
+    email              String    @unique
     emailVerified   DateTime?
     password        String
     role            UserRole  @default(USER)
