@@ -3,17 +3,19 @@ import { useState } from "react";
 import { MessageSquare } from "lucide-react";
 import ConversationList from "./ConversationList";
 import RequestList from "./RequestList";
+import HiddenList from "./HiddenList";
 import MessageThread from "./MessageThread";
 import NewConversationModal from "./NewConversationModal";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type ActiveConversation = RouterOutputs["messages"]["getConversations"][number];
 type RequestConversation = RouterOutputs["messages"]["getRequests"][number];
-type AnyConversation = ActiveConversation | RequestConversation;
+type HiddenConversation = RouterOutputs["messages"]["getHidden"][number];
+type AnyConversation = ActiveConversation | RequestConversation | HiddenConversation;
 
 type Props = { currentUserId: string };
 
-type Tab = "messages" | "requests";
+type Tab = "messages" | "requests" | "hidden";
 
 export default function MessagesPage({ currentUserId }: Props) {
   const [tab, setTab] = useState<Tab>("messages");
@@ -22,10 +24,13 @@ export default function MessagesPage({ currentUserId }: Props) {
 
   const { data: convos } = api.messages.getConversations.useQuery();
   const { data: requests } = api.messages.getRequests.useQuery();
+  const { data: hidden } = api.messages.getHidden.useQuery();
   const { data: requestCount = 0 } = api.messages.getRequestCount.useQuery();
 
   const selectedConvo: AnyConversation | undefined =
-    (convos?.find((c) => c.id === selectedId) ?? requests?.find((c) => c.id === selectedId)) as AnyConversation | undefined;
+    (convos?.find((c) => c.id === selectedId) ??
+      requests?.find((c) => c.id === selectedId) ??
+      hidden?.find((c) => c.id === selectedId)) as AnyConversation | undefined;
 
   const handleSelect = (id: string, fromTab: Tab) => {
     setTab(fromTab);
@@ -64,21 +69,39 @@ export default function MessagesPage({ currentUserId }: Props) {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setTab("hidden")}
+              className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                tab === "hidden"
+                  ? "border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+              }`}
+            >
+              Hidden
+            </button>
           </div>
 
           {/* List content */}
           <div className="flex-1 overflow-hidden flex flex-col">
-            {tab === "messages" ? (
+            {tab === "messages" && (
               <ConversationList
                 selectedId={selectedId}
                 onSelect={(id) => handleSelect(id, "messages")}
                 onNewMessage={() => setShowNewModal(true)}
                 currentUserId={currentUserId}
               />
-            ) : (
+            )}
+            {tab === "requests" && (
               <RequestList
                 selectedId={selectedId}
                 onSelect={(id) => handleSelect(id, "requests")}
+                currentUserId={currentUserId}
+              />
+            )}
+            {tab === "hidden" && (
+              <HiddenList
+                selectedId={selectedId}
+                onSelect={(id) => handleSelect(id, "hidden")}
                 currentUserId={currentUserId}
               />
             )}
