@@ -34,6 +34,7 @@ Share photos, follow people you care about, and see what's happening — all in 
 - **Mobile-first** — Responsive layout with a bottom tab bar on mobile, sidebar on desktop
 - **Admin** — User management dashboard with impersonation
 - **Secure uploads** — Images routed through a server-side endpoint; client-side resize and JPEG conversion before upload
+- **Mobile companion app** — React Native + Expo app under `mobile/` consuming the same tRPC API; Bearer-token auth via `expo-secure-store`; Supabase Realtime for messages and notifications
 
 ---
 
@@ -107,6 +108,54 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and sign up for an account.
+
+---
+
+## Mobile app
+
+A React Native companion app built with [Expo](https://expo.dev/) lives under `mobile/`. It consumes the same tRPC API — no duplicated business logic.
+
+### Running it
+
+```bash
+cd mobile
+yarn install
+yarn start            # Metro bundler
+```
+
+Then press `i` for iOS simulator, `a` for Android emulator, or scan the QR code with Expo Go on a physical device.
+
+### Mobile environment
+
+Create `mobile/.env`:
+
+```
+EXPO_PUBLIC_API_URL=http://192.168.1.20:3000
+EXPO_PUBLIC_SUPABASE_URL=<same as web>
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<same as web>
+```
+
+Use the **LAN IP** of your dev machine, not `localhost` (which won't resolve from a physical device). The web dev server at `http://localhost:3000` must be running and reachable.
+
+In development, add the Expo origin to the web app's `.env` so CORS allows it:
+
+```
+CORS_ALLOWED_ORIGINS=http://192.168.1.20:8081
+```
+
+(Localhost and private-LAN patterns are already allow-listed by default.)
+
+### What's in mobile
+
+- Auth (login / signup / logout) with JWT stored in `expo-secure-store`
+- Feed (For You / Following, infinite scroll, optimistic likes, comments sheet)
+- Compose (multi-photo picker, upload through `/api/upload`)
+- Profile (view/edit, follows, follow requests, blocked users, friends badge)
+- Messages (conversation list with main/requests/hidden tabs, thread view, new-DM search, Supabase Realtime updates)
+- Notifications (list + unread badge with Realtime updates, preferences settings)
+- Dark mode via the device's system setting
+
+Not yet on mobile (deferred — see `FUTURE_WORK.md` → "Mobile app follow-ups"): admin console, email verification/password reset, push notifications, group-conversation creation, EAS release config.
 
 ---
 
