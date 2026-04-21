@@ -1,0 +1,24 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+
+# Metro
+.metro-health-check*
+
+# Expo / EAS
+.expo-shared/
+.easignore
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Local env
+.env
+.env.local
