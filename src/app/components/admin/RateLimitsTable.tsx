@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { RotateCcw, Save } from "lucide-react";
 import { api } from "~/trpc/react";
-import { DEFAULT_RATE_LIMITS } from "~/../prisma/queries/admin/rateLimitDefaults";
+import { DEFAULT_RATE_LIMITS } from "@queries/admin/rateLimitDefaults";
 
 const WINDOW_OPTIONS = [
   { label: "1 minute",  ms: 60_000 },

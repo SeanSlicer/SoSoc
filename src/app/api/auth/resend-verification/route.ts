@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "~/lib/getCurrentUser";
-import { createEmailVerificationToken } from "~/../prisma/queries/auth/tokens";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
+import { createEmailVerificationToken } from "@queries/auth/tokens";
 import { sendVerificationEmail } from "~/lib/server/email";
 import { checkRateLimit } from "~/lib/server/rateLimit";
 

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "~/lib/getCurrentUser";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
 import Link from "next/link";
 
 export default async function Home() {

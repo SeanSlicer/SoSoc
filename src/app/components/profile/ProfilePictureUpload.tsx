@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import { storageProvider } from "~/lib/storage";
-import { resizeImage } from "~/lib/resizeImage";
+import { resizeImage } from "~/lib/client/resizeImage";
 import { api } from "~/trpc/react";
 
 type Props = { userId: string; onUpload: () => void };

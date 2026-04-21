@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { env } from "~/env";
-import { getCurrentUser } from "~/lib/getCurrentUser";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
 
 // Module-level singleton — avoids creating a new GoTrueClient per request,
 // which triggers the "multiple GoTrueClient instances" browser warning.

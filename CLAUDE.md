@@ -48,11 +48,12 @@ This is a T3 Stack social media app (Next.js 15 App Router + tRPC v11 + Prisma v
 
 ### Key Conventions
 
-- **Path alias:** `~/` maps to `./src/`. Note: `lib/` is at the repo root and aliased as `~/../lib/`.
+- **Path aliases:** `~/` → `./src/`; `@queries/` → `./prisma/queries/`.
+- **`src/lib/` layout:** split into `server/` (Node-only, marked `server-only`), `client/` (browser-only, marked `"use client"`), and `shared/` (platform-agnostic — safe to import from a future Expo app).
 - **Auth:** JWT stored as HTTP-only cookie (`user-token`). Custom bcrypt + JWT (HS256) — no NextAuth.
   - Auth operations use dedicated Next.js route handlers (`/api/auth/login`, `/api/auth/signup`, `/api/auth/logout`) that call `NextResponse.cookies.set()` — **not** tRPC, because `httpBatchStreamLink` streaming responses can't reliably send `Set-Cookie` headers.
   - JWT payload: `{ sub: userId, role: "ADMIN"|"USER", imp?: adminId }`
-  - `verifyAuth()` is in `lib/client/auth.ts` (imported as `~/../lib/client/auth`)
+  - `verifyAuth()` is in `src/lib/server/jwt.ts`; the payload type lives in `src/lib/shared/jwt.ts` so it can be imported from Expo.
 - **Protected procedures:** Use `protectedProcedure` (alias: `userProcedure`) from `src/server/api/trpc.ts`. Admin-only routes use `adminProcedure`.
 - **Roles:** Stored in JWT — no DB query needed in middleware. Role changes take effect at next token issue (7-day expiry). Acceptable for single-admin apps.
 - **Impersonation:** Admin can impersonate via `/api/admin/impersonate`. Real admin token saved as `admin-token` cookie; `user-token` replaced with short-lived (4h) impersonation token containing `{ imp: adminId }`. Exit via `/api/admin/impersonate/exit`.

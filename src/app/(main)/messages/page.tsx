@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 import { cookies } from "next/headers";
-import { verifyAuth } from "~/../lib/client/auth";
+import { verifyAuth } from "~/lib/server/jwt";
 import MessagesPage from "~/app/components/messages/MessagesPage";
 
 export const metadata: Metadata = { title: "Messages — sosoc" };

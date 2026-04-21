@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { verifyAuth } from "~/../lib/client/auth";
+import { verifyAuth } from "~/lib/server/jwt";
 import { exitImpersonation, AUTH_COOKIE, ADMIN_COOKIE } from "~/lib/server/auth";
 
 export async function POST(req: NextRequest) {

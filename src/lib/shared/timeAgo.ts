@@ -1,8 +1,12 @@
 /**
+ * Platform-agnostic date formatting. Safe to import from React Native.
+ */
+
+/**
  * Returns a compact human-readable relative time string (e.g. "just now", "5m", "2h", "3d").
  * Falls back to a short date string for dates older than 7 days.
  *
- * @param date  The past date to format relative to now
+ * @param date  The past date to format relative to now.
  */
 export function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);

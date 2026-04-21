@@ -6,10 +6,10 @@ import {
   updateUserProfile,
   updateUserPhoto,
   updateUserBanner,
-} from "~/../prisma/queries/users/profile";
-import { followUser, unfollowUser, isFollowing } from "~/../prisma/queries/users/follows";
-import { isFriends } from "~/../prisma/queries/users/friends";
-import { checkRateLimit, getRateLimitConfig } from "~/lib/server/rateLimit";
+} from "@queries/users/profile";
+import { followUser, unfollowUser, isFollowing } from "@queries/users/follows";
+import { isFriends } from "@queries/users/friends";
+import { enforceRateLimit } from "~/lib/server/rateLimit";
 import {
   cancelFollowRequest,
   acceptFollowRequest,
@@ -17,9 +17,9 @@ import {
   getPendingRequestsForUser,
   hasPendingRequest,
   acceptAllPendingRequests,
-} from "~/../prisma/queries/users/followRequests";
-import { searchUsers, getFollowerList, getFollowingList } from "~/../prisma/queries/users/search";
-import { blockUser, unblockUser, isBlocked, getBlockedUsers } from "~/../prisma/queries/users/blocks";
+} from "@queries/users/followRequests";
+import { searchUsers, getFollowerList, getFollowingList } from "@queries/users/search";
+import { blockUser, unblockUser, isBlocked, getBlockedUsers } from "@queries/users/blocks";
 import { updateProfileSchema } from "~/validation/post/post";
 
 export const userRouter = createTRPCRouter({
@@ -91,11 +91,7 @@ export const userRouter = createTRPCRouter({
       if (ctx.userId === input.userId) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot follow yourself" });
       }
-      const cfg = await getRateLimitConfig("user.follow", 100, 60 * 60 * 1000);
-      const rl = checkRateLimit(`user.follow:${ctx.userId}`, cfg.maxRequests, cfg.windowMs);
-      if (!rl.allowed) {
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many follow actions. Try again soon." });
-      }
+      await enforceRateLimit("user.follow", ctx.userId, 100, 60 * 60 * 1000, "Too many follow actions. Try again soon.");
       return followUser(ctx.userId, input.userId);
     }),
 

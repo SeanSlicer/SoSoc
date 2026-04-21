@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { verifyAuth } from "~/../lib/client/auth";
-import { getUserForImpersonation } from "~/../prisma/queries/admin/users";
+import { verifyAuth } from "~/lib/server/jwt";
+import { getUserForImpersonation } from "@queries/admin/users";
 import { createImpersonationToken, startImpersonation, AUTH_COOKIE } from "~/lib/server/auth";
 
 export async function POST(req: NextRequest) {

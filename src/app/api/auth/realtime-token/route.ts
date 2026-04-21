@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { env } from "~/env";
-import { getCurrentUser } from "~/lib/getCurrentUser";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
 
 /**
  * Issues a short-lived Supabase-compatible JWT so the browser Realtime client

@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
-import { listAllUsers, adminCreateUser } from "~/../prisma/queries/admin/users";
+import { listAllUsers, adminCreateUser } from "@queries/admin/users";
 import {
   getAllRateLimitConfigs,
   upsertRateLimitConfig,
   resetRateLimitConfig,
-} from "~/../prisma/queries/admin/rateLimits";
+} from "@queries/admin/rateLimits";
 
 export const adminRouter = createTRPCRouter({
   getUsers: adminProcedure.query(() => listAllUsers()),

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-import { consumePasswordResetToken, verifyPasswordResetToken } from "~/../prisma/queries/auth/tokens";
+import { consumePasswordResetToken, verifyPasswordResetToken } from "@queries/auth/tokens";
 import { checkRateLimit } from "~/lib/server/rateLimit";
 
 const schema = z.object({

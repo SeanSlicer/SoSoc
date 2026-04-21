@@ -5,7 +5,7 @@ import { Heart, MessageCircle, Trash2, Edit2, X, Check, ChevronLeft, ChevronRigh
 import { api, type RouterOutputs } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import Lightbox from "~/app/components/ui/Lightbox";
-import { timeAgo } from "~/lib/timeAgo";
+import { timeAgo } from "~/lib/shared/timeAgo";
 
 export type FeedPost = RouterOutputs["post"]["getFeed"]["posts"][number];
 
