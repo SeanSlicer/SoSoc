@@ -5,19 +5,32 @@ import { createAuthToken } from "~/lib/server/auth";
 import { createEmailVerificationToken } from "@queries/auth/tokens";
 import { sendVerificationEmail } from "~/lib/server/email";
 import { checkRateLimit } from "~/lib/server/rateLimit";
+import { applyCorsHeaders, corsPreflight } from "~/lib/server/cors";
 import { TRPCError } from "@trpc/server";
+
+export function OPTIONS(req: NextRequest) {
+  return corsPreflight(req.headers.get("origin"));
+}
+
+function respond(body: unknown, init: ResponseInit | undefined, origin: string | null) {
+  const res = NextResponse.json(body, init);
+  applyCorsHeaders(res.headers, origin);
+  return res;
+}
 
 /**
  * Mobile signup — returns the JWT in the response body instead of setting a
  * cookie. Mirrors the web `/api/auth/signup` flow otherwise.
  */
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const limit = checkRateLimit(`mobile-signup:${ip}`, 5, 60 * 60 * 1000);
   if (!limit.allowed) {
-    return NextResponse.json(
+    return respond(
       { error: "Too many accounts created from this IP. Please try again later." },
       { status: 429 },
+      origin,
     );
   }
 
@@ -26,10 +39,7 @@ export async function POST(req: NextRequest) {
     const parsed = signUpSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return respond({ error: parsed.error.flatten().fieldErrors }, { status: 400 }, origin);
     }
 
     const { username, email, password } = parsed.data;
@@ -43,16 +53,20 @@ export async function POST(req: NextRequest) {
       console.error("[auth/mobile-signup] Failed to send verification email:", emailErr);
     }
 
-    return NextResponse.json({
-      token,
-      user: { id: user.id, username: user.username, role: user.role },
-      pendingVerification: true,
-    });
+    return respond(
+      {
+        token,
+        user: { id: user.id, username: user.username, role: user.role },
+        pendingVerification: true,
+      },
+      undefined,
+      origin,
+    );
   } catch (err) {
     if (err instanceof TRPCError && err.code === "CONFLICT") {
-      return NextResponse.json({ error: "Username or email already taken" }, { status: 409 });
+      return respond({ error: "Username or email already taken" }, { status: 409 }, origin);
     }
     console.error("[auth/mobile-signup]", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return respond({ error: "Internal server error" }, { status: 500 }, origin);
   }
 }
