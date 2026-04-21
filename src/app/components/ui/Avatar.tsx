@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 type AvatarUser = {
@@ -12,6 +13,7 @@ type AvatarProps = {
   user: AvatarUser;
   size?: "sm" | "md" | "lg" | "xl";
   onClick?: () => void;
+  href?: string;
 };
 
 const sizes = { sm: 32, md: 40, lg: 56, xl: 88 };
@@ -34,24 +36,17 @@ function InitialsAvatar({ user, size }: AvatarProps) {
   );
 }
 
-export default function Avatar({ user, size = "md", onClick }: AvatarProps) {
+export default function Avatar({ user, size = "md", onClick, href }: AvatarProps) {
   const px = sizes[size];
   const [imgError, setImgError] = useState(false);
   const hasPhoto = !!user.photo && user.photo !== "default.png";
   const clickable = !!onClick;
 
-  if (!hasPhoto || imgError) {
-    return (
-      <div
-        onClick={onClick}
-        className={clickable ? "cursor-pointer" : undefined}
-      >
-        <InitialsAvatar user={user} size={size} />
-      </div>
-    );
-  }
-
-  return (
+  const inner = (!hasPhoto || imgError) ? (
+    <div onClick={onClick} className={clickable ? "cursor-pointer" : undefined}>
+      <InitialsAvatar user={user} size={size} />
+    </div>
+  ) : (
     <Image
       src={user.photo!}
       alt={user.displayName ?? user.username}
@@ -63,4 +58,14 @@ export default function Avatar({ user, size = "md", onClick }: AvatarProps) {
       onClick={onClick}
     />
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        {inner}
+      </Link>
+    );
+  }
+
+  return inner;
 }
