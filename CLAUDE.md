@@ -207,13 +207,51 @@ All exported functions in `prisma/queries/**/*.ts` and key `src/lib/server/*.ts`
  */
 ```
 
-### Expo / Mobile (future)
+### Mobile app (`mobile/`)
 
-The app is web-only today but is designed for a future React Native (Expo) companion:
-- All business logic lives in tRPC routers and `prisma/queries/` — reusable from Expo via `@trpc/client`.
-- JWT auth uses cookies on web; Expo would use `expo-secure-store` instead.
-- Supabase Realtime subscriptions are in `src/hooks/` — Expo would use `@supabase/supabase-js` directly with the same JWT.
-- Storage uploads go through `/api/upload`; Expo would call the same endpoint.
+A companion React Native app built with Expo Router lives under `mobile/`. It consumes the same tRPC API as the web app — no duplicated business logic.
+
+**Running it:**
+```bash
+cd mobile
+yarn install          # or npm install
+yarn start            # Metro bundler — open in Expo Go, iOS simulator, or Android emulator
+```
+
+The web server must be running (`yarn dev` at repo root) and reachable from the device. Set `EXPO_PUBLIC_API_URL` in `mobile/.env` to the LAN IP of your dev machine (e.g. `http://192.168.1.20:3000`) — `localhost` only works in simulators, not on a physical device.
+
+**Layout:**
+```
+mobile/
+├── app/                     ← Expo Router (file-based) screens
+│   ├── (auth)/              ← login, signup
+│   ├── (tabs)/              ← feed, search, compose, notifications, messages, profile
+│   ├── messages/[id].tsx    ← thread view
+│   ├── profile/             ← edit, [username], followers, following
+│   └── settings/            ← index, blocked, notifications
+├── components/              ← shared RN components (Avatar, PostCard, etc.)
+├── lib/
+│   ├── auth.tsx             ← AuthProvider (SecureStore-backed JWT)
+│   ├── trpc.ts              ← tRPC client + React Query hooks
+│   ├── supabase.ts          ← Supabase Realtime client
+│   ├── realtime/            ← useRealtimeAuth, useRealtimeConversations, useRealtimeNotifications
+│   ├── theme.ts             ← light/dark palette
+│   └── upload.ts            ← multipart upload to /api/upload with Bearer
+└── package.json             ← own deps, no workspace tie-in
+```
+
+**Key architectural notes:**
+- **No Yarn workspaces.** Mobile imports only the `AppRouter` *type* via `tsconfig` paths (`~api/root` → `../src/server/api/root.ts`). Zero runtime dependency on the web code.
+- **Auth over Bearer.** The web client uses HTTP-only cookies; mobile uses `Authorization: Bearer <jwt>`. `extractToken()` in `src/server/api/trpc.ts` reads both, cookie first. `getUserFromRequest()` in `src/lib/server/getCurrentUser.ts` does the same for route handlers (`/api/upload`, `/api/auth/realtime-token`).
+- **Dedicated auth endpoints.** `/api/auth/mobile-login`, `/mobile-signup`, `/mobile-logout` return the JWT in the response body instead of setting a cookie. They reuse the same `createAuthToken` helper.
+- **tRPC transport.** Uses `httpBatchLink`, not `httpBatchStreamLink` — RN's `fetch` doesn't fully support streaming responses.
+- **CORS.** Web and mobile share a domain in prod, so CORS is dev-only. `src/lib/server/cors.ts` permits `localhost`, private-LAN IP patterns, and `exp://` by default, plus anything in `CORS_ALLOWED_ORIGINS`.
+- **Realtime.** `@supabase/supabase-js` works in RN with minimal setup. `useRealtimeAuth` fetches short-lived Supabase JWTs from `/api/auth/realtime-token` and refreshes them 5 min before expiry. Per-conversation and global message/notification subscriptions mirror the web hooks in `src/hooks/`.
+- **Uploads.** `expo-image-picker` → FormData with `{ uri, name, type }` shape (RN-specific) → `/api/upload` with Bearer header.
+- **Dark mode.** Driven by the device's `useColorScheme()` — no manual toggle. Palette in `mobile/lib/theme.ts` mirrors the web Tailwind values.
+- **Icons.** Unicode-glyph stopgap in `mobile/components/Icon.tsx`. See FUTURE_WORK.md "Mobile icon set" for the planned swap.
+
+**What's not in mobile yet** (see FUTURE_WORK.md → "Mobile app follow-ups"): admin UI, email verification/password reset flows, push notifications (APNs/FCM), EAS/app-store release config, deep linking, offline write queue, group-conversation creation UI.
 
 ## Known Technical Debt
 
