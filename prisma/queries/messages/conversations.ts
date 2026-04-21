@@ -170,11 +170,45 @@ export async function declineRequest(conversationId: string, userId: string) {
   });
 }
 
-/** Hide an existing conversation for one user only (soft-delete). */
+/** Hide an existing conversation for one user only. Can be restored when a new message arrives. */
 export async function hideConversation(conversationId: string, userId: string) {
   await prisma.conversationMember.updateMany({
     where: { conversationId, userId },
     data: { status: "HIDDEN" },
+  });
+}
+
+/**
+ * Returns all HIDDEN conversations for a user.
+ * These are conversations the user has explicitly hidden or declined.
+ */
+export async function getHidden(userId: string) {
+  const convos = await prisma.conversation.findMany({
+    where: { members: { some: { userId, status: "HIDDEN" } } },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      members: { include: { user: { select: memberUserSelect } } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1, select: lastMessageSelect },
+      _count: { select: { messages: true } },
+    },
+  });
+  return convos.map((c) => ({ ...c, unread: 0 }));
+}
+
+/**
+ * Permanently removes a user from a conversation by deleting their member row.
+ * The conversation continues for other participants. Unlike hiding, this cannot
+ * be restored by a new incoming message.
+ */
+export async function deleteConversation(conversationId: string, userId: string) {
+  await prisma.conversationMember.deleteMany({ where: { conversationId, userId } });
+}
+
+/** Restores a HIDDEN conversation to ACTIVE for one user (unhide). */
+export async function unhideConversation(conversationId: string, userId: string) {
+  await prisma.conversationMember.updateMany({
+    where: { conversationId, userId, status: "HIDDEN" },
+    data: { status: "ACTIVE" },
   });
 }
 

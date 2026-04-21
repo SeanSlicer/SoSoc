@@ -13,6 +13,7 @@ import {
   createComment,
   deleteComment,
 } from "~/../prisma/queries/posts/mutations";
+import { checkRateLimit, getRateLimitConfig } from "~/lib/server/rateLimit";
 
 export const postRouter = createTRPCRouter({
   getFeed: userProcedure
@@ -29,6 +30,11 @@ export const postRouter = createTRPCRouter({
   create: userProcedure
     .input(createPostSchema)
     .mutation(async ({ ctx, input }) => {
+      const cfg = await getRateLimitConfig("post.create", 100, 60 * 60 * 1000);
+      const rl = checkRateLimit(`post.create:${ctx.userId}`, cfg.maxRequests, cfg.windowMs);
+      if (!rl.allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "You're posting too fast. Slow down a bit." });
+      }
       const type = input.videoUrl ? "VIDEO" : input.images.length > 0 ? "PHOTO" : "CAPTION";
       return createPost(ctx.userId, input.content, type, input.images, input.videoUrl);
     }),
@@ -51,7 +57,14 @@ export const postRouter = createTRPCRouter({
 
   toggleLike: userProcedure
     .input(z.object({ postId: z.string() }))
-    .mutation(({ ctx, input }) => toggleLike(ctx.userId, input.postId)),
+    .mutation(async ({ ctx, input }) => {
+      const cfg = await getRateLimitConfig("post.like", 500, 60 * 60 * 1000);
+      const rl = checkRateLimit(`post.like:${ctx.userId}`, cfg.maxRequests, cfg.windowMs);
+      if (!rl.allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many likes. Try again soon." });
+      }
+      return toggleLike(ctx.userId, input.postId);
+    }),
 
   getComments: userProcedure
     .input(z.object({ postId: z.string(), cursor: z.string().optional(), limit: z.number().int().min(1).max(50).default(10) }))
@@ -59,7 +72,14 @@ export const postRouter = createTRPCRouter({
 
   addComment: userProcedure
     .input(z.object({ postId: z.string(), content: z.string().min(1).max(300) }))
-    .mutation(({ ctx, input }) => createComment(ctx.userId, input.postId, input.content)),
+    .mutation(async ({ ctx, input }) => {
+      const cfg = await getRateLimitConfig("post.comment", 200, 60 * 60 * 1000);
+      const rl = checkRateLimit(`post.comment:${ctx.userId}`, cfg.maxRequests, cfg.windowMs);
+      if (!rl.allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "You're commenting too fast. Slow down a bit." });
+      }
+      return createComment(ctx.userId, input.postId, input.content);
+    }),
 
   deleteComment: userProcedure
     .input(z.object({ commentId: z.string() }))

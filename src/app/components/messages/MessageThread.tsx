@@ -93,7 +93,13 @@ export default function MessageThread({ conversationId, conversation, currentUse
         <button onClick={onBack} className="md:hidden rounded-lg p-1.5 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
           <ArrowLeft size={18} />
         </button>
-        {otherMembers[0]?.user && <Avatar user={otherMembers[0].user} size="sm" />}
+        {otherMembers[0]?.user && (
+          <Avatar
+            user={otherMembers[0].user}
+            size="sm"
+            href={otherMembers.length === 1 ? `/profile/${otherMembers[0].user.username}` : undefined}
+          />
+        )}
         <div>
           <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{threadName}</p>
           {otherMembers.length === 1 && otherMembers[0]?.user && (
@@ -121,7 +127,7 @@ export default function MessageThread({ conversationId, conversation, currentUse
           return (
             <div key={msg.id} className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
               <div className="w-7 shrink-0">
-                {showAvatar && !isOwn && <Avatar user={msg.sender} size="sm" />}
+                {showAvatar && !isOwn && <Avatar user={msg.sender} size="sm" href={`/profile/${msg.sender.username}`} />}
               </div>
               <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
                 {msg.content && (

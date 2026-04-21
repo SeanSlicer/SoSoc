@@ -55,21 +55,21 @@ export default function RequestList({ selectedId, onSelect, currentUserId }: Pro
           return (
             <div
               key={c.id}
-              className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+              className={`flex items-center gap-3 pl-4 pr-3 py-3 transition-colors ${
                 isSelected ? "bg-indigo-50 dark:bg-indigo-950" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
               }`}
             >
-              <button onClick={() => onSelect(c.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                <div className="shrink-0">
-                  {displayUser ? (
-                    <Avatar user={displayUser} size="md" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 font-bold text-sm">
-                      {name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+              <div className="shrink-0">
+                {displayUser ? (
+                  <Avatar user={displayUser} size="md" href={`/profile/${displayUser.username}`} />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 font-bold text-sm">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
 
+              <button onClick={() => onSelect(c.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-1">
                     <p className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">{name}</p>

@@ -1,7 +1,14 @@
 import { prisma } from "~/server/db";
 
+/**
+ * Blocks a user. Also removes any existing follow relationships and pending
+ * follow requests between the two users.
+ * Runs in a transaction so all side effects are atomic.
+ *
+ * @param blockerId  User performing the block
+ * @param blockedId  User being blocked
+ */
 export async function blockUser(blockerId: string, blockedId: string) {
-  // Remove any existing follow relationship in both directions
   await prisma.$transaction([
     prisma.user.update({
       where: { id: blockerId },
@@ -10,7 +17,6 @@ export async function blockUser(blockerId: string, blockedId: string) {
         followers: { disconnect: { id: blockedId } },
       },
     }),
-    // Delete any pending follow requests between the two users
     prisma.followRequest.deleteMany({
       where: {
         OR: [
@@ -27,10 +33,22 @@ export async function blockUser(blockerId: string, blockedId: string) {
   ]);
 }
 
+/**
+ * Removes a block relationship.
+ *
+ * @param blockerId  User who originally blocked
+ * @param blockedId  User who was blocked
+ */
 export async function unblockUser(blockerId: string, blockedId: string) {
   await prisma.blockedUser.deleteMany({ where: { blockerId, blockedId } });
 }
 
+/**
+ * Returns true if blockerId has blocked blockedId (one direction only).
+ *
+ * @param blockerId  Potential blocker
+ * @param blockedId  Potential blocked user
+ */
 export async function isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
   const row = await prisma.blockedUser.findUnique({
     where: { blockerId_blockedId: { blockerId, blockedId } },
@@ -39,7 +57,12 @@ export async function isBlocked(blockerId: string, blockedId: string): Promise<b
   return row !== null;
 }
 
-/** Returns true if either user has blocked the other. */
+/**
+ * Returns true if either user has blocked the other.
+ *
+ * @param userA  First user
+ * @param userB  Second user
+ */
 export async function isBlockedInAnyDirection(
   userA: string,
   userB: string,
@@ -56,6 +79,11 @@ export async function isBlockedInAnyDirection(
   return row !== null;
 }
 
+/**
+ * Returns the list of users that a given user has blocked.
+ *
+ * @param blockerId  User whose block list to return
+ */
 export async function getBlockedUsers(blockerId: string) {
   const rows = await prisma.blockedUser.findMany({
     where: { blockerId },

@@ -1,5 +1,16 @@
 import { prisma } from "~/server/db";
 
+/**
+ * Returns a cursor-paginated feed of posts.
+ *
+ * - `"all"` feed: all public posts + posts from followed users + own posts, excluding blocked users.
+ * - `"following"` feed: posts only from users the viewer follows (still excludes blocked users).
+ *
+ * @param currentUserId  Viewer's user ID
+ * @param cursor         Cursor for pagination (last post ID from the previous page)
+ * @param limit          Posts per page (default 20)
+ * @param feedType       `"all"` or `"following"`
+ */
 export async function getFeed(
   currentUserId: string,
   cursor?: string,

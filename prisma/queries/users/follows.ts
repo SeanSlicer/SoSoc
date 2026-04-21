@@ -3,8 +3,12 @@ import { createNotification } from "../notifications/notifications";
 import { sendFollowRequest } from "./followRequests";
 
 /**
- * Follow a user. If the target account is private, sends a follow request instead.
- * Returns { requested: true } when a request was queued, or the updated user when followed directly.
+ * Follows a user. If the target account is private, sends a follow request instead.
+ * Throws if either user has blocked the other.
+ *
+ * @param followerId  User initiating the follow
+ * @param followingId User to follow
+ * @returns `{ requested: true }` when a follow request was queued, `{ requested: false }` when followed directly
  */
 export async function followUser(
   followerId: string,
@@ -54,6 +58,12 @@ export async function followUser(
   return { requested: false };
 }
 
+/**
+ * Removes a follow relationship.
+ *
+ * @param followerId  User who wants to unfollow
+ * @param followingId User to unfollow
+ */
 export async function unfollowUser(followerId: string, followingId: string) {
   return prisma.user.update({
     where: { id: followerId },
@@ -61,6 +71,12 @@ export async function unfollowUser(followerId: string, followingId: string) {
   });
 }
 
+/**
+ * Returns true if followerId is currently following followingId.
+ *
+ * @param followerId  Potential follower
+ * @param followingId Potential followee
+ */
 export async function isFollowing(followerId: string, followingId: string): Promise<boolean> {
   const result = await prisma.user.findFirst({
     where: {

@@ -62,23 +62,24 @@ This is a T3 Stack social media app (Next.js 15 App Router + tRPC v11 + Prisma v
 
 ### Database Models (Prisma)
 
-- `User` — `isPrivate`, `hideFollowLists`, `bannerUrl`, self-referential many-to-many follow via `@relation(name: "Followers")`
+- `User` — `isPrivate`, `hideFollowLists`, `bannerUrl`, self-referential many-to-many follow via `@relation(name: "Followers")`. Has 6 notification preference booleans (`notifyNewFollower`, `notifyNewLike`, `notifyNewComment`, `notifyFollowRequest`, `notifyFollowAccepted`, `notifyNewMessage`) — all default `true`.
 - `Post` — types: `PHOTO | CAPTION | VIDEO`. `images[]` array (up to 15) for multi-photo, `videoUrl` for video posts.
 - `FollowRequest` — pending follow requests for private accounts. `@@unique([requesterId, targetId])`.
 - `Like` — `@@unique([userId, postId])`
 - `Comment`
 - `Notification` — types: `NEW_FOLLOWER | NEW_LIKE | NEW_COMMENT | FOLLOW_REQUEST | FOLLOW_REQUEST_ACCEPTED | NEW_MESSAGE | FRIEND_REQUEST`
 - `Conversation` — DMs and group chats. `name` is null for DMs, set for groups.
-- `ConversationMember` — join table with `lastReadAt` for unread tracking. Composite PK `[userId, conversationId]`.
+- `ConversationMember` — join table with `lastReadAt` for unread tracking and `status: ConversationMemberStatus` (ACTIVE/REQUEST/HIDDEN). Composite PK `[userId, conversationId]`.
 - `Message` — belongs to a Conversation. Has `content` (text) and/or `sharedPostId` (post share).
+- `RateLimitConfig` — admin-configurable rate limit overrides keyed by action name (e.g. `"post.create"`). Cached in memory for 60 s.
 
 ### tRPC Routers
 
-- `user` — profile, follow/unfollow, follow requests, search, privacy settings, banner
+- `user` — profile, follow/unfollow, follow requests, search, privacy settings, banner, block/unblock, `getFollowStatus` (includes `friends` flag)
 - `post` — feed (infinite), user posts, create/update/delete, like, comments
-- `notification` — list, unread count, mark read
-- `messages` — conversations, DMs, group creation, send, mark read, unread count
-- `admin` — user list, create user (admin-only)
+- `notification` — list, unread count, mark read, `getPrefs` / `updatePrefs` for notification preferences
+- `messages` — conversations, DMs, group creation, send, mark read, unread count, `getRequests` / `acceptRequest` / `declineRequest` / `hideConversation` for message requests
+- `admin` — user list, create user, `getRateLimits` / `setRateLimit` / `resetRateLimit` for rate limit config
 
 ### Storage
 
@@ -94,11 +95,37 @@ Provider-agnostic interface at `src/lib/storage/types.ts`. Buckets: `"avatars" |
 - The "For You" feed (`feedType: "all"`) filters out private account posts unless the viewer follows them or owns the posts.
 - `getUserPosts` enforces privacy — returns `{ posts: [], locked: true }` for private profiles the viewer doesn't follow.
 
-### Direct Messaging
+### Friends System
+
+- Friends are mutual follows — no separate model. User A and User B are friends when both `isFollowing(A, B)` and `isFollowing(B, A)` are true.
+- `isFriends()` is in `prisma/queries/users/friends.ts`.
+- `user.getFollowStatus` returns `{ following, requested, friends }`.
+- Profile pages show a "Friends" pill badge when viewing a mutual follow.
+
+### Direct Messaging & Message Requests
 
 - Conversations are created via `messages.getOrCreateDM` (2-person) or `messages.createGroup`.
+- `ConversationMember.status` controls visibility: `ACTIVE` (main tab), `REQUEST` (pending DM from non-friend), `HIDDEN` (declined or user-hidden).
+- New DMs from non-friends set the recipient's status to `REQUEST`; existing conversations are never downgraded.
+- `sendMessage` restores `HIDDEN` → `REQUEST` for the recipient when a new message arrives.
+- Messages page has two tabs: Messages (ACTIVE) and Requests (REQUEST). Users can accept, decline, or hide conversations.
 - Messages update via Supabase Realtime (`postgres_changes` on `messages` table) — no polling. `NavSidebar` owns the global subscription; `MessageThread` adds a per-conversation subscription.
 - Post sharing: `PostCard` accepts an optional `onShare` prop. `FeedClient` passes `setSharingPostId` which opens `SharePostModal`.
+
+### Notification Preferences
+
+- Each user has 6 boolean preference columns on the `User` model, all defaulting to `true`.
+- `createNotification()` checks the recipient's preference for the notification type and silently no-ops if it's disabled.
+- Preferences are editable at `/settings/notifications` via toggle switches.
+- tRPC: `notification.getPrefs` / `notification.updatePrefs`.
+
+### Rate Limiting
+
+- In-memory sliding window limiter in `src/lib/server/rateLimit.ts` (`checkRateLimit`).
+- Admin-configurable overrides stored in the `RateLimitConfig` DB table, cached in memory for 60 seconds (`getRateLimitConfig`).
+- Applied to: `post.create` (100/hr), `post.comment` (200/hr), `post.like` (500/hr), `message.send` (100/hr), `user.follow` (100/hr), `auth.signup` (5/hr per IP).
+- Admin UI at `/admin` → Rate Limits tab to view and override limits. Reset button restores defaults.
+- Rate-limited actions throw `TOO_MANY_REQUESTS` (HTTP 429).
 
 ### Dark Mode
 
@@ -167,10 +194,29 @@ Required (defined in `src/env.js`):
 
 See `.env.example` for the database URL format. Use `start-database.sh` to spin up a local PostgreSQL instance.
 
+### Documentation
+
+All exported functions in `prisma/queries/**/*.ts` and key `src/lib/server/*.ts` files have JSDoc comments. Format:
+```ts
+/**
+ * One-line summary.
+ *
+ * @param paramName  Description
+ * @returns          What it returns (omit for void)
+ */
+```
+
+### Expo / Mobile (future)
+
+The app is web-only today but is designed for a future React Native (Expo) companion:
+- All business logic lives in tRPC routers and `prisma/queries/` — reusable from Expo via `@trpc/client`.
+- JWT auth uses cookies on web; Expo would use `expo-secure-store` instead.
+- Supabase Realtime subscriptions are in `src/hooks/` — Expo would use `@supabase/supabase-js` directly with the same JWT.
+- Storage uploads go through `/api/upload`; Expo would call the same endpoint.
+
 ## Known Technical Debt
 
 See `FUTURE_WORK.md` for a full list. Top priorities:
 - JWT role revocation window (no immediate invalidation on role/password change)
-- No rate limiting on auth endpoints
-- Message polling should be upgraded to Supabase Realtime
+- Rate limiting is per-instance (not shared across replicas) — swap store for Redis for multi-instance deployments
 - No email verification or password reset flow

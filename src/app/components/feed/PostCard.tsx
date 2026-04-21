@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Trash2, Edit2, X, Check, ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { Heart, MessageCircle, Trash2, Edit2, X, Check, ChevronLeft, ChevronRight, Send, MoreHorizontal } from "lucide-react";
 import { api, type RouterOutputs } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import Lightbox from "~/app/components/ui/Lightbox";
@@ -108,6 +108,37 @@ function VideoPlayer({ src }: { src: string }) {
         className="w-full max-h-96"
         playsInline
       />
+    </div>
+  );
+}
+
+// ─── Comment options menu ──────────────────────────────────────────────────────
+function CommentMenu({ onDelete }: { onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget as Node)) setOpen(false); }}
+        className="rounded p-0.5 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+        aria-label="Comment options"
+      >
+        <MoreHorizontal size={14} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-6 z-20 w-36 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
+          <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => { setOpen(false); onDelete(); }}
+            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+          >
+            <Trash2 size={13} />
+            Delete comment
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -291,9 +322,7 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                           {comment.user.displayName ?? comment.user.username}
                         </span>
                         {comment.user.id === currentUserId && (
-                          <button onClick={() => deleteComment({ commentId: comment.id })} className="text-neutral-300 dark:text-neutral-600 hover:text-red-400 transition-colors">
-                            <X size={13} />
-                          </button>
+                          <CommentMenu onDelete={() => deleteComment({ commentId: comment.id })} />
                         )}
                       </div>
                       <p className="text-xs text-neutral-700 dark:text-neutral-300 mt-0.5">{comment.content}</p>
