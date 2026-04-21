@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { Edit, MoreHorizontal, EyeOff, Trash2 } from "lucide-react";
+import { MoreHorizontal, Eye, Trash2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { timeAgo } from "~/lib/timeAgo";
@@ -8,15 +8,10 @@ import { timeAgo } from "~/lib/timeAgo";
 type Props = {
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onNewMessage: () => void;
   currentUserId: string;
 };
 
-function ConvoMenu({ conversationId, onHide, onDelete }: {
-  conversationId: string;
-  onHide: () => void;
-  onDelete: () => void;
-}) {
+function HiddenConvoMenu({ onUnhide, onDelete }: { onUnhide: () => void; onDelete: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -35,11 +30,11 @@ function ConvoMenu({ conversationId, onHide, onDelete }: {
         <div className="absolute right-0 top-8 z-30 w-40 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
           <button
             onMouseDown={(e) => e.preventDefault()}
-            onClick={(e) => { e.stopPropagation(); setOpen(false); onHide(); }}
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onUnhide(); }}
             className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
           >
-            <EyeOff size={15} />
-            Hide
+            <Eye size={15} />
+            Unhide
           </button>
           <button
             onMouseDown={(e) => e.preventDefault()}
@@ -55,30 +50,27 @@ function ConvoMenu({ conversationId, onHide, onDelete }: {
   );
 }
 
-export default function ConversationList({ selectedId, onSelect, onNewMessage, currentUserId }: Props) {
+export default function HiddenList({ selectedId, onSelect, currentUserId }: Props) {
   const utils = api.useUtils();
+  const { data: hidden, isLoading } = api.messages.getHidden.useQuery();
 
-  const { data: convos, isLoading } = api.messages.getConversations.useQuery();
+  const invalidate = () => void utils.messages.getHidden.invalidate();
 
-  const invalidate = () => {
-    void utils.messages.getConversations.invalidate();
-    void utils.messages.getTotalUnread.invalidate();
-  };
+  const { mutate: unhide } = api.messages.unhideConversation.useMutation({
+    onSuccess: () => {
+      void utils.messages.getConversations.invalidate();
+      invalidate();
+    },
+  });
 
-  const { mutate: hide } = api.messages.hideConversation.useMutation({ onSuccess: invalidate });
   const { mutate: del } = api.messages.deleteConversation.useMutation({ onSuccess: invalidate });
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
-        <h2 className="font-bold text-neutral-900 dark:text-neutral-100">Messages</h2>
-        <button
-          onClick={onNewMessage}
-          className="rounded-lg p-1.5 text-neutral-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          title="New message"
-        >
-          <Edit size={18} />
-        </button>
+      <div className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          Hidden conversations won&apos;t appear in Messages unless you unhide them.
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -88,11 +80,11 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
           </div>
         )}
 
-        {!isLoading && convos?.length === 0 && (
-          <p className="py-12 text-center text-sm text-neutral-400">No conversations yet</p>
+        {!isLoading && hidden?.length === 0 && (
+          <p className="py-12 text-center text-sm text-neutral-400">No hidden conversations</p>
         )}
 
-        {convos?.map((c) => {
+        {hidden?.map((c) => {
           const otherMembers = c.members.filter((m) => m.userId !== currentUserId);
           const displayUser = otherMembers[0]?.user;
           const name = c.name ?? displayUser?.displayName ?? displayUser?.username ?? "Unknown";
@@ -101,18 +93,13 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
 
           return (
             <div key={c.id} className={`flex items-center gap-1 pl-4 pr-2 transition-colors ${isSelected ? "bg-indigo-50 dark:bg-indigo-950" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"}`}>
-              <div className="relative shrink-0 py-3">
+              <div className="shrink-0 py-3">
                 {displayUser ? (
                   <Avatar user={displayUser} size="md" href={`/profile/${displayUser.username}`} />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 font-bold text-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-bold text-sm">
                     {name.charAt(0).toUpperCase()}
                   </div>
-                )}
-                {c.unread > 0 && (
-                  <span className="absolute -right-0.5 top-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white">
-                    {c.unread > 99 ? "99+" : c.unread}
-                  </span>
                 )}
               </div>
 
@@ -122,25 +109,21 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-1">
-                    <p className={`truncate text-sm ${c.unread > 0 ? "font-semibold text-neutral-900 dark:text-neutral-100" : "font-medium text-neutral-800 dark:text-neutral-200"}`}>
-                      {name}
-                    </p>
+                    <p className="truncate text-sm font-medium text-neutral-600 dark:text-neutral-400">{name}</p>
                     {lastMsg && (
                       <span className="shrink-0 text-xs text-neutral-400">{timeAgo(new Date(lastMsg.createdAt))}</span>
                     )}
                   </div>
                   {lastMsg && (
-                    <p className={`truncate text-xs ${c.unread > 0 ? "text-neutral-600 dark:text-neutral-300" : "text-neutral-400 dark:text-neutral-500"}`}>
-                      {lastMsg.senderId === currentUserId ? "You: " : ""}
+                    <p className="truncate text-xs text-neutral-400 dark:text-neutral-500">
                       {lastMsg.sharedPostId ? "📎 Shared a post" : (lastMsg.content ?? "")}
                     </p>
                   )}
                 </div>
               </button>
 
-              <ConvoMenu
-                conversationId={c.id}
-                onHide={() => hide({ conversationId: c.id })}
+              <HiddenConvoMenu
+                onUnhide={() => unhide({ conversationId: c.id })}
                 onDelete={() => del({ conversationId: c.id })}
               />
             </div>

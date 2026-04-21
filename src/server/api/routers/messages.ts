@@ -4,11 +4,14 @@ import { TRPCError } from "@trpc/server";
 import {
   getConversations,
   getRequests,
+  getHidden,
   getOrCreateDM,
   createGroup,
   acceptRequest,
   declineRequest,
   hideConversation,
+  unhideConversation,
+  deleteConversation,
   markConversationRead,
   getTotalUnread,
   getRequestCount,
@@ -96,4 +99,17 @@ export const messagesRouter = createTRPCRouter({
   hideConversation: userProcedure
     .input(z.object({ conversationId: z.string() }))
     .mutation(({ ctx, input }) => hideConversation(input.conversationId, ctx.userId)),
+
+  /** Returns all hidden conversations for the current user. */
+  getHidden: userProcedure.query(({ ctx }) => getHidden(ctx.userId)),
+
+  /** Restores a hidden conversation back to the main Messages tab. */
+  unhideConversation: userProcedure
+    .input(z.object({ conversationId: z.string() }))
+    .mutation(({ ctx, input }) => unhideConversation(input.conversationId, ctx.userId)),
+
+  /** Permanently removes the user from a conversation (cannot be undone). */
+  deleteConversation: userProcedure
+    .input(z.object({ conversationId: z.string() }))
+    .mutation(({ ctx, input }) => deleteConversation(input.conversationId, ctx.userId)),
 });
