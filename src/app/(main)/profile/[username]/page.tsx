@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "~/lib/getCurrentUser";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
 import ProfileHeader from "~/app/components/profile/ProfileHeader";
 import UserPostsList from "~/app/components/profile/UserPostsList";
 

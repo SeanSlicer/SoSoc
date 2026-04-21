@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { verifyEmailToken } from "~/../prisma/queries/auth/tokens";
+import { verifyEmailToken } from "@queries/auth/tokens";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");

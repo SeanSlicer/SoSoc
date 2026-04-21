@@ -2,7 +2,7 @@
 import { Check, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
-import { timeAgo } from "~/lib/timeAgo";
+import { timeAgo } from "~/lib/shared/timeAgo";
 
 type Props = {
   selectedId: string | null;

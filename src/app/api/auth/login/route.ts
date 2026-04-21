@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getUserByUsernameOrEmailAndPassword } from "~/../prisma/queries/auth/getUser";
+import { getUserByUsernameOrEmailAndPassword } from "@queries/auth/getUser";
 import { createAuthToken, setAuthCookie } from "~/lib/server/auth";
 import { checkRateLimit } from "~/lib/server/rateLimit";
 

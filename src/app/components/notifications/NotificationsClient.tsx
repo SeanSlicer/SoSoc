@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Heart, MessageCircle, UserPlus, Bell, UserCheck } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
-import { timeAgo } from "~/lib/timeAgo";
+import { timeAgo } from "~/lib/shared/timeAgo";
 import { type NotificationType } from "@prisma/client";
 
 function NotificationIcon({ type }: { type: NotificationType }) {

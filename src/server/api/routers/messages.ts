@@ -15,10 +15,10 @@ import {
   markConversationRead,
   getTotalUnread,
   getRequestCount,
-} from "~/../prisma/queries/messages/conversations";
-import { getMessages, sendMessage } from "~/../prisma/queries/messages/messages";
+} from "@queries/messages/conversations";
+import { getMessages, sendMessage } from "@queries/messages/messages";
 import { prisma } from "~/server/db";
-import { checkRateLimit, getRateLimitConfig } from "~/lib/server/rateLimit";
+import { enforceRateLimit } from "~/lib/server/rateLimit";
 
 export const messagesRouter = createTRPCRouter({
   /** All ACTIVE conversations for the current user. */
@@ -69,11 +69,7 @@ export const messagesRouter = createTRPCRouter({
       if (!input.content?.trim() && !input.sharedPostId) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Message must have content or a shared post" });
       }
-      const cfg = await getRateLimitConfig("message.send", 100, 60 * 60 * 1000);
-      const rl = checkRateLimit(`message.send:${ctx.userId}`, cfg.maxRequests, cfg.windowMs);
-      if (!rl.allowed) {
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "You're sending messages too fast. Slow down a bit." });
-      }
+      await enforceRateLimit("message.send", ctx.userId, 100, 60 * 60 * 1000, "You're sending messages too fast. Slow down a bit.");
       const member = await prisma.conversationMember.findUnique({
         where: { userId_conversationId: { userId: ctx.userId, conversationId: input.conversationId } },
       });

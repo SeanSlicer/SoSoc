@@ -4,7 +4,7 @@ import { Image as ImageIcon, Video, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import { storageProvider } from "~/lib/storage";
-import { resizeImage } from "~/lib/resizeImage";
+import { resizeImage } from "~/lib/client/resizeImage";
 
 const MAX_IMAGES = 15;
 const MAX_VIDEO_MB = 100;

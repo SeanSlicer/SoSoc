@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { supabase } from "~/lib/supabase";
+import { supabase } from "~/lib/client/supabase";
 
 /**
  * Fetches a Supabase-compatible JWT from /api/auth/realtime-token and sets it

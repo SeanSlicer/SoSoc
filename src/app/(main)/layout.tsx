@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "~/lib/getCurrentUser";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
 import NavSidebar from "~/app/components/layout/NavSidebar";
 import ImpersonationBanner from "~/app/components/layout/ImpersonationBanner";
 import VerifyEmailBanner from "~/app/components/layout/VerifyEmailBanner";

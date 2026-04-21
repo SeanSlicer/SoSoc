@@ -78,7 +78,7 @@ describe("checkRateLimit — sliding window", () => {
 
 describe("DEFAULT_RATE_LIMITS", () => {
   it("defines all expected rate-limited actions", async () => {
-    const { DEFAULT_RATE_LIMITS } = await import("~/../prisma/queries/admin/rateLimitDefaults");
+    const { DEFAULT_RATE_LIMITS } = await import("@queries/admin/rateLimitDefaults");
     const expected = [
       "post.create",
       "post.comment",
@@ -95,14 +95,14 @@ describe("DEFAULT_RATE_LIMITS", () => {
   });
 
   it("auth.signup has a stricter limit than other actions", async () => {
-    const { DEFAULT_RATE_LIMITS } = await import("~/../prisma/queries/admin/rateLimitDefaults");
+    const { DEFAULT_RATE_LIMITS } = await import("@queries/admin/rateLimitDefaults");
     const signup = DEFAULT_RATE_LIMITS["auth.signup"]!;
     const postCreate = DEFAULT_RATE_LIMITS["post.create"]!;
     expect(signup.maxRequests).toBeLessThan(postCreate.maxRequests);
   });
 
   it("post.like has the highest limit (expected for passive actions)", async () => {
-    const { DEFAULT_RATE_LIMITS } = await import("~/../prisma/queries/admin/rateLimitDefaults");
+    const { DEFAULT_RATE_LIMITS } = await import("@queries/admin/rateLimitDefaults");
     const like = DEFAULT_RATE_LIMITS["post.like"]!;
     const create = DEFAULT_RATE_LIMITS["post.create"]!;
     expect(like.maxRequests).toBeGreaterThan(create.maxRequests);

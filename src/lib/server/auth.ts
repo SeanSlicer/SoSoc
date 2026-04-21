@@ -8,7 +8,7 @@ export const AUTH_COOKIE = "user-token";
 /** Stores the real admin token while an impersonation session is active. */
 export const ADMIN_COOKIE = "admin-token";
 
-export const AUTH_COOKIE_OPTIONS = {
+const AUTH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,

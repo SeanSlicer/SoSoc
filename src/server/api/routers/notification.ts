@@ -6,7 +6,7 @@ import {
   markAllRead,
   getNotificationPrefs,
   updateNotificationPrefs,
-} from "~/../prisma/queries/notifications/notifications";
+} from "@queries/notifications/notifications";
 
 const notificationPrefSchema = z.object({
   notifyNewFollower:    z.boolean().optional(),

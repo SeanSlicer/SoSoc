@@ -1,11 +1,17 @@
 /**
+ * Browser-only image helpers. Uses `Image`, `URL.createObjectURL`, and the
+ * Canvas API — not portable to React Native. A future Expo client should
+ * use `expo-image-manipulator` instead.
+ */
+
+/**
  * Resize an image file using the browser Canvas API and convert it to JPEG.
  * This handles large photos and non-standard formats (e.g. HEIC from iPhone/Mac)
  * that browsers can display but may not upload cleanly.
  *
- * @param file - Original file from <input type="file">
- * @param maxDimension - Maximum width or height in pixels
- * @returns A new File object (always JPEG) at most maxDimension × maxDimension
+ * @param file         Original file from `<input type="file">`.
+ * @param maxDimension Maximum width or height in pixels.
+ * @returns            A new File object (always JPEG) at most maxDimension × maxDimension.
  */
 export async function resizeImage(file: File, maxDimension: number): Promise<File> {
   return new Promise((resolve, reject) => {
@@ -17,7 +23,7 @@ export async function resizeImage(file: File, maxDimension: number): Promise<Fil
 
       let { width, height } = img;
 
-      // Only resize if the image actually exceeds the max dimension
+      // Skip resizing when the image is already small enough and already JPEG
       if (width <= maxDimension && height <= maxDimension && file.type === "image/jpeg") {
         resolve(file);
         return;

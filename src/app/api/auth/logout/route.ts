@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { clearAuthCookie, AUTH_COOKIE } from "~/lib/server/auth";
-import { revokeUserTokens } from "~/../prisma/queries/auth/getUser";
+import { revokeUserTokens } from "@queries/auth/getUser";
 
 export async function POST(req: NextRequest) {
   const token = req.cookies.get(AUTH_COOKIE)?.value;

@@ -1,54 +1,15 @@
 "use client";
-import { useState, useRef } from "react";
-import { MoreHorizontal, Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
-import { timeAgo } from "~/lib/timeAgo";
+import DropdownMenu from "~/app/components/ui/DropdownMenu";
+import { timeAgo } from "~/lib/shared/timeAgo";
 
 type Props = {
   selectedId: string | null;
   onSelect: (id: string) => void;
   currentUserId: string;
 };
-
-function HiddenConvoMenu({ onUnhide, onDelete }: { onUnhide: () => void; onDelete: () => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  return (
-    <div ref={ref} className="relative shrink-0">
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget as Node)) setOpen(false); }}
-        aria-label="Conversation options"
-        className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
-      >
-        <MoreHorizontal size={15} />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-8 z-30 w-40 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
-          <button
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={(e) => { e.stopPropagation(); setOpen(false); onUnhide(); }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-          >
-            <Eye size={15} />
-            Unhide
-          </button>
-          <button
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
-          >
-            <Trash2 size={15} />
-            Delete
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function HiddenList({ selectedId, onSelect, currentUserId }: Props) {
   const utils = api.useUtils();
@@ -122,9 +83,12 @@ export default function HiddenList({ selectedId, onSelect, currentUserId }: Prop
                 </div>
               </button>
 
-              <HiddenConvoMenu
-                onUnhide={() => unhide({ conversationId: c.id })}
-                onDelete={() => del({ conversationId: c.id })}
+              <DropdownMenu
+                label="Conversation options"
+                items={[
+                  { label: "Unhide", icon: <Eye size={15} />, onClick: () => unhide({ conversationId: c.id }) },
+                  { label: "Delete", icon: <Trash2 size={15} />, onClick: () => del({ conversationId: c.id }), variant: "danger" },
+                ]}
               />
             </div>
           );

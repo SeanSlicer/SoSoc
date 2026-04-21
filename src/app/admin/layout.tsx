@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 import Link from "next/link";
-import { getCurrentUser } from "~/lib/getCurrentUser";
+import { getCurrentUser } from "~/lib/server/getCurrentUser";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Admin — sosoc" };

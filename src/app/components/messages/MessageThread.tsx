@@ -4,7 +4,7 @@ import { Send, ArrowLeft } from "lucide-react";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { useRealtimeMessages } from "~/hooks/useRealtimeMessages";
 import Avatar from "~/app/components/ui/Avatar";
-import { timeAgo } from "~/lib/timeAgo";
+import { timeAgo } from "~/lib/shared/timeAgo";
 import Link from "next/link";
 
 type Conversation = RouterOutputs["messages"]["getConversations"][number];

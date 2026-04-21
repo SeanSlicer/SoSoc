@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createPasswordResetToken } from "~/../prisma/queries/auth/tokens";
+import { createPasswordResetToken } from "@queries/auth/tokens";
 import { sendPasswordResetEmail } from "~/lib/server/email";
 import { checkRateLimit } from "~/lib/server/rateLimit";
 

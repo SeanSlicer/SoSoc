@@ -8,6 +8,7 @@
  * replicas). For multi-instance deployments, swap the store for a Redis-backed
  * implementation (e.g. @upstash/ratelimit).
  */
+import { TRPCError } from "@trpc/server";
 
 interface WindowEntry {
   /** Timestamps (ms) of requests in the current window */
@@ -115,5 +116,30 @@ export async function getRateLimitConfig(
     return config;
   } catch {
     return { maxRequests: defaultMax, windowMs: defaultWindow };
+  }
+}
+
+/**
+ * Enforce a rate limit for a tRPC procedure. Loads the configured limit
+ * (with default fallback), checks the sliding window, and throws
+ * `TOO_MANY_REQUESTS` when blocked.
+ *
+ * @param action        Action name (e.g. `"post.create"`) — also used as the default key prefix
+ * @param subject       Per-actor identifier appended to the key — typically `ctx.userId`
+ * @param defaultMax    Default max requests when no DB override exists
+ * @param defaultWindow Default window in ms when no DB override exists
+ * @param message       Error message returned to the client when blocked
+ */
+export async function enforceRateLimit(
+  action: string,
+  subject: string,
+  defaultMax: number,
+  defaultWindow: number,
+  message: string,
+): Promise<void> {
+  const cfg = await getRateLimitConfig(action, defaultMax, defaultWindow);
+  const rl = checkRateLimit(`${action}:${subject}`, cfg.maxRequests, cfg.windowMs);
+  if (!rl.allowed) {
+    throw new TRPCError({ code: "TOO_MANY_REQUESTS", message });
   }
 }

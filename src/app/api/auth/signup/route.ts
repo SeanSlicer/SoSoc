@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createUser } from "~/../prisma/queries/auth/signUp";
+import { createUser } from "@queries/auth/signUp";
 import { signUpSchema } from "~/validation/auth/auth";
 import { createAuthToken, setAuthCookie } from "~/lib/server/auth";
-import { createEmailVerificationToken } from "~/../prisma/queries/auth/tokens";
+import { createEmailVerificationToken } from "@queries/auth/tokens";
 import { sendVerificationEmail } from "~/lib/server/email";
 import { checkRateLimit } from "~/lib/server/rateLimit";
 import { TRPCError } from "@trpc/server";
