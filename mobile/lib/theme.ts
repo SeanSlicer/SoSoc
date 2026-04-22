@@ -5,7 +5,7 @@ import { useColorScheme } from "react-native";
  * stronger contrast) and a friendly-but-modern feel — indigo primary with
  * warm coral for likes, teal for friend/positive states, amber for requests.
  */
-const palette = {
+const palette: Record<"light" | "dark", ThemeColors> = {
   light: {
     bg: "#ffffff",
     bgMuted: "#fafafa",
@@ -64,9 +64,37 @@ const palette = {
     overlay: "rgba(0,0,0,0.7)",
     shadow: "rgba(0,0,0,0.4)",
   },
-} as const;
+};
 
-export type ThemeColors = typeof palette.light;
+export interface ThemeColors {
+  bg: string;
+  bgMuted: string;
+  bgSubtle: string;
+  bgHover: string;
+  surface: string;
+  surfaceElevated: string;
+  border: string;
+  borderStrong: string;
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  textFaint: string;
+  accent: string;
+  accentSolid: string;
+  accentBg: string;
+  accentText: string;
+  accentBorder: string;
+  like: string;
+  likeBg: string;
+  success: string;
+  successBg: string;
+  warning: string;
+  warningBg: string;
+  danger: string;
+  dangerBg: string;
+  overlay: string;
+  shadow: string;
+}
 
 export function useTheme(): { mode: "light" | "dark"; colors: ThemeColors } {
   const scheme = useColorScheme();
