@@ -32,7 +32,16 @@ const t = initTRPC.context<Context>().create({
 export const createCallerFactory = t.createCallerFactory;
 
 function extractToken(ctx: Context) {
-  return parse(ctx.headers.get("cookie") ?? "")["user-token"];
+  // Web clients send the JWT as an HTTP-only cookie; mobile clients can't use
+  // cookies reliably with streaming responses, so they send Authorization:
+  // Bearer <jwt> instead. Cookie wins when both are present.
+  const cookieToken = parse(ctx.headers.get("cookie") ?? "")["user-token"];
+  if (cookieToken) return cookieToken;
+
+  const authHeader = ctx.headers.get("authorization") ?? ctx.headers.get("Authorization");
+  if (authHeader?.startsWith("Bearer ")) return authHeader.slice("Bearer ".length).trim();
+
+  return undefined;
 }
 
 const isAuthenticated = t.middleware(async ({ ctx, next }) => {

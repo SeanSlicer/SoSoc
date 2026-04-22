@@ -34,6 +34,7 @@ Share photos, follow people you care about, and see what's happening — all in 
 - **Mobile-first** — Responsive layout with a bottom tab bar on mobile, sidebar on desktop
 - **Admin** — User management dashboard with impersonation
 - **Secure uploads** — Images routed through a server-side endpoint; client-side resize and JPEG conversion before upload
+- **Mobile companion app** — React Native + Expo app under `mobile/` consuming the same tRPC API; Bearer-token auth via `expo-secure-store`; Supabase Realtime for messages and notifications
 
 ---
 
@@ -107,6 +108,94 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and sign up for an account.
+
+---
+
+## Mobile app
+
+A React Native companion app built with [Expo](https://expo.dev/) lives under `mobile/`. It consumes the same tRPC API — no duplicated business logic.
+
+### Testing on a physical phone
+
+You'll run the web API on your dev machine and connect to it from your phone over Wi-Fi via [Expo Go](https://expo.dev/go).
+
+#### 1. Install Expo Go on your phone
+
+- **iOS:** App Store → "Expo Go" by 650 Industries
+- **Android:** Play Store → "Expo Go"
+
+Phone and dev machine must be on the same network.
+
+#### 2. Find your dev machine's LAN IP
+
+| OS | Command |
+|---|---|
+| **Windows** | `ipconfig` — look for "IPv4 Address" under your active adapter (Wi-Fi or Ethernet). Ignore virtual switches like `vEthernet`, `192.168.80.x`, etc. |
+| **macOS** | `ipconfig getifaddr en0` (Wi-Fi) or `ipconfig getifaddr en1` |
+| **Linux** | `hostname -I` |
+
+Example: `192.168.0.69`. The rest of this guide uses that — substitute your own.
+
+#### 3. Start the web API on all interfaces
+
+By default Next binds to `localhost`, which your phone can't reach. Bind to `0.0.0.0` instead:
+
+```bash
+yarn dev --hostname 0.0.0.0
+```
+
+Verify from your phone's browser: open `http://192.168.0.69:3000` — you should see the web app load.
+
+> **Windows firewall:** if the page doesn't load, allow Node.js through the firewall when prompted (or System Settings → Windows Defender Firewall → Allow an app → Node.js → check Private networks).
+
+#### 4. Configure mobile env
+
+Create `mobile/.env`:
+
+```
+EXPO_PUBLIC_API_URL=http://192.168.0.69:3000
+EXPO_PUBLIC_SUPABASE_URL=<copy from your root .env>
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<copy from your root .env>
+```
+
+#### 5. Start Metro
+
+```bash
+cd mobile
+yarn install   # first time only
+yarn start
+```
+
+A QR code prints in the terminal.
+
+#### 6. Open it on your phone
+
+- **iOS:** open the Camera app, point at the QR — tap the banner to launch in Expo Go.
+- **Android:** open Expo Go and tap "Scan QR code".
+
+The first JS bundle takes ~30 seconds to download. After that, edits hot-reload in under a second.
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| QR scans but nothing loads | Phone isn't on the same Wi-Fi as the PC, or PC firewall is blocking port 8081. |
+| App opens but login fails with "Network request failed" | Web API isn't reachable. Browse `http://<your-ip>:3000` from your phone — if it doesn't load, fix the firewall or `--hostname` flag. |
+| Login works but messages/notifications don't update live | Supabase env vars in `mobile/.env` are missing or wrong — copy them from the root `.env`. |
+| `cors error` in the Metro logs | Add the Expo origin to the root `.env`: `CORS_ALLOWED_ORIGINS=http://192.168.0.69:8081` |
+| Stuck on splash | Shake phone → Reload, or press `r` in the Metro terminal. |
+
+### What's in mobile
+
+- Auth (login / signup / logout) with JWT stored in `expo-secure-store`
+- Feed (For You / Following, infinite scroll, optimistic likes, comments sheet)
+- Compose (multi-photo picker, upload through `/api/upload`)
+- Profile (view/edit, follows, follow requests, blocked users, friends badge)
+- Messages (conversation list with main/requests/hidden tabs, thread view, new-DM search, Supabase Realtime updates)
+- Notifications (list + unread badge with Realtime updates, preferences settings)
+- Dark mode via the device's system setting
+
+Not yet on mobile (deferred — see `FUTURE_WORK.md` → "Mobile app follow-ups"): admin console, email verification/password reset, push notifications, group-conversation creation, EAS release config.
 
 ---
 

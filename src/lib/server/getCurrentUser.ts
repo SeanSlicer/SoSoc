@@ -20,3 +20,32 @@ export const getCurrentUser = cache(async () => {
     return null;
   }
 });
+
+/**
+ * Reads the current user from a route handler's `Request`, supporting both the
+ * web cookie (`user-token`) and the mobile `Authorization: Bearer <jwt>` header.
+ *
+ * Use this in API route handlers that must serve both the web app and the
+ * mobile app (e.g. `/api/upload`). Returns `null` on any failure.
+ */
+export async function getUserFromRequest(req: Request) {
+  try {
+    const cookieToken = req.headers
+      .get("cookie")
+      ?.split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith("user-token="))
+      ?.slice("user-token=".length);
+
+    const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length).trim()
+      : undefined;
+
+    const token = cookieToken ?? bearerToken;
+    if (!token) return null;
+    return await getUserByToken(token);
+  } catch {
+    return null;
+  }
+}
