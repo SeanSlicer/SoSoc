@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Dimensions, FlatList, type ViewToken } from "react-native";
+import { View, Text, Dimensions, FlatList, type ViewToken } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "~/lib/theme";
 
@@ -39,19 +39,44 @@ export function PostImageCarousel({ images }: Props) {
         viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
       />
       {images.length > 1 ? (
-        <View style={{ flexDirection: "row", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
-          {images.map((_, i) => (
-            <View
-              key={i}
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: i === index ? colors.text : colors.border,
-              }}
-            />
-          ))}
-        </View>
+        <>
+          <View
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              backgroundColor: "rgba(0,0,0,0.55)",
+              paddingHorizontal: 9,
+              paddingVertical: 4,
+              borderRadius: 12,
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "700" }}>
+              {index + 1}/{images.length}
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              gap: 6,
+              paddingTop: 10,
+              paddingBottom: 4,
+            }}
+          >
+            {images.map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  width: i === index ? 16 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: i === index ? colors.accent : colors.borderStrong,
+                }}
+              />
+            ))}
+          </View>
+        </>
       ) : null}
     </View>
   );

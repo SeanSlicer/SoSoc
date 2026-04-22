@@ -25,15 +25,28 @@ export default function UserProfile() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          paddingHorizontal: 12,
+          paddingTop: 8,
         }}
       >
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.4)",
+          })}
+        >
+          <Icon name="chevron-left" size={22} color="#ffffff" strokeWidth={2.6} />
         </Pressable>
       </View>
       {username ? (

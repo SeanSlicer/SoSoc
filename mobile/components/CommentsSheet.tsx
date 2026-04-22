@@ -67,9 +67,20 @@ export function CommentsSheet({ postId, onClose }: Props) {
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Text style={{ color: colors.text, fontWeight: "600", fontSize: 16 }}>Comments</Text>
-          <Pressable onPress={onClose} hitSlop={10}>
-            <Icon name="x" size={18} color={colors.text} />
+          <Text style={{ color: colors.text, fontWeight: "700", fontSize: 17 }}>Comments</Text>
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            style={({ pressed }) => ({
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: pressed ? colors.bgHover : colors.bgSubtle,
+            })}
+          >
+            <Icon name="x" size={16} color={colors.text} strokeWidth={2.4} />
           </Pressable>
         </View>
 
@@ -79,7 +90,7 @@ export function CommentsSheet({ postId, onClose }: Props) {
           style={{ flex: 1 }}
         >
           {commentsQ.isLoading ? (
-            <View style={{ padding: 20 }}>
+            <View style={{ padding: 32 }}>
               <ActivityIndicator color={colors.accent} />
             </View>
           ) : (
@@ -87,29 +98,54 @@ export function CommentsSheet({ postId, onClose }: Props) {
               ref={listRef}
               data={comments}
               keyExtractor={(c) => c.id}
-              contentContainerStyle={{ padding: 14, gap: 14 }}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16, gap: 16 }}
               onEndReached={() => commentsQ.hasNextPage && commentsQ.fetchNextPage()}
               onEndReachedThreshold={0.4}
               renderItem={({ item }) => (
-                <View style={{ flexDirection: "row", gap: 10 }}>
-                  <Avatar url={item.user.photo} username={item.user.username} size={32} />
-                  <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <Avatar url={item.user.photo} username={item.user.username} size={36} />
+                  <View style={{ flex: 1, gap: 3 }}>
                     <View style={{ flexDirection: "row", gap: 6, alignItems: "baseline" }}>
-                      <Text style={{ color: colors.text, fontWeight: "600" }}>
+                      <Text style={{ color: colors.text, fontWeight: "700", fontSize: 14 }}>
                         {item.user.displayName ?? item.user.username}
                       </Text>
                       <Text style={{ color: colors.textFaint, fontSize: 12 }}>
                         {timeAgo(new Date(item.createdAt))}
                       </Text>
                     </View>
-                    <Text style={{ color: colors.text, marginTop: 2 }}>{item.content}</Text>
+                    <Text style={{ color: colors.text, fontSize: 14, lineHeight: 19 }}>
+                      {item.content}
+                    </Text>
                   </View>
                 </View>
               )}
               ListEmptyComponent={
-                <Text style={{ color: colors.textMuted, textAlign: "center", paddingVertical: 24 }}>
-                  Be the first to comment
-                </Text>
+                <View style={{ padding: 48, alignItems: "center" }}>
+                  <View
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      backgroundColor: colors.bgSubtle,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 14,
+                    }}
+                  >
+                    <Icon
+                      name="message-circle"
+                      size={24}
+                      color={colors.textFaint}
+                      strokeWidth={1.8}
+                    />
+                  </View>
+                  <Text style={{ color: colors.text, fontSize: 15, fontWeight: "600" }}>
+                    No comments yet
+                  </Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>
+                    Be the first to say something.
+                  </Text>
+                </View>
               }
             />
           )}
@@ -121,13 +157,13 @@ export function CommentsSheet({ postId, onClose }: Props) {
             ]}
           >
             <TextInput
-              placeholder="Add a comment"
+              placeholder="Add a comment…"
               placeholderTextColor={colors.textFaint}
               value={draft}
               onChangeText={setDraft}
               style={[
                 styles.input,
-                { backgroundColor: colors.bgSubtle, color: colors.text, borderColor: colors.border },
+                { backgroundColor: colors.bgSubtle, color: colors.text },
               ]}
               maxLength={300}
               multiline
@@ -139,12 +175,12 @@ export function CommentsSheet({ postId, onClose }: Props) {
                 styles.sendBtn,
                 {
                   backgroundColor: colors.accent,
-                  opacity: !draft.trim() || addMut.isPending ? 0.4 : pressed ? 0.8 : 1,
+                  opacity: !draft.trim() || addMut.isPending ? 0.45 : pressed ? 0.85 : 1,
                 },
               ]}
               hitSlop={8}
             >
-              <Icon name="send" size={16} color="#ffffff" />
+              <Icon name="send" size={18} color="#ffffff" strokeWidth={2.4} />
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -158,29 +194,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 8,
-    padding: 10,
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 15,
-    maxHeight: 120,
+    lineHeight: 20,
+    minHeight: 44,
+    maxHeight: 140,
   },
   sendBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
