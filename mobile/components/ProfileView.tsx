@@ -118,16 +118,32 @@ export function ProfileView({ username, isOwnProfile, onEdit, onOpenSettings, on
             contentFit="cover"
           />
         ) : (
-          <View style={{ height: 120, backgroundColor: colors.bgSubtle }} />
+          <View style={{ height: 140, backgroundColor: colors.bgSubtle }} />
         )}
 
-        <View style={{ padding: 16, gap: 12 }}>
-          <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, marginTop: -48 }}>
-            <Avatar url={profile.photo} username={profile.username} size={96} />
-            <View style={{ flex: 1, flexDirection: "row", justifyContent: "flex-end", gap: 8, paddingBottom: 12 }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 14 }}>
+          <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, marginTop: -56 }}>
+            <View
+              style={{
+                borderRadius: 56,
+                borderWidth: 4,
+                borderColor: colors.bg,
+              }}
+            >
+              <Avatar url={profile.photo} username={profile.username} size={104} />
+            </View>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: 8,
+                paddingBottom: 14,
+              }}
+            >
               {isOwnProfile ? (
                 <>
-                  <Button title="Edit profile" variant="secondary" onPress={onEdit ?? (() => {})} />
+                  <Button title="Edit" variant="secondary" onPress={onEdit ?? (() => {})} />
                   {onOpenSettings ? (
                     <Button title="Settings" variant="secondary" onPress={onOpenSettings} />
                   ) : null}
@@ -143,40 +159,66 @@ export function ProfileView({ username, isOwnProfile, onEdit, onOpenSettings, on
             </View>
           </View>
 
-          <View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Text style={{ color: colors.text, fontSize: 20, fontWeight: "700" }}>
+          <View style={{ gap: 4 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 22,
+                  fontWeight: "800",
+                  letterSpacing: -0.5,
+                }}
+              >
                 {profile.displayName ?? profile.username}
               </Text>
               {status?.friends ? (
-                <View style={{ backgroundColor: colors.accentBg, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 }}>
-                  <Text style={{ color: colors.accentText, fontSize: 11, fontWeight: "600" }}>Friends</Text>
+                <View
+                  style={{
+                    backgroundColor: colors.successBg,
+                    borderRadius: 10,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                  }}
+                >
+                  <Text style={{ color: colors.success, fontSize: 11, fontWeight: "700" }}>
+                    FRIENDS
+                  </Text>
                 </View>
               ) : null}
             </View>
-            <Text style={{ color: colors.textMuted }}>@{profile.username}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: "500" }}>
+              @{profile.username}
+            </Text>
           </View>
 
           {profile.bio ? (
-            <Text style={{ color: colors.text, lineHeight: 20 }}>{profile.bio}</Text>
+            <Text style={{ color: colors.text, fontSize: 14, lineHeight: 20 }}>
+              {profile.bio}
+            </Text>
           ) : null}
 
-          <View style={{ flexDirection: "row", gap: 20 }}>
-            <Pressable onPress={() => router.push(`/profile/${profile.username}/followers`)}>
-              <Text style={{ color: colors.text }}>
-                <Text style={{ fontWeight: "700" }}>{profile._count.followers}</Text>{" "}
-                <Text style={{ color: colors.textMuted }}>followers</Text>
+          <View style={{ flexDirection: "row", gap: 22, paddingTop: 4, paddingBottom: 12 }}>
+            <Pressable
+              onPress={() => router.push(`/profile/${profile.username}/followers`)}
+              hitSlop={6}
+            >
+              <Text style={{ color: colors.text, fontSize: 15 }}>
+                <Text style={{ fontWeight: "800" }}>{profile._count.followers}</Text>
+                <Text style={{ color: colors.textMuted, fontWeight: "500" }}> followers</Text>
               </Text>
             </Pressable>
-            <Pressable onPress={() => router.push(`/profile/${profile.username}/following`)}>
-              <Text style={{ color: colors.text }}>
-                <Text style={{ fontWeight: "700" }}>{profile._count.follows}</Text>{" "}
-                <Text style={{ color: colors.textMuted }}>following</Text>
+            <Pressable
+              onPress={() => router.push(`/profile/${profile.username}/following`)}
+              hitSlop={6}
+            >
+              <Text style={{ color: colors.text, fontSize: 15 }}>
+                <Text style={{ fontWeight: "800" }}>{profile._count.follows}</Text>
+                <Text style={{ color: colors.textMuted, fontWeight: "500" }}> following</Text>
               </Text>
             </Pressable>
-            <Text style={{ color: colors.text }}>
-              <Text style={{ fontWeight: "700" }}>{profile._count.posts}</Text>{" "}
-              <Text style={{ color: colors.textMuted }}>posts</Text>
+            <Text style={{ color: colors.text, fontSize: 15 }}>
+              <Text style={{ fontWeight: "800" }}>{profile._count.posts}</Text>
+              <Text style={{ color: colors.textMuted, fontWeight: "500" }}> posts</Text>
             </Text>
           </View>
         </View>

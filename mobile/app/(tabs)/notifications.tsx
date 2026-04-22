@@ -29,19 +29,21 @@ const TYPE_GLYPH: Record<NotificationType, IconName> = {
   FRIEND_REQUEST: "user",
 };
 
-const TYPE_COLOR: Partial<Record<NotificationType, string>> = {
-  NEW_LIKE: "#ef4444",
-  NEW_COMMENT: "#6366f1",
-  NEW_FOLLOWER: "#10b981",
-  FOLLOW_REQUEST_ACCEPTED: "#10b981",
-  FOLLOW_REQUEST: "#f59e0b",
-};
-
 export default function Notifications() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const meQ = trpc.user.getMe.useQuery(undefined, { enabled: !user });
   const currentUserId = user?.id ?? meQ.data?.id ?? "";
+
+  const TYPE_COLOR: Partial<Record<NotificationType, string>> = {
+    NEW_LIKE: colors.like,
+    NEW_COMMENT: colors.accent,
+    NEW_FOLLOWER: colors.success,
+    FOLLOW_REQUEST_ACCEPTED: colors.success,
+    FOLLOW_REQUEST: colors.warning,
+    NEW_MESSAGE: colors.accent,
+    FRIEND_REQUEST: colors.success,
+  };
 
   const utils = trpc.useUtils();
   const q = trpc.notification.getAll.useQuery();
@@ -63,18 +65,27 @@ export default function Notifications() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}>Notifications</Text>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800", letterSpacing: -0.5 }}>
+          Notifications
+        </Text>
         <Pressable
           onPress={() => router.push("/settings/notifications")}
-          hitSlop={10}
-          style={{ padding: 6 }}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? colors.bgHover : colors.bgSubtle,
+          })}
         >
-          <Icon name="settings" size={20} color={colors.text} />
+          <Icon name="settings" size={18} color={colors.text} strokeWidth={2.2} />
         </Pressable>
       </View>
 
       {q.isLoading ? (
-        <View style={{ padding: 24 }}>
+        <View style={{ padding: 32 }}>
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
@@ -96,27 +107,30 @@ export default function Notifications() {
               style={({ pressed }) => [
                 styles.row,
                 {
+                  backgroundColor: !item.isRead
+                    ? colors.accentBg
+                    : pressed
+                      ? colors.bgHover
+                      : "transparent",
                   borderBottomColor: colors.border,
-                  backgroundColor: !item.isRead ? colors.accentBg : "transparent",
-                  opacity: pressed ? 0.7 : 1,
                 },
               ]}
             >
               <View>
                 {item.actor ? (
-                  <Avatar url={item.actor.photo} username={item.actor.username} size={44} />
+                  <Avatar url={item.actor.photo} username={item.actor.username} size={48} />
                 ) : (
                   <View
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
                       backgroundColor: colors.bgSubtle,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Icon name="bell" size={18} color={colors.textMuted} />
+                    <Icon name="bell" size={20} color={colors.textMuted} />
                   </View>
                 )}
                 <View
@@ -124,35 +138,33 @@ export default function Notifications() {
                     position: "absolute",
                     bottom: -2,
                     right: -2,
-                    width: 20,
-                    height: 20,
-                    borderRadius: 10,
-                    backgroundColor: colors.bg,
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    backgroundColor: TYPE_COLOR[item.type] ?? colors.textMuted,
                     alignItems: "center",
                     justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: colors.border,
+                    borderWidth: 2,
+                    borderColor: colors.bg,
                   }}
                 >
-                  <Icon
-                    name={TYPE_GLYPH[item.type]}
-                    size={11}
-                    color={TYPE_COLOR[item.type] ?? colors.textMuted}
-                  />
+                  <Icon name={TYPE_GLYPH[item.type]} size={11} color="#ffffff" strokeWidth={2.5} />
                 </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontSize: 14 }}>{item.content}</Text>
-                <Text style={{ color: colors.textFaint, fontSize: 11, marginTop: 2 }}>
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={{ color: colors.text, fontSize: 14, lineHeight: 19 }}>
+                  {item.content}
+                </Text>
+                <Text style={{ color: colors.textFaint, fontSize: 12, fontWeight: "500" }}>
                   {timeAgo(new Date(item.createdAt))}
                 </Text>
               </View>
               {!item.isRead ? (
                 <View
                   style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
+                    width: 9,
+                    height: 9,
+                    borderRadius: 5,
                     backgroundColor: colors.accent,
                   }}
                 />
@@ -161,12 +173,24 @@ export default function Notifications() {
           )}
           ListEmptyComponent={
             <View style={{ padding: 48, alignItems: "center" }}>
-              <Icon name="bell" size={40} color={colors.textFaint} />
-              <Text style={{ color: colors.textMuted, marginTop: 12, fontSize: 14 }}>
-                No notifications yet.
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: colors.bgSubtle,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Icon name="bell" size={28} color={colors.textFaint} strokeWidth={1.8} />
+              </View>
+              <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+                You're all caught up
               </Text>
-              <Text style={{ color: colors.textFaint, marginTop: 4, fontSize: 12, textAlign: "center" }}>
-                When someone follows you, likes or comments on a post, it'll show up here.
+              <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: "center" }}>
+                Likes, comments, and new followers will land here.
               </Text>
             </View>
           }
@@ -181,16 +205,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

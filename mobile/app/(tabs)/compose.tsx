@@ -101,13 +101,15 @@ export default function Compose() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}>New post</Text>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800", letterSpacing: -0.5 }}>
+          New post
+        </Text>
         <Button
           title="Post"
           onPress={handlePost}
           loading={uploading || createMut.isPending}
           disabled={!content.trim() || uploading || createMut.isPending}
-          style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+          style={{ paddingVertical: 8, paddingHorizontal: 18, borderRadius: 999 }}
         />
       </View>
 
@@ -123,7 +125,13 @@ export default function Compose() {
             onChangeText={setContent}
             multiline
             maxLength={500}
-            style={{ color: colors.text, fontSize: 16, minHeight: 120 }}
+            style={{
+              color: colors.text,
+              fontSize: 17,
+              lineHeight: 24,
+              minHeight: 140,
+              textAlignVertical: "top",
+            }}
           />
 
           {localImages.length > 0 ? (
@@ -164,21 +172,21 @@ export default function Compose() {
 
           <Pressable
             onPress={handlePickImages}
-            style={{
+            style={({ pressed }) => ({
               flexDirection: "row",
               alignItems: "center",
-              gap: 8,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: colors.border,
+              gap: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 999,
+              backgroundColor: pressed ? colors.bgHover : colors.bgSubtle,
               alignSelf: "flex-start",
-            }}
+              opacity: localImages.length >= MAX_IMAGES ? 0.5 : 1,
+            })}
             disabled={localImages.length >= MAX_IMAGES}
           >
-            <Icon name="image" size={18} color={colors.text} />
-            <Text style={{ color: colors.text }}>
+            <Icon name="image" size={18} color={colors.text} strokeWidth={2.2} />
+            <Text style={{ color: colors.text, fontSize: 14, fontWeight: "600" }}>
               Add photos ({localImages.length}/{MAX_IMAGES})
             </Text>
           </Pressable>
@@ -199,7 +207,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

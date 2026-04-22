@@ -31,8 +31,6 @@ export function Button({ title, onPress, disabled, loading, variant = "primary",
         ? colors.accent
         : colors.text;
 
-  const borderColor = variant === "secondary" ? colors.border : "transparent";
-
   return (
     <Pressable
       onPress={onPress}
@@ -40,22 +38,23 @@ export function Button({ title, onPress, disabled, loading, variant = "primary",
       style={({ pressed }) => [
         {
           backgroundColor: bg,
-          borderColor,
-          borderWidth: variant === "secondary" ? 1 : 0,
-          paddingVertical: 12,
+          paddingVertical: 10,
           paddingHorizontal: 16,
-          borderRadius: 10,
+          borderRadius: 999,
           alignItems: "center",
           justifyContent: "center",
-          opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
+          opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
           flexDirection: "row",
           gap: 8,
+          minHeight: 38,
         },
         style,
       ]}
     >
-      {loading ? <ActivityIndicator color={textColor} /> : null}
-      <Text style={{ color: textColor, fontWeight: "600", fontSize: 15 }}>{title}</Text>
+      {loading ? <ActivityIndicator color={textColor} size="small" /> : null}
+      <Text style={{ color: textColor, fontWeight: "700", fontSize: 14, letterSpacing: -0.1 }}>
+        {title}
+      </Text>
     </Pressable>
   );
 }

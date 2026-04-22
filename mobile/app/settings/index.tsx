@@ -17,47 +17,99 @@ export default function Settings() {
   const { colors } = useTheme();
   const { signOut } = useAuth();
 
-  const rows: Row[] = [
-    { label: "Notification preferences", icon: "bell", href: "/settings/notifications" },
-    { label: "Blocked users", icon: "x", href: "/settings/blocked" },
-    { label: "Sign out", icon: "logout", onPress: () => void signOut(), destructive: true },
+  const sections: { title?: string; rows: Row[] }[] = [
+    {
+      rows: [
+        { label: "Notification preferences", icon: "bell", href: "/settings/notifications" },
+        { label: "Blocked users", icon: "x", href: "/settings/blocked" },
+      ],
+    },
+    {
+      rows: [{ label: "Sign out", icon: "logout", onPress: () => void signOut(), destructive: true }],
+    },
   ];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? colors.bgHover : "transparent",
+          })}
+        >
+          <Icon name="chevron-left" size={22} color={colors.text} strokeWidth={2.4} />
         </Pressable>
-        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>Settings</Text>
+        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 17 }}>Settings</Text>
         <View style={{ width: 36 }} />
       </View>
 
-      <ScrollView>
-        {rows.map((row) => (
-          <Pressable
-            key={row.label}
-            onPress={() => (row.href ? router.push(row.href) : row.onPress?.())}
-            style={({ pressed }) => [
-              styles.row,
-              { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
-            ]}
-          >
-            <Icon name={row.icon} size={20} color={row.destructive ? colors.danger : colors.text} />
-            <Text
+      <ScrollView contentContainerStyle={{ paddingTop: 16, paddingBottom: 32 }}>
+        {sections.map((section, sIdx) => (
+          <View key={sIdx} style={{ marginBottom: 24 }}>
+            <View
               style={{
-                flex: 1,
-                color: row.destructive ? colors.danger : colors.text,
-                fontSize: 15,
-                fontWeight: "500",
+                marginHorizontal: 16,
+                borderRadius: 14,
+                overflow: "hidden",
+                backgroundColor: colors.surface,
+                borderWidth: StyleSheet.hairlineWidth,
+                borderColor: colors.border,
               }}
             >
-              {row.label}
-            </Text>
-            {!row.destructive ? (
-              <Icon name="chevron-right" size={20} color={colors.textFaint} />
-            ) : null}
-          </Pressable>
+              {section.rows.map((row, rIdx) => (
+                <Pressable
+                  key={row.label}
+                  onPress={() => (row.href ? router.push(row.href) : row.onPress?.())}
+                  style={({ pressed }) => [
+                    styles.row,
+                    {
+                      backgroundColor: pressed ? colors.bgHover : "transparent",
+                      borderTopWidth: rIdx > 0 ? StyleSheet.hairlineWidth : 0,
+                      borderTopColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: row.destructive ? colors.dangerBg : colors.bgSubtle,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon
+                      name={row.icon}
+                      size={17}
+                      color={row.destructive ? colors.danger : colors.text}
+                      strokeWidth={2.2}
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      flex: 1,
+                      color: row.destructive ? colors.danger : colors.text,
+                      fontSize: 16,
+                      fontWeight: "500",
+                    }}
+                  >
+                    {row.label}
+                  </Text>
+                  {!row.destructive ? (
+                    <Icon name="chevron-right" size={20} color={colors.textFaint} strokeWidth={2} />
+                  ) : null}
+                </Pressable>
+              ))}
+            </View>
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -69,14 +121,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
 });
