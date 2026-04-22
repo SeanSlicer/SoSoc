@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "~/lib/theme";
@@ -8,26 +9,18 @@ interface Props {
   size?: number;
 }
 
+/**
+ * Always renders the initial-letter fallback underneath the avatar image.
+ * The image fades in over the fallback once loaded — and if it errors, the
+ * fallback stays visible so the avatar is never an empty grey circle.
+ */
 export function Avatar({ url, username, size = 40 }: Props) {
   const { colors } = useTheme();
-
-  if (url) {
-    return (
-      <Image
-        source={{ uri: url }}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: colors.bgSubtle,
-        }}
-        contentFit="cover"
-        transition={120}
-      />
-    );
-  }
+  const [errored, setErrored] = useState(false);
 
   const initial = (username ?? "?").trim().charAt(0).toUpperCase() || "?";
+  const showImage = !!url && !errored;
+
   return (
     <View
       style={{
@@ -37,11 +30,29 @@ export function Avatar({ url, username, size = 40 }: Props) {
         backgroundColor: colors.bgSubtle,
         alignItems: "center",
         justifyContent: "center",
+        overflow: "hidden",
       }}
     >
-      <Text style={{ color: colors.textMuted, fontSize: size * 0.4, fontWeight: "600" }}>
+      <Text
+        style={{
+          color: colors.textMuted,
+          fontSize: size * 0.42,
+          fontWeight: "700",
+          letterSpacing: -0.5,
+        }}
+      >
         {initial}
       </Text>
+      {showImage ? (
+        <Image
+          source={{ uri: url ?? undefined }}
+          style={{ position: "absolute", top: 0, left: 0, width: size, height: size }}
+          contentFit="cover"
+          transition={150}
+          cachePolicy="memory-disk"
+          onError={() => setErrored(true)}
+        />
+      ) : null}
     </View>
   );
 }
