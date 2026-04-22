@@ -229,13 +229,24 @@ mobile/
 │   ├── messages/[id].tsx    ← thread view
 │   ├── profile/             ← edit, [username], followers, following
 │   └── settings/            ← index, blocked, notifications
-├── components/              ← shared RN components (Avatar, PostCard, etc.)
+├── components/              ← shared RN components
+│   ├── Avatar.tsx           ← initial-fallback overlaid by image; never shows blank
+│   ├── Button.tsx           ← pill-shaped, primary/secondary/danger/ghost
+│   ├── ConversationRow.tsx  ← messages list row with unread accent
+│   ├── CommentsSheet.tsx    ← bottom-sheet modal (presentationStyle="pageSheet")
+│   ├── FollowList.tsx       ← shared followers/following list view
+│   ├── FormField.tsx        ← labeled text input
+│   ├── Icon.tsx             ← lucide-react-native wrapper, name-prop API
+│   ├── PostCard.tsx
+│   ├── PostImageCarousel.tsx ← horizontal pager with index pill + dots
+│   ├── ProfileView.tsx      ← used by both /(tabs)/profile and /profile/[username]
+│   └── ScreenHeader.tsx     ← back-button + centered title; reuse on every sub-screen
 ├── lib/
 │   ├── auth.tsx             ← AuthProvider (SecureStore-backed JWT)
 │   ├── trpc.ts              ← tRPC client + React Query hooks
 │   ├── supabase.ts          ← Supabase Realtime client
 │   ├── realtime/            ← useRealtimeAuth, useRealtimeConversations, useRealtimeNotifications
-│   ├── theme.ts             ← light/dark palette
+│   ├── theme.ts             ← light/dark palette + useTheme()
 │   └── upload.ts            ← multipart upload to /api/upload with Bearer
 └── package.json             ← own deps, no workspace tie-in
 ```
@@ -248,10 +259,22 @@ mobile/
 - **CORS.** Web and mobile share a domain in prod, so CORS is dev-only. `src/lib/server/cors.ts` permits `localhost`, private-LAN IP patterns, and `exp://` by default, plus anything in `CORS_ALLOWED_ORIGINS`.
 - **Realtime.** `@supabase/supabase-js` works in RN with minimal setup. `useRealtimeAuth` fetches short-lived Supabase JWTs from `/api/auth/realtime-token` and refreshes them 5 min before expiry. Per-conversation and global message/notification subscriptions mirror the web hooks in `src/hooks/`.
 - **Uploads.** `expo-image-picker` → FormData with `{ uri, name, type }` shape (RN-specific) → `/api/upload` with Bearer header.
-- **Dark mode.** Driven by the device's `useColorScheme()` — no manual toggle. Palette in `mobile/lib/theme.ts` mirrors the web Tailwind values.
-- **Icons.** Unicode-glyph stopgap in `mobile/components/Icon.tsx`. See FUTURE_WORK.md "Mobile icon set" for the planned swap.
+- **Dark mode.** Driven by the device's `useColorScheme()` — no manual toggle yet (see FUTURE_WORK.md). The full palette lives in `mobile/lib/theme.ts` as `palette: Record<"light" | "dark", ThemeColors>`.
+- **Icons.** `lucide-react-native` wrapped by `mobile/components/Icon.tsx`, which exposes a `name` prop API (e.g. `<Icon name="bell" size={22} color={colors.text} />`). Available names are listed in the `IconName` union — add to both the union and the `ICONS` map when introducing a new one.
+- **Avatars.** `mobile/components/Avatar.tsx` always renders the username initial as a fallback layer, then overlays the image on top. If `expo-image` errors or the URL is null, the initial stays visible — never a blank grey circle. Pass `url`, `username`, and `size`.
+- **Sub-screen header.** Use `mobile/components/ScreenHeader.tsx` — it renders the back button (defaults to `router.back()`), a centered title, and an optional `right` action slot. Pass `onBack={null}` to suppress the back button.
 
-**What's not in mobile yet** (see FUTURE_WORK.md → "Mobile app follow-ups"): admin UI, email verification/password reset flows, push notifications (APNs/FCM), EAS/app-store release config, deep linking, offline write queue, group-conversation creation UI.
+**Design tokens & UI conventions:**
+- **Spacing scale:** 4 / 8 / 12 / 14 / 16 / 22 / 24. Avoid stray odd numbers.
+- **Typography:** screen titles 22pt / 800 weight / `letterSpacing: -0.5`; section headings 17pt / 700; body 14-15pt / 400-600; meta 12-13pt / 500. Always use `colors.text` / `colors.textMuted` / `colors.textFaint` — never raw hex.
+- **Touch targets:** minimum 36×36 (icon buttons in headers); chips and rows ≥44pt tall. Wrap small icons in a `width: 36, height: 36, borderRadius: 18` Pressable that uses `colors.bgSubtle`/`bgHover` for press feedback.
+- **Pressable feedback:** every tappable row should set `backgroundColor: pressed ? colors.bgHover : "transparent"` (lists) or `opacity: pressed ? 0.7 : 1` (cards). Don't leave taps with no visual confirmation.
+- **Buttons:** pill-shaped (`borderRadius: 999`). `primary` = `colors.accent` solid; `secondary` = `colors.bgSubtle` with `colors.text`; `danger` = `colors.danger`; `ghost` = transparent with accent text.
+- **Empty states:** centered 64×64 rounded-square icon (`colors.bgSubtle` background, `textFaint` icon), then a 16pt/600 title and a 14pt/textMuted subtitle.
+- **Icons in lists:** use `strokeWidth: 1.9–2.4` for visual heft. Default Icon size: 22.
+- **Accents:** `colors.like` (coral) for hearts, `colors.success` (teal) for friend/accepted states, `colors.warning` (amber) for pending requests, `colors.accent` (indigo) for primary actions.
+
+**What's not in mobile yet** (see FUTURE_WORK.md → "Mobile app follow-ups"): admin UI, email verification/password reset flows, push notifications (APNs/FCM), EAS/app-store release config, deep linking, offline write queue, group-conversation creation UI, light/dark manual toggle, post share sheet, image lightbox, video posts, skeleton loaders, haptics.
 
 ## Known Technical Debt
 

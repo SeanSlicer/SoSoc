@@ -77,11 +77,41 @@ The app has `scheme: "sosoc"` declared but no URL handlers. Deep links from push
 ### Offline write queue
 Reads are cached by React Query. Writes (likes, comments, messages, follows) fail silently on network loss. Plan: a simple retry queue keyed by mutation shape, persisted to SecureStore, flushed on reconnect.
 
-### Mobile icon set
-Currently using Unicode glyphs in `mobile/components/Icon.tsx` as a zero-dep stopgap. Visually inconsistent with lucide on the web. Plan: add `lucide-react-native` (or `@expo/vector-icons`) and swap the `Icon` component — no other call sites need to change.
-
 ### Pixel-perfect styling parity with web
 Mobile screens are functional but not visually identical to the web app — spacing, typography, and shadow treatments differ. Low priority: users rarely see both at once, and RN's primitives don't map 1:1 to Tailwind. Better to iterate on mobile as its own design surface.
 
 ### CORS origin list for production-domain Expo builds
 Dev allows `localhost` and private-LAN IPs automatically. Production builds hit the web API directly — fine when they share a domain, but TestFlight / internal-distribution builds from a custom dev-server URL may need an explicit entry in `CORS_ALLOWED_ORIGINS`.
+
+### tRPC v11 type errors against React 19
+After upgrading to Expo SDK 54 / React 19, `yarn typecheck` in `mobile/` reports false positives like *"Property 'useUtils' in your router collides with a built-in method"* against perfectly valid `trpc.someRouter.someProc.useQuery()` calls. The runtime is fine — Metro uses Babel, not tsc — and the app works end-to-end on device. Likely root cause: `@trpc/react-query` v11's type helpers don't yet narrow correctly against React 19's revised hook signatures. Watch for a tRPC patch release; if not soon, swap to a thinner client (vanilla `@trpc/client` + manual React Query keys) or pin React 18 types as a stopgap.
+
+### Mobile tsconfig cross-package path resolution
+`mobile/tsconfig.json` aliases `~/*` to `./mobile/*`, but the type-only import of `AppRouter` (`~api/root`) drags in `src/server/api/root.ts` which uses `~/*` to mean `./src/*`. `tsc` can't reconcile both. Runtime is unaffected (only the type-side import crosses). Options: split the AppRouter type into a tiny re-export file under `src/types/` that uses relative imports only, or generate a flat `.d.ts` of AppRouter via `tsc --emitDeclarationOnly` in `src/` and consume that.
+
+### Light/dark mode toggle on mobile
+Mobile follows the device's system color scheme via RN's `useColorScheme()`. There's no manual override — unlike the web app, which has Sun/Monitor/Moon toggle in the desktop sidebar. Add a "Theme" row in `mobile/app/settings/index.tsx` that lets users force light/dark/system independent of the device setting (persist via `expo-secure-store` like the auth token).
+
+### Group conversation creation on mobile
+The backend (`messages.createGroup`) works and mobile can *use* existing groups, but there's no UI to create one from the mobile app yet. Expect a multi-user picker screen plus a group-name field.
+
+### Conversation management actions
+Hide / unhide / delete work from the conversation list long-press, but per-thread settings (rename group, remove member, mute) are not wired. Thread view needs a header overflow menu.
+
+### Post share sheet on mobile
+`PostCard` accepts an optional `onShare` prop but no consumer wires it. Web has `SharePostModal` that picks a friend and forwards via `messages.send`. Need a mobile equivalent (probably reusing `messages/new.tsx` user search but routing to a "share" mode).
+
+### Image lightbox / video posts on mobile
+Tapping an image in `PostImageCarousel` does nothing. Web opens a full-screen lightbox with arrow-key navigation. RN equivalent: `expo-image` + a Modal with `react-native-gesture-handler` for swipe + pinch. Video posts (`type: "VIDEO"`) aren't rendered at all — needs `expo-av` integration.
+
+### "Forgot password" / "Resend verification" links on mobile
+Login screen is sign-in only — no flow to recover a forgotten password, and signup doesn't surface the "we sent you a verification email" follow-up. Plumbing depends on the mobile email-flow item above.
+
+### Skeleton loaders / better loading states
+Most lists fall back to a centered `ActivityIndicator`. Native-feeling apps use grey skeleton placeholders that match the final layout. Plan: a tiny `Skeleton` component with `react-native-reanimated` shimmer, applied to feed cards, conversation rows, profile headers.
+
+### Haptic feedback
+Tab switches, like button, send button, and pull-to-refresh would all benefit from `expo-haptics` impact triggers (light impact on tab change, medium on like, success on send). Doesn't exist anywhere yet.
+
+### Avatar upload cropping / aspect quality
+`expo-image-picker` with `allowsEditing: true` is used for avatar (1:1) and banner (3:1). Quality is 0.85, no client-side resize. Server accepts arbitrary sizes. Could add `expo-image-manipulator` to downscale very large avatars before upload (web does a 400px resize before POSTing).
