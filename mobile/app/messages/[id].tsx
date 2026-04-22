@@ -75,20 +75,35 @@ export default function Thread() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? colors.bgHover : "transparent",
+          })}
+        >
+          <Icon name="chevron-left" size={22} color={colors.text} strokeWidth={2.4} />
         </Pressable>
         {others[0] ? (
-          <Avatar url={others[0].photo} username={others[0].username} size={32} />
+          <Avatar url={others[0].photo} username={others[0].username} size={36} />
         ) : null}
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
+          <Text numberOfLines={1} style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>
             {title}
           </Text>
           {others.length === 1 ? (
-            <Text style={{ color: colors.textFaint, fontSize: 12 }}>@{others[0]?.username}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: "500" }}>
+              @{others[0]?.username}
+            </Text>
           ) : others.length > 1 ? (
-            <Text style={{ color: colors.textFaint, fontSize: 12 }}>{others.length + 1} members</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: "500" }}>
+              {others.length + 1} members
+            </Text>
           ) : null}
         </View>
       </View>
@@ -135,14 +150,20 @@ export default function Thread() {
                       <View
                         style={{
                           backgroundColor: isOwn ? colors.accent : colors.bgSubtle,
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          borderRadius: 16,
-                          borderBottomRightRadius: isOwn ? 4 : 16,
-                          borderBottomLeftRadius: isOwn ? 16 : 4,
+                          paddingHorizontal: 14,
+                          paddingVertical: 10,
+                          borderRadius: 20,
+                          borderBottomRightRadius: isOwn ? 4 : 20,
+                          borderBottomLeftRadius: isOwn ? 20 : 4,
                         }}
                       >
-                        <Text style={{ color: isOwn ? "#ffffff" : colors.text, fontSize: 14 }}>
+                        <Text
+                          style={{
+                            color: isOwn ? "#ffffff" : colors.text,
+                            fontSize: 15,
+                            lineHeight: 20,
+                          }}
+                        >
                           {item.content}
                         </Text>
                       </View>
@@ -196,30 +217,31 @@ export default function Thread() {
             multiline
             style={{
               flex: 1,
-              minHeight: 40,
-              maxHeight: 120,
-              paddingHorizontal: 14,
-              paddingVertical: 10,
-              borderRadius: 20,
+              minHeight: 44,
+              maxHeight: 140,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderRadius: 22,
               backgroundColor: colors.bgSubtle,
               color: colors.text,
-              fontSize: 14,
+              fontSize: 15,
+              lineHeight: 20,
             }}
           />
           <Pressable
             onPress={handleSend}
             disabled={!text.trim() || sendMut.isPending}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: 22,
               backgroundColor: colors.accent,
               alignItems: "center",
               justifyContent: "center",
-              opacity: !text.trim() || sendMut.isPending ? 0.5 : 1,
-            }}
+              opacity: !text.trim() || sendMut.isPending ? 0.45 : pressed ? 0.85 : 1,
+            })}
           >
-            <Icon name="send" size={16} color="#ffffff" />
+            <Icon name="send" size={18} color="#ffffff" strokeWidth={2.4} />
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -231,15 +253,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    padding: 10,
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 8,
-    padding: 10,
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
 });

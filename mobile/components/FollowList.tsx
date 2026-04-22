@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { useTheme } from "~/lib/theme";
 import { trpc } from "~/lib/trpc";
 import { Avatar } from "./Avatar";
-import { Icon } from "./Icon";
+import { ScreenHeader } from "./ScreenHeader";
 
 interface Props {
   username: string;
@@ -21,24 +21,21 @@ export function FollowList({ username, kind }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>
-          {kind === "followers" ? "Followers" : "Following"}
-        </Text>
-        <View style={{ width: 36 }} />
-      </View>
+      <ScreenHeader title={kind === "followers" ? "Followers" : "Following"} />
 
       {q.isLoading ? (
-        <View style={{ padding: 24 }}>
+        <View style={{ padding: 32 }}>
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : hidden ? (
-        <Text style={{ color: colors.textMuted, padding: 32, textAlign: "center" }}>
-          This user has hidden their follow lists.
-        </Text>
+        <View style={{ padding: 48, alignItems: "center" }}>
+          <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+            Hidden
+          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: "center" }}>
+            This user has chosen to hide their follow lists.
+          </Text>
+        </View>
       ) : (
         <FlatList
           data={list}
@@ -48,22 +45,24 @@ export function FollowList({ username, kind }: Props) {
               onPress={() => router.push(`/profile/${item.username}`)}
               style={({ pressed }) => [
                 styles.row,
-                { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                { backgroundColor: pressed ? colors.bgHover : "transparent" },
               ]}
             >
-              <Avatar url={item.photo} username={item.username} size={44} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontWeight: "600" }}>{item.username}</Text>
-                {item.displayName ? (
-                  <Text style={{ color: colors.textMuted }}>{item.displayName}</Text>
-                ) : null}
+              <Avatar url={item.photo} username={item.username} size={48} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
+                  {item.displayName ?? item.username}
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 13 }}>@{item.username}</Text>
               </View>
             </Pressable>
           )}
           ListEmptyComponent={
-            <Text style={{ color: colors.textMuted, padding: 32, textAlign: "center" }}>
-              {kind === "followers" ? "No followers yet." : "Not following anyone yet."}
-            </Text>
+            <View style={{ padding: 48, alignItems: "center" }}>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                {kind === "followers" ? "No followers yet." : "Not following anyone yet."}
+              </Text>
+            </View>
           }
         />
       )}
@@ -72,18 +71,11 @@ export function FollowList({ username, kind }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });

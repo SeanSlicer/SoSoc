@@ -11,7 +11,16 @@ export function FormField({ label, errorText, ...rest }: Props) {
 
   return (
     <View style={{ gap: 6 }}>
-      <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: "500" }}>{label}</Text>
+      <Text
+        style={{
+          color: colors.textSecondary,
+          fontSize: 13,
+          fontWeight: "600",
+          letterSpacing: -0.1,
+        }}
+      >
+        {label}
+      </Text>
       <TextInput
         {...rest}
         placeholderTextColor={colors.textFaint}
@@ -19,13 +28,13 @@ export function FormField({ label, errorText, ...rest }: Props) {
           styles.input,
           {
             backgroundColor: colors.bgSubtle,
-            borderColor: errorText ? colors.danger : colors.border,
+            borderColor: errorText ? colors.danger : "transparent",
             color: colors.text,
           },
         ]}
       />
       {errorText ? (
-        <Text style={{ color: colors.danger, fontSize: 12 }}>{errorText}</Text>
+        <Text style={{ color: colors.danger, fontSize: 12, fontWeight: "500" }}>{errorText}</Text>
       ) : null}
     </View>
   );
@@ -33,10 +42,10 @@ export function FormField({ label, errorText, ...rest }: Props) {
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
     fontSize: 15,
   },
 });

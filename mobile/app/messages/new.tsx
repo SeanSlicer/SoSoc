@@ -32,30 +32,52 @@ export default function NewMessage() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? colors.bgHover : "transparent",
+          })}
+        >
+          <Icon name="chevron-left" size={22} color={colors.text} strokeWidth={2.4} />
         </Pressable>
-        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>New message</Text>
+        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 17 }}>New message</Text>
         <View style={{ width: 36 }} />
       </View>
 
-      <View style={{ padding: 12 }}>
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search users…"
-          placeholderTextColor={colors.textFaint}
-          autoCapitalize="none"
-          autoCorrect={false}
+      <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14 }}>
+        <View
           style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
             paddingHorizontal: 14,
-            paddingVertical: 10,
-            borderRadius: 12,
             backgroundColor: colors.bgSubtle,
-            color: colors.text,
-            fontSize: 14,
+            borderRadius: 14,
           }}
-        />
+        >
+          <Icon name="search" size={18} color={colors.textMuted} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search users…"
+            placeholderTextColor={colors.textFaint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoFocus
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              fontSize: 15,
+              color: colors.text,
+            }}
+          />
+        </View>
       </View>
 
       {searchQ.isLoading ? (
@@ -72,15 +94,15 @@ export default function NewMessage() {
               disabled={dmMut.isPending}
               style={({ pressed }) => [
                 styles.row,
-                { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                { backgroundColor: pressed ? colors.bgHover : "transparent" },
               ]}
             >
-              <Avatar url={item.photo} username={item.username} size={44} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontWeight: "600" }}>{item.username}</Text>
-                {item.displayName ? (
-                  <Text style={{ color: colors.textMuted }}>{item.displayName}</Text>
-                ) : null}
+              <Avatar url={item.photo} username={item.username} size={48} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
+                  {item.displayName ?? item.username}
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 13 }}>@{item.username}</Text>
               </View>
             </Pressable>
           )}
@@ -106,14 +128,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });

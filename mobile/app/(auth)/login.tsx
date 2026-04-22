@@ -41,9 +41,13 @@ export default function Login() {
           contentContainerStyle={{ flexGrow: 1, padding: 24, justifyContent: "center", gap: 18 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={{ gap: 4, marginBottom: 12 }}>
-            <Text style={{ fontSize: 28, fontWeight: "700", color: colors.text }}>sosoc</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 15 }}>Sign in to continue</Text>
+          <View style={{ gap: 6, marginBottom: 16 }}>
+            <Text style={{ fontSize: 36, fontWeight: "800", color: colors.text, letterSpacing: -1 }}>
+              sosoc
+            </Text>
+            <Text style={{ color: colors.textMuted, fontSize: 16 }}>
+              Welcome back. Sign in to continue.
+            </Text>
           </View>
 
           <FormField

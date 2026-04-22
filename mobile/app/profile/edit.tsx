@@ -130,15 +130,26 @@ export default function EditProfile() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? colors.bgHover : "transparent",
+          })}
+        >
+          <Icon name="chevron-left" size={22} color={colors.text} strokeWidth={2.4} />
         </Pressable>
-        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>Edit profile</Text>
+        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 17 }}>Edit profile</Text>
         <Button
           title="Save"
           onPress={handleSave}
           loading={saveMut.isPending}
-          style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+          style={{ paddingVertical: 8, paddingHorizontal: 16 }}
         />
       </View>
 
@@ -148,7 +159,7 @@ export default function EditProfile() {
             {banner ? (
               <Image
                 source={{ uri: banner }}
-                style={{ width: "100%", aspectRatio: 3, borderRadius: 10, backgroundColor: colors.bgSubtle }}
+                style={{ width: "100%", aspectRatio: 3, borderRadius: 14, backgroundColor: colors.bgSubtle }}
                 contentFit="cover"
               />
             ) : (
@@ -156,13 +167,17 @@ export default function EditProfile() {
                 style={{
                   width: "100%",
                   aspectRatio: 3,
-                  borderRadius: 10,
+                  borderRadius: 14,
                   backgroundColor: colors.bgSubtle,
                   alignItems: "center",
                   justifyContent: "center",
+                  gap: 6,
                 }}
               >
-                <Text style={{ color: colors.textMuted }}>Tap to add banner</Text>
+                <Icon name="image" size={26} color={colors.textMuted} strokeWidth={1.8} />
+                <Text style={{ color: colors.textMuted, fontSize: 13, fontWeight: "500" }}>
+                  Tap to add banner
+                </Text>
               </View>
             )}
             {savingField === "banner" ? (
@@ -174,9 +189,34 @@ export default function EditProfile() {
 
           <Pressable
             onPress={() => pickAndUpload("photo")}
-            style={{ alignSelf: "center", marginTop: -48 }}
+            style={{ alignSelf: "center", marginTop: -52 }}
           >
-            <Avatar url={photo} username={username} size={96} />
+            <View
+              style={{
+                borderRadius: 56,
+                borderWidth: 4,
+                borderColor: colors.bg,
+              }}
+            >
+              <Avatar url={photo} username={username} size={104} />
+            </View>
+            <View
+              style={{
+                position: "absolute",
+                bottom: 6,
+                right: 6,
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: colors.accent,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 3,
+                borderColor: colors.bg,
+              }}
+            >
+              <Icon name="camera" size={14} color="#ffffff" strokeWidth={2.4} />
+            </View>
             {savingField === "photo" ? (
               <View style={StyleSheet.absoluteFill}>
                 <ActivityIndicator color={colors.accent} style={{ alignSelf: "center", marginTop: 36 }} />
@@ -187,24 +227,40 @@ export default function EditProfile() {
           <FormField label="Display name" value={displayName} onChangeText={setDisplayName} maxLength={50} />
           <FormField label="Bio" value={bio} onChangeText={setBio} maxLength={160} multiline />
 
-          <View style={[styles.toggleRow, { borderColor: colors.border }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text, fontWeight: "600" }}>Private account</Text>
-              <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+          <View style={[styles.toggleRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={{ flex: 1, paddingRight: 8 }}>
+              <Text style={{ color: colors.text, fontWeight: "600", fontSize: 15 }}>
+                Private account
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 3 }}>
                 Followers must be approved before they can see your posts.
               </Text>
             </View>
-            <Switch value={isPrivate} onValueChange={setIsPrivate} />
+            <Switch
+              value={isPrivate}
+              onValueChange={setIsPrivate}
+              trackColor={{ false: colors.borderStrong, true: colors.accent }}
+              thumbColor="#ffffff"
+              ios_backgroundColor={colors.borderStrong}
+            />
           </View>
 
-          <View style={[styles.toggleRow, { borderColor: colors.border }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text, fontWeight: "600" }}>Hide follow lists</Text>
-              <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+          <View style={[styles.toggleRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={{ flex: 1, paddingRight: 8 }}>
+              <Text style={{ color: colors.text, fontWeight: "600", fontSize: 15 }}>
+                Hide follow lists
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 3 }}>
                 Other people can't see who you follow or who follows you.
               </Text>
             </View>
-            <Switch value={hideFollowLists} onValueChange={setHideFollowLists} />
+            <Switch
+              value={hideFollowLists}
+              onValueChange={setHideFollowLists}
+              trackColor={{ false: colors.borderStrong, true: colors.accent }}
+              thumbColor="#ffffff"
+              ios_backgroundColor={colors.borderStrong}
+            />
           </View>
 
           {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
@@ -226,8 +282,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderRadius: 10,
+    padding: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 14,
   },
 });

@@ -1,11 +1,11 @@
-import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 import { useTheme } from "~/lib/theme";
 import { trpc } from "~/lib/trpc";
 import { Avatar } from "~/components/Avatar";
 import { Button } from "~/components/Button";
 import { Icon } from "~/components/Icon";
+import { ScreenHeader } from "~/components/ScreenHeader";
 
 export default function Blocked() {
   const { colors } = useTheme();
@@ -17,16 +17,10 @@ export default function Blocked() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>Blocked users</Text>
-        <View style={{ width: 36 }} />
-      </View>
+      <ScreenHeader title="Blocked users" />
 
       {blockedQ.isLoading ? (
-        <View style={{ padding: 24 }}>
+        <View style={{ padding: 32 }}>
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
@@ -35,25 +29,43 @@ export default function Blocked() {
           keyExtractor={(u) => u.id}
           renderItem={({ item }) => (
             <View style={[styles.row, { borderBottomColor: colors.border }]}>
-              <Avatar url={item.photo} username={item.username} size={40} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontWeight: "600" }}>{item.username}</Text>
-                {item.displayName ? (
-                  <Text style={{ color: colors.textMuted }}>{item.displayName}</Text>
-                ) : null}
+              <Avatar url={item.photo} username={item.username} size={44} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
+                  {item.displayName ?? item.username}
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 13 }}>@{item.username}</Text>
               </View>
               <Button
                 title="Unblock"
                 variant="secondary"
                 onPress={() => unblockMut.mutate({ userId: item.id })}
-                style={{ paddingVertical: 6, paddingHorizontal: 12 }}
+                style={{ paddingVertical: 7, paddingHorizontal: 14 }}
               />
             </View>
           )}
           ListEmptyComponent={
-            <Text style={{ color: colors.textMuted, padding: 32, textAlign: "center" }}>
-              You haven't blocked anyone.
-            </Text>
+            <View style={{ padding: 48, alignItems: "center" }}>
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: colors.bgSubtle,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Icon name="x" size={26} color={colors.textFaint} strokeWidth={2} />
+              </View>
+              <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+                No blocked users
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: "center" }}>
+                People you block will appear here.
+              </Text>
+            </View>
           }
         />
       )}
@@ -62,18 +74,12 @@ export default function Blocked() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 12,
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

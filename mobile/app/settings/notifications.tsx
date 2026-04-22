@@ -3,15 +3,13 @@ import {
   Text,
   Switch,
   ScrollView,
-  Pressable,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 import { useTheme } from "~/lib/theme";
 import { trpc } from "~/lib/trpc";
-import { Icon } from "~/components/Icon";
+import { ScreenHeader } from "~/components/ScreenHeader";
 
 type PrefKey =
   | "notifyNewFollower"
@@ -40,43 +38,56 @@ export default function NotificationPrefs() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="chevron-left" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>Notifications</Text>
-        <View style={{ width: 36 }} />
-      </View>
+      <ScreenHeader title="Notifications" />
 
       {prefsQ.isLoading ? (
-        <View style={{ padding: 24 }}>
+        <View style={{ padding: 32 }}>
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
-        <ScrollView>
-          {PREFS.map(({ key, label, description }) => {
-            const enabled = prefsQ.data?.[key] ?? true;
-            return (
-              <View
-                key={key}
-                style={[styles.row, { borderBottomColor: colors.border }]}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: colors.text, fontWeight: "500", fontSize: 14 }}>
-                    {label}
-                  </Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                    {description}
-                  </Text>
+        <ScrollView contentContainerStyle={{ paddingTop: 16, paddingBottom: 32 }}>
+          <View
+            style={{
+              marginHorizontal: 16,
+              borderRadius: 14,
+              overflow: "hidden",
+              backgroundColor: colors.surface,
+              borderWidth: StyleSheet.hairlineWidth,
+              borderColor: colors.border,
+            }}
+          >
+            {PREFS.map(({ key, label, description }, idx) => {
+              const enabled = prefsQ.data?.[key] ?? true;
+              return (
+                <View
+                  key={key}
+                  style={[
+                    styles.row,
+                    {
+                      borderTopWidth: idx > 0 ? StyleSheet.hairlineWidth : 0,
+                      borderTopColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={{ color: colors.text, fontWeight: "600", fontSize: 15 }}>
+                      {label}
+                    </Text>
+                    <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 3 }}>
+                      {description}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={enabled}
+                    onValueChange={(value) => updateMut.mutate({ [key]: value })}
+                    trackColor={{ false: colors.borderStrong, true: colors.accent }}
+                    thumbColor="#ffffff"
+                    ios_backgroundColor={colors.borderStrong}
+                  />
                 </View>
-                <Switch
-                  value={enabled}
-                  onValueChange={(value) => updateMut.mutate({ [key]: value })}
-                  trackColor={{ false: colors.border, true: colors.accent }}
-                />
-              </View>
-            );
-          })}
+              );
+            })}
+          </View>
         </ScrollView>
       )}
     </SafeAreaView>
@@ -84,18 +95,11 @@ export default function NotificationPrefs() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
     gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

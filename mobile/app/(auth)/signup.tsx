@@ -46,9 +46,13 @@ export default function Signup() {
           contentContainerStyle={{ flexGrow: 1, padding: 24, justifyContent: "center", gap: 18 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={{ gap: 4, marginBottom: 12 }}>
-            <Text style={{ fontSize: 28, fontWeight: "700", color: colors.text }}>Create account</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 15 }}>Pick a username to get started</Text>
+          <View style={{ gap: 6, marginBottom: 16 }}>
+            <Text style={{ fontSize: 32, fontWeight: "800", color: colors.text, letterSpacing: -1 }}>
+              Create account
+            </Text>
+            <Text style={{ color: colors.textMuted, fontSize: 16 }}>
+              Pick a username to get started.
+            </Text>
           </View>
 
           <FormField
