@@ -55,32 +55,46 @@ export function ConversationRow({ convo, currentUserId, onPress, onLongPress }: 
       onLongPress={onLongPress}
       style={({ pressed }) => [
         styles.row,
-        { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
+        { backgroundColor: pressed ? colors.bgHover : "transparent" },
       ]}
     >
-      <Avatar url={others[0]?.photo} username={others[0]?.username} size={48} />
-      <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+      <Avatar url={others[0]?.photo} username={others[0]?.username} size={56} />
+      <View style={{ flex: 1, gap: 3 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <Text
             numberOfLines={1}
-            style={{ color: colors.text, fontWeight: isUnread ? "700" : "600", flex: 1 }}
+            style={{
+              color: colors.text,
+              fontWeight: isUnread ? "700" : "600",
+              fontSize: 16,
+              flex: 1,
+              letterSpacing: -0.2,
+            }}
           >
             {title}
           </Text>
           {last ? (
-            <Text style={{ color: colors.textFaint, fontSize: 12, marginLeft: 8 }}>
+            <Text
+              style={{
+                color: isUnread ? colors.accent : colors.textFaint,
+                fontSize: 12,
+                marginLeft: 8,
+                fontWeight: isUnread ? "700" : "500",
+              }}
+            >
               {timeAgo(new Date(last.createdAt))}
             </Text>
           ) : null}
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Text
             numberOfLines={1}
             style={{
               flex: 1,
               color: isUnread ? colors.text : colors.textMuted,
               fontWeight: isUnread ? "600" : "400",
-              fontSize: 13,
+              fontSize: 14,
+              lineHeight: 19,
             }}
           >
             {preview}
@@ -89,13 +103,15 @@ export function ConversationRow({ convo, currentUserId, onPress, onLongPress }: 
             <View
               style={{
                 backgroundColor: colors.accent,
-                borderRadius: 10,
-                paddingHorizontal: 6,
-                minWidth: 18,
+                borderRadius: 11,
+                paddingHorizontal: 7,
+                minWidth: 22,
+                height: 22,
                 alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "700" }}>
+              <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "800" }}>
                 {convo.unread > 99 ? "99+" : convo.unread}
               </Text>
             </View>
@@ -109,9 +125,9 @@ export function ConversationRow({ convo, currentUserId, onPress, onLongPress }: 
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    gap: 12,
-    padding: 12,
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     alignItems: "center",
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

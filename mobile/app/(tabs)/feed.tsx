@@ -72,6 +72,11 @@ export default function Feed() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
+      <View style={[styles.titleBar, { borderBottomColor: colors.border }]}>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800", letterSpacing: -0.5 }}>
+          sosoc
+        </Text>
+      </View>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <FeedTab label="For you" active={feedType === "all"} onPress={() => setFeedType("all")} />
         <FeedTab
@@ -134,17 +139,20 @@ function FeedTab({ label, active, onPress }: { label: string; active: boolean; o
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        paddingVertical: 12,
-        paddingHorizontal: 18,
-        borderBottomWidth: 2,
-        borderBottomColor: active ? colors.text : "transparent",
-      }}
+      style={({ pressed }) => ({
+        flex: 1,
+        alignItems: "center",
+        paddingVertical: 14,
+        borderBottomWidth: 2.5,
+        borderBottomColor: active ? colors.accent : "transparent",
+        opacity: pressed ? 0.7 : 1,
+      })}
     >
       <Text
         style={{
           color: active ? colors.text : colors.textMuted,
-          fontWeight: active ? "700" : "500",
+          fontWeight: active ? "700" : "600",
+          fontSize: 15,
         }}
       >
         {label}
@@ -154,6 +162,11 @@ function FeedTab({ label, active, onPress }: { label: string; active: boolean; o
 }
 
 const styles = StyleSheet.create({
+  titleBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
   header: {
     flexDirection: "row",
     borderBottomWidth: StyleSheet.hairlineWidth,

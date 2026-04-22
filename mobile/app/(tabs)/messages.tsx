@@ -89,9 +89,22 @@ export default function Messages() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={[styles.topBar, { borderBottomColor: colors.border }]}>
-        <Text style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}>Messages</Text>
-        <Pressable onPress={() => router.push("/messages/new")} hitSlop={10} style={{ padding: 6 }}>
-          <Icon name="plus" size={22} color={colors.text} />
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800", letterSpacing: -0.5 }}>
+          Messages
+        </Text>
+        <Pressable
+          onPress={() => router.push("/messages/new")}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? colors.bgHover : colors.bgSubtle,
+          })}
+        >
+          <Icon name="plus" size={20} color={colors.text} strokeWidth={2.4} />
         </Pressable>
       </View>
       <View style={[styles.tabs, { borderBottomColor: colors.border }]}>
@@ -106,7 +119,7 @@ export default function Messages() {
       </View>
 
       {q.isLoading ? (
-        <View style={{ padding: 24 }}>
+        <View style={{ padding: 32 }}>
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
@@ -121,15 +134,43 @@ export default function Messages() {
               onLongPress={() => handleLongPress(item)}
             />
           )}
-          refreshControl={<RefreshControl refreshing={q.isRefetching} onRefresh={() => void q.refetch()} tintColor={colors.accent} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={q.isRefetching}
+              onRefresh={() => void q.refetch()}
+              tintColor={colors.accent}
+            />
+          }
           ListEmptyComponent={
-            <Text style={{ color: colors.textMuted, padding: 32, textAlign: "center" }}>
-              {tab === "messages"
-                ? "No messages yet."
-                : tab === "requests"
-                  ? "No pending requests."
-                  : "No hidden conversations."}
-            </Text>
+            <View style={{ padding: 48, alignItems: "center" }}>
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: colors.bgSubtle,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Icon name="mail" size={28} color={colors.textFaint} strokeWidth={1.8} />
+              </View>
+              <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+                {tab === "messages"
+                  ? "No conversations yet"
+                  : tab === "requests"
+                    ? "No pending requests"
+                    : "Nothing hidden"}
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: "center" }}>
+                {tab === "messages"
+                  ? "Tap + to start a new chat."
+                  : tab === "requests"
+                    ? "Message requests from new people will land here."
+                    : "Conversations you hide will appear here."}
+              </Text>
+            </View>
           }
         />
       )}
@@ -142,30 +183,48 @@ function TabPill({ label, active, badge, onPress }: { label: string; active: boo
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        flexDirection: "row",
+      style={({ pressed }) => ({
+        flex: 1,
         alignItems: "center",
+        flexDirection: "row",
+        justifyContent: "center",
         gap: 6,
-        paddingVertical: 12,
-        paddingHorizontal: 18,
-        borderBottomWidth: 2,
-        borderBottomColor: active ? colors.text : "transparent",
-      }}
+        paddingVertical: 14,
+        borderBottomWidth: 2.5,
+        borderBottomColor: active ? colors.accent : "transparent",
+        opacity: pressed ? 0.7 : 1,
+      })}
     >
-      <Text style={{ color: active ? colors.text : colors.textMuted, fontWeight: active ? "700" : "500" }}>
+      <Text
+        style={{
+          color: active ? colors.text : colors.textMuted,
+          fontWeight: active ? "700" : "600",
+          fontSize: 15,
+        }}
+      >
         {label}
       </Text>
       {badge && badge > 0 ? (
         <View
           style={{
-            backgroundColor: colors.accent,
-            borderRadius: 9,
-            paddingHorizontal: 6,
-            minWidth: 18,
+            backgroundColor: active ? colors.accent : colors.bgSubtle,
+            borderRadius: 10,
+            paddingHorizontal: 7,
+            minWidth: 20,
+            height: 20,
             alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "700" }}>{badge}</Text>
+          <Text
+            style={{
+              color: active ? "#ffffff" : colors.textMuted,
+              fontSize: 11,
+              fontWeight: "800",
+            }}
+          >
+            {badge}
+          </Text>
         </View>
       ) : null}
     </Pressable>
@@ -177,8 +236,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   tabs: {

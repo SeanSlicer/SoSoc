@@ -38,22 +38,30 @@ export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props)
   return (
     <View style={[styles.card, { borderBottomColor: colors.border }]}>
       <Pressable
-        style={styles.header}
+        style={({ pressed }) => [styles.header, { opacity: pressed ? 0.7 : 1 }]}
         onPress={() => router.push(`/profile/${post.author.username}`)}
       >
-        <Avatar url={post.author.photo} username={post.author.username} size={40} />
+        <Avatar url={post.author.photo} username={post.author.username} size={44} />
         <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.text, fontWeight: "600" }} numberOfLines={1}>
+          <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }} numberOfLines={1}>
             {post.author.displayName ?? post.author.username}
           </Text>
-          <Text style={{ color: colors.textMuted, fontSize: 13 }} numberOfLines={1}>
+          <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 1 }} numberOfLines={1}>
             @{post.author.username} · {timeAgo(new Date(post.createdAt))}
           </Text>
         </View>
       </Pressable>
 
       {post.content ? (
-        <Text style={{ color: colors.text, paddingHorizontal: 14, paddingBottom: 10, lineHeight: 20 }}>
+        <Text
+          style={{
+            color: colors.text,
+            paddingHorizontal: 16,
+            paddingBottom: 12,
+            fontSize: 15,
+            lineHeight: 22,
+          }}
+        >
           {post.content}
         </Text>
       ) : null}
@@ -61,23 +69,50 @@ export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props)
       {post.images.length > 0 ? <PostImageCarousel images={post.images} /> : null}
 
       <View style={styles.actions}>
-        <Pressable style={styles.action} onPress={() => onToggleLike(post.id)} hitSlop={8}>
+        <Pressable
+          style={({ pressed }) => [styles.action, { opacity: pressed ? 0.6 : 1 }]}
+          onPress={() => onToggleLike(post.id)}
+          hitSlop={10}
+        >
           <Icon
             name={post.isLiked ? "heart-filled" : "heart"}
-            size={22}
-            color={post.isLiked ? "#ef4444" : colors.text}
+            size={24}
+            color={post.isLiked ? colors.like : colors.text}
+            strokeWidth={1.9}
           />
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{post._count.likes}</Text>
+          {post._count.likes > 0 ? (
+            <Text
+              style={{
+                color: post.isLiked ? colors.like : colors.textSecondary,
+                fontSize: 14,
+                fontWeight: "600",
+              }}
+            >
+              {post._count.likes}
+            </Text>
+          ) : null}
         </Pressable>
 
-        <Pressable style={styles.action} onPress={() => onOpenComments(post.id)} hitSlop={8}>
-          <Icon name="message-circle" size={20} color={colors.text} />
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{post._count.comments}</Text>
+        <Pressable
+          style={({ pressed }) => [styles.action, { opacity: pressed ? 0.6 : 1 }]}
+          onPress={() => onOpenComments(post.id)}
+          hitSlop={10}
+        >
+          <Icon name="message-circle" size={23} color={colors.text} strokeWidth={1.9} />
+          {post._count.comments > 0 ? (
+            <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: "600" }}>
+              {post._count.comments}
+            </Text>
+          ) : null}
         </Pressable>
 
         {onShare ? (
-          <Pressable style={styles.action} onPress={() => onShare(post.id)} hitSlop={8}>
-            <Icon name="share" size={20} color={colors.text} />
+          <Pressable
+            style={({ pressed }) => [styles.action, { opacity: pressed ? 0.6 : 1 }]}
+            onPress={() => onShare(post.id)}
+            hitSlop={10}
+          >
+            <Icon name="share" size={22} color={colors.text} strokeWidth={1.9} />
           </Pressable>
         ) : null}
       </View>
@@ -86,8 +121,20 @@ export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props)
 }
 
 const styles = StyleSheet.create({
-  card: { paddingTop: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  header: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingBottom: 10 },
-  actions: { flexDirection: "row", gap: 20, paddingHorizontal: 14, paddingVertical: 12 },
+  card: { paddingTop: 14, borderBottomWidth: StyleSheet.hairlineWidth },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  actions: {
+    flexDirection: "row",
+    gap: 22,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 14,
+  },
   action: { flexDirection: "row", alignItems: "center", gap: 6 },
 });
