@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -18,10 +18,18 @@ import { Icon } from "~/components/Icon";
 export default function Search() {
   const { colors } = useTheme();
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const enabled = query.trim().length >= 2;
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [query]);
+
+  const enabled = debouncedQuery.trim().length >= 2;
   const searchQ = trpc.user.search.useQuery(
-    { query: query.trim(), limit: 20 },
+    { query: debouncedQuery.trim(), limit: 20 },
     { enabled, staleTime: 5_000 },
   );
 
@@ -95,7 +103,9 @@ export default function Search() {
         ListEmptyComponent={
           enabled && !searchQ.isLoading ? (
             <View style={{ padding: 48, alignItems: "center" }}>
-              <Text style={{ color: colors.textMuted, fontSize: 14 }}>No users found</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                No results for &ldquo;{debouncedQuery}&rdquo;
+              </Text>
             </View>
           ) : !enabled ? (
             <View style={{ padding: 48, alignItems: "center" }}>

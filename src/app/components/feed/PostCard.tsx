@@ -174,6 +174,11 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
 
   const { mutate: deletePost } = api.post.delete.useMutation({ onSuccess: invalidatePosts });
 
+  const handleDeletePost = () => {
+    if (!window.confirm("Delete this post? This can't be undone.")) return;
+    deletePost({ postId: post.id });
+  };
+
   const { mutate: updatePost, isPending: isUpdating } = api.post.update.useMutation({
     onSuccess: () => { invalidatePosts(); setIsEditing(false); },
   });
@@ -224,7 +229,7 @@ export default function PostCard({ post, currentUserId, onShare }: PostCardProps
                   <button onClick={() => setIsEditing(true)} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Edit post">
                     <Edit2 size={15} />
                   </button>
-                  <button onClick={() => deletePost({ postId: post.id })} className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-500 transition-colors" title="Delete post">
+                  <button onClick={handleDeletePost} className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-500 transition-colors" title="Delete post">
                     <Trash2 size={15} />
                   </button>
                 </div>

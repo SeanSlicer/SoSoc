@@ -11,13 +11,42 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "~/lib/theme";
 import { trpc } from "~/lib/trpc";
+import { useAuth } from "~/lib/auth";
 import { PostCard, type FeedPost } from "~/components/PostCard";
 import { CommentsSheet } from "~/components/CommentsSheet";
 
 type FeedType = "all" | "following";
 
+function PostCardSkeleton() {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.skeleton, { borderBottomColor: colors.border }]}>
+      <View style={{ flexDirection: "row", gap: 12, alignItems: "center", marginBottom: 12 }}>
+        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.bgSubtle }} />
+        <View style={{ flex: 1, gap: 7 }}>
+          <View style={{ height: 13, width: "48%", borderRadius: 6, backgroundColor: colors.bgSubtle }} />
+          <View style={{ height: 11, width: "32%", borderRadius: 5, backgroundColor: colors.bgSubtle }} />
+        </View>
+      </View>
+      <View style={{ gap: 7 }}>
+        <View style={{ height: 12, width: "100%", borderRadius: 6, backgroundColor: colors.bgSubtle }} />
+        <View style={{ height: 12, width: "82%", borderRadius: 6, backgroundColor: colors.bgSubtle }} />
+        <View style={{ height: 12, width: "63%", borderRadius: 6, backgroundColor: colors.bgSubtle }} />
+      </View>
+      <View style={{ flexDirection: "row", gap: 20, marginTop: 14 }}>
+        <View style={{ height: 11, width: 36, borderRadius: 5, backgroundColor: colors.bgSubtle }} />
+        <View style={{ height: 11, width: 36, borderRadius: 5, backgroundColor: colors.bgSubtle }} />
+      </View>
+    </View>
+  );
+}
+
 export default function Feed() {
   const { colors } = useTheme();
+  const { user } = useAuth();
+  const meQ = trpc.user.getMe.useQuery(undefined, { enabled: !user });
+  const currentUserId = user?.id ?? meQ.data?.id;
+
   const utils = trpc.useUtils();
   const [feedType, setFeedType] = useState<FeedType>("all");
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
@@ -86,38 +115,41 @@ export default function Feed() {
         />
       </View>
 
-      <FlatList
-        data={posts}
-        keyExtractor={(p) => p.id}
-        renderItem={({ item }) => (
-          <PostCard
-            post={item}
-            onToggleLike={handleToggleLike}
-            onOpenComments={(id) => setCommentsPostId(id)}
-          />
-        )}
-        onEndReached={() => feedQ.hasNextPage && feedQ.fetchNextPage()}
-        onEndReachedThreshold={0.4}
-        refreshControl={
-          <RefreshControl
-            refreshing={feedQ.isRefetching && !feedQ.isFetchingNextPage}
-            onRefresh={onRefresh}
-            tintColor={colors.accent}
-          />
-        }
-        ListFooterComponent={
-          feedQ.isFetchingNextPage ? (
-            <View style={{ padding: 20 }}>
-              <ActivityIndicator color={colors.accent} />
-            </View>
-          ) : null
-        }
-        ListEmptyComponent={
-          feedQ.isLoading ? (
-            <View style={{ padding: 40 }}>
-              <ActivityIndicator color={colors.accent} />
-            </View>
-          ) : (
+      {feedQ.isLoading ? (
+        <>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </>
+      ) : (
+        <FlatList
+          data={posts}
+          keyExtractor={(p) => p.id}
+          renderItem={({ item }) => (
+            <PostCard
+              post={item}
+              currentUserId={currentUserId}
+              onToggleLike={handleToggleLike}
+              onOpenComments={(id) => setCommentsPostId(id)}
+            />
+          )}
+          onEndReached={() => feedQ.hasNextPage && feedQ.fetchNextPage()}
+          onEndReachedThreshold={0.4}
+          refreshControl={
+            <RefreshControl
+              refreshing={feedQ.isRefetching && !feedQ.isFetchingNextPage}
+              onRefresh={onRefresh}
+              tintColor={colors.accent}
+            />
+          }
+          ListFooterComponent={
+            feedQ.isFetchingNextPage ? (
+              <View style={{ padding: 20 }}>
+                <ActivityIndicator color={colors.accent} />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
             <View style={{ padding: 40, alignItems: "center" }}>
               <Text style={{ color: colors.textMuted, textAlign: "center" }}>
                 {feedType === "following"
@@ -125,11 +157,15 @@ export default function Feed() {
                   : "Nothing to show yet — come back soon."}
               </Text>
             </View>
-          )
-        }
-      />
+          }
+        />
+      )}
 
-      <CommentsSheet postId={commentsPostId} onClose={() => setCommentsPostId(null)} />
+      <CommentsSheet
+        postId={commentsPostId}
+        currentUserId={currentUserId}
+        onClose={() => setCommentsPostId(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -169,6 +205,11 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  skeleton: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

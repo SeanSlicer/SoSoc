@@ -48,8 +48,17 @@ export default function NotificationsClient() {
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-16">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+        <div className="divide-y divide-neutral-100 dark:divide-neutral-800 animate-pulse">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-start gap-3 px-4 py-4">
+              <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700 shrink-0" />
+              <div className="flex-1 space-y-2 pt-1">
+                <div className="h-3 w-3/4 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                <div className="h-3 w-1/2 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                <div className="h-2.5 w-1/4 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

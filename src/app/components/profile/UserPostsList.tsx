@@ -10,8 +10,19 @@ export default function UserPostsList({ username, currentUserId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+      <div className="animate-pulse">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-5">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700 shrink-0" />
+              <div className="min-w-0 flex-1 space-y-2.5">
+                <div className="h-3.5 w-28 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                <div className="h-3 w-full rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                <div className="h-3 w-4/5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

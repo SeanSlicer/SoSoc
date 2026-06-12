@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
+import { useAuth } from "~/lib/auth";
 import { useTheme } from "~/lib/theme";
 import { trpc } from "~/lib/trpc";
 import { Avatar } from "./Avatar";
@@ -27,7 +28,10 @@ interface Props {
 
 export function ProfileView({ username, isOwnProfile, onEdit, onOpenSettings, onMessage }: Props) {
   const { colors } = useTheme();
+  const { user } = useAuth();
   const utils = trpc.useUtils();
+  const meQ = trpc.user.getMe.useQuery(undefined, { enabled: !user });
+  const currentUserId = user?.id ?? meQ.data?.id;
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
 
   const profileQ = trpc.user.getProfile.useQuery({ username });
@@ -241,6 +245,7 @@ export function ProfileView({ username, isOwnProfile, onEdit, onOpenSettings, on
               <PostCard
                 key={p.id}
                 post={p}
+                currentUserId={currentUserId}
                 onToggleLike={(id) => likeMut.mutate({ postId: id })}
                 onOpenComments={(id) => setCommentsPostId(id)}
               />
@@ -249,7 +254,7 @@ export function ProfileView({ username, isOwnProfile, onEdit, onOpenSettings, on
         </View>
       </ScrollView>
 
-      <CommentsSheet postId={commentsPostId} onClose={() => setCommentsPostId(null)} />
+      <CommentsSheet postId={commentsPostId} currentUserId={currentUserId} onClose={() => setCommentsPostId(null)} />
     </>
   );
 }

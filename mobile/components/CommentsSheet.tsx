@@ -10,6 +10,7 @@ import {
   Platform,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "~/lib/theme";
@@ -20,10 +21,11 @@ import { Icon } from "./Icon";
 
 interface Props {
   postId: string | null;
+  currentUserId?: string;
   onClose: () => void;
 }
 
-export function CommentsSheet({ postId, onClose }: Props) {
+export function CommentsSheet({ postId, currentUserId, onClose }: Props) {
   const { colors } = useTheme();
   const utils = trpc.useUtils();
   const listRef = useRef<FlatList>(null);
@@ -47,6 +49,15 @@ export function CommentsSheet({ postId, onClose }: Props) {
     },
   });
 
+  const deleteMut = trpc.post.deleteComment.useMutation({
+    onSuccess: async () => {
+      if (postId) {
+        await utils.post.getComments.invalidate({ postId });
+        await utils.post.getFeed.invalidate();
+      }
+    },
+  });
+
   useEffect(() => {
     if (!postId) setDraft("");
   }, [postId]);
@@ -56,6 +67,18 @@ export function CommentsSheet({ postId, onClose }: Props) {
   const handleSend = () => {
     if (!postId || !draft.trim()) return;
     addMut.mutate({ postId, content: draft.trim() });
+  };
+
+  const handleLongPressComment = (commentId: string, isOwn: boolean) => {
+    if (!isOwn) return;
+    Alert.alert("Delete comment?", "This can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteMut.mutate({ commentId }),
+      },
+    ]);
   };
 
   return (
@@ -101,24 +124,46 @@ export function CommentsSheet({ postId, onClose }: Props) {
               contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16, gap: 16 }}
               onEndReached={() => commentsQ.hasNextPage && commentsQ.fetchNextPage()}
               onEndReachedThreshold={0.4}
-              renderItem={({ item }) => (
-                <View style={{ flexDirection: "row", gap: 12 }}>
-                  <Avatar url={item.user.photo} username={item.user.username} size={36} />
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <View style={{ flexDirection: "row", gap: 6, alignItems: "baseline" }}>
-                      <Text style={{ color: colors.text, fontWeight: "700", fontSize: 14 }}>
-                        {item.user.displayName ?? item.user.username}
-                      </Text>
-                      <Text style={{ color: colors.textFaint, fontSize: 12 }}>
-                        {timeAgo(new Date(item.createdAt))}
+              renderItem={({ item }) => {
+                const isOwn = !!currentUserId && item.user.id === currentUserId;
+                return (
+                  <Pressable
+                    onLongPress={() => handleLongPressComment(item.id, isOwn)}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      gap: 12,
+                      opacity: pressed && isOwn ? 0.7 : 1,
+                    })}
+                    delayLongPress={400}
+                  >
+                    <Avatar url={item.user.photo} username={item.user.username} size={36} />
+                    <View style={{ flex: 1, gap: 3 }}>
+                      <View style={{ flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "space-between" }}>
+                        <View style={{ flexDirection: "row", gap: 6, alignItems: "baseline" }}>
+                          <Text style={{ color: colors.text, fontWeight: "700", fontSize: 14 }}>
+                            {item.user.displayName ?? item.user.username}
+                          </Text>
+                          <Text style={{ color: colors.textFaint, fontSize: 12 }}>
+                            {timeAgo(new Date(item.createdAt))}
+                          </Text>
+                        </View>
+                        {isOwn && (
+                          <Pressable
+                            onPress={() => handleLongPressComment(item.id, true)}
+                            hitSlop={8}
+                            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                          >
+                            <Icon name="trash" size={14} color={colors.textFaint} strokeWidth={2} />
+                          </Pressable>
+                        )}
+                      </View>
+                      <Text style={{ color: colors.text, fontSize: 14, lineHeight: 19 }}>
+                        {item.content}
                       </Text>
                     </View>
-                    <Text style={{ color: colors.text, fontSize: 14, lineHeight: 19 }}>
-                      {item.content}
-                    </Text>
-                  </View>
-                </View>
-              )}
+                  </Pressable>
+                );
+              }}
               ListEmptyComponent={
                 <View style={{ padding: 48, alignItems: "center" }}>
                   <View

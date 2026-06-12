@@ -71,8 +71,30 @@ export default function ProfileHeader({ username, currentUserId }: ProfileHeader
 
   if (isLoading || !profile) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+      <div className="animate-pulse">
+        {/* Sticky header skeleton */}
+        <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
+          <div className="h-4 w-32 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          <div className="mt-1 h-3 w-16 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+        {/* Banner */}
+        <div className="h-36 bg-neutral-200 dark:bg-neutral-700" />
+        {/* Avatar row */}
+        <div className="flex items-start justify-between px-4 -mt-10 pb-4">
+          <div className="h-20 w-20 rounded-full bg-neutral-300 dark:bg-neutral-600 ring-4 ring-white dark:ring-neutral-900" />
+          <div className="mt-14 h-9 w-28 rounded-xl bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+        {/* Bio area */}
+        <div className="px-4 pb-4 space-y-2">
+          <div className="h-5 w-36 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          <div className="h-3.5 w-24 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          <div className="mt-3 h-3 w-full rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          <div className="h-3 w-4/5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          <div className="mt-3 flex gap-4">
+            <div className="h-3.5 w-20 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+            <div className="h-3.5 w-20 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          </div>
+        </div>
       </div>
     );
   }

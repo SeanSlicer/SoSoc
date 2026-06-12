@@ -17,6 +17,7 @@ import {
   Send,
   Settings,
   Share2,
+  Trash2,
   User,
   X,
 } from "lucide-react-native";
@@ -41,7 +42,8 @@ export type IconName =
   | "dots"
   | "check"
   | "x"
-  | "send";
+  | "send"
+  | "trash";
 
 const ICONS: Record<IconName, LucideIcon> = {
   home: Home,
@@ -64,6 +66,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   check: Check,
   x: X,
   send: Send,
+  trash: Trash2,
 };
 
 export function Icon({

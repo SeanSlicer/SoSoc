@@ -40,8 +40,16 @@ export default function ConversationList({ selectedId, onSelect, onNewMessage, c
 
       <div className="flex-1 overflow-y-auto">
         {isLoading && (
-          <div className="flex justify-center py-12">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <div className="animate-pulse">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 w-32 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                  <div className="h-3 w-48 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

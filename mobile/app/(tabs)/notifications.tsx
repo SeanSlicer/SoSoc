@@ -85,9 +85,29 @@ export default function Notifications() {
       </View>
 
       {q.isLoading ? (
-        <View style={{ padding: 32 }}>
-          <ActivityIndicator color={colors.accent} />
-        </View>
+        <>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <View
+              key={i}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.bgSubtle }} />
+              <View style={{ flex: 1, gap: 8 }}>
+                <View style={{ height: 12, width: "72%", borderRadius: 6, backgroundColor: colors.bgSubtle }} />
+                <View style={{ height: 11, width: "48%", borderRadius: 5, backgroundColor: colors.bgSubtle }} />
+                <View style={{ height: 10, width: "24%", borderRadius: 5, backgroundColor: colors.bgSubtle }} />
+              </View>
+            </View>
+          ))}
+        </>
       ) : (
         <FlatList
           data={q.data ?? []}

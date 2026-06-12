@@ -1,7 +1,8 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
 import { router } from "expo-router";
 import { useTheme } from "~/lib/theme";
 import { timeAgo } from "~/lib/timeAgo";
+import { trpc } from "~/lib/trpc";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
 import { PostImageCarousel } from "./PostImageCarousel";
@@ -27,30 +28,85 @@ export interface FeedPost {
 
 interface Props {
   post: FeedPost;
+  currentUserId?: string;
   onToggleLike: (postId: string) => void;
   onOpenComments: (postId: string) => void;
   onShare?: (postId: string) => void;
+  onDeleted?: (postId: string) => void;
 }
 
-export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props) {
+export function PostCard({ post, currentUserId, onToggleLike, onOpenComments, onShare, onDeleted }: Props) {
   const { colors } = useTheme();
+  const utils = trpc.useUtils();
+  const isOwn = !!currentUserId && post.author.id === currentUserId;
+
+  const deleteMut = trpc.post.delete.useMutation({
+    onSuccess: () => {
+      void utils.post.getFeed.invalidate();
+      void utils.post.getUserPosts.invalidate();
+      onDeleted?.(post.id);
+    },
+  });
+
+  const handleMorePress = () => {
+    Alert.alert(
+      "Post options",
+      undefined,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete post",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert("Delete post?", "This can't be undone.", [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Delete",
+                style: "destructive",
+                onPress: () => deleteMut.mutate({ postId: post.id }),
+              },
+            ]);
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <View style={[styles.card, { borderBottomColor: colors.border }]}>
-      <Pressable
-        style={({ pressed }) => [styles.header, { opacity: pressed ? 0.7 : 1 }]}
-        onPress={() => router.push(`/profile/${post.author.username}`)}
-      >
-        <Avatar url={post.author.photo} username={post.author.username} size={44} />
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }} numberOfLines={1}>
-            {post.author.displayName ?? post.author.username}
-          </Text>
-          <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 1 }} numberOfLines={1}>
-            @{post.author.username} · {timeAgo(new Date(post.createdAt))}
-          </Text>
-        </View>
-      </Pressable>
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.authorRow, { opacity: pressed ? 0.7 : 1 }]}
+          onPress={() => router.push(`/profile/${post.author.username}`)}
+        >
+          <Avatar url={post.author.photo} username={post.author.username} size={44} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }} numberOfLines={1}>
+              {post.author.displayName ?? post.author.username}
+            </Text>
+            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 1 }} numberOfLines={1}>
+              @{post.author.username} · {timeAgo(new Date(post.createdAt))}
+            </Text>
+          </View>
+        </Pressable>
+
+        {isOwn && (
+          <Pressable
+            onPress={handleMorePress}
+            hitSlop={10}
+            style={({ pressed }) => ({
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: pressed ? colors.bgHover : "transparent",
+            })}
+          >
+            <Icon name="dots" size={20} color={colors.textMuted} strokeWidth={2} />
+          </Pressable>
+        )}
+      </View>
 
       {post.content ? (
         <Text
@@ -77,20 +133,18 @@ export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props)
           <Icon
             name={post.isLiked ? "heart-filled" : "heart"}
             size={24}
-            color={post.isLiked ? colors.like : colors.text}
+            color={post.isLiked ? colors.like : colors.textMuted}
             strokeWidth={1.9}
           />
-          {post._count.likes > 0 ? (
-            <Text
-              style={{
-                color: post.isLiked ? colors.like : colors.textSecondary,
-                fontSize: 14,
-                fontWeight: "600",
-              }}
-            >
-              {post._count.likes}
-            </Text>
-          ) : null}
+          <Text
+            style={{
+              color: post.isLiked ? colors.like : colors.textMuted,
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
+            {post._count.likes}
+          </Text>
         </Pressable>
 
         <Pressable
@@ -98,12 +152,10 @@ export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props)
           onPress={() => onOpenComments(post.id)}
           hitSlop={10}
         >
-          <Icon name="message-circle" size={23} color={colors.text} strokeWidth={1.9} />
-          {post._count.comments > 0 ? (
-            <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: "600" }}>
-              {post._count.comments}
-            </Text>
-          ) : null}
+          <Icon name="message-circle" size={23} color={colors.textMuted} strokeWidth={1.9} />
+          <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: "600" }}>
+            {post._count.comments}
+          </Text>
         </Pressable>
 
         {onShare ? (
@@ -112,7 +164,7 @@ export function PostCard({ post, onToggleLike, onOpenComments, onShare }: Props)
             onPress={() => onShare(post.id)}
             hitSlop={10}
           >
-            <Icon name="share" size={22} color={colors.text} strokeWidth={1.9} />
+            <Icon name="share" size={22} color={colors.textMuted} strokeWidth={1.9} />
           </Pressable>
         ) : null}
       </View>
@@ -125,9 +177,15 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 8,
     paddingHorizontal: 16,
     paddingBottom: 12,
+  },
+  authorRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   actions: {
     flexDirection: "row",

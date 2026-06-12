@@ -47,6 +47,9 @@ export default function NavSidebar({ user: initialUser }: { user: NavUser }) {
   const { data: unreadMessages = 0 } = api.messages.getTotalUnread.useQuery();
 
   const handleSignOut = async () => {
+    // On narrow screens the sign-out icon sits in the tab bar where accidental
+    // taps are common — require a confirm so users don't lose their session by mistake.
+    if (window.innerWidth < 768 && !window.confirm("Sign out?")) return;
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
   };
