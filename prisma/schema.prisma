@@ -2,11 +2,13 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
+    previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-    provider = "postgresql"
+    provider   = "postgresql"
+    extensions = [pg_trgm]
 }
 
 enum UserRole {
@@ -78,6 +80,9 @@ model User {
     blocking               BlockedUser[]         @relation("BlockerRelation")
     blockedBy              BlockedUser[]         @relation("BlockedRelation")
 
+    // Trigram GIN indexes — make ILIKE '%term%' user search use an index scan
+    @@index([username(ops: raw("gin_trgm_ops"))], type: Gin)
+    @@index([displayName(ops: raw("gin_trgm_ops"))], type: Gin)
     @@map(name: "users")
 }
 
@@ -90,6 +95,8 @@ model BlockedUser {
     createdAt DateTime @default(now()) @map("created_at")
 
     @@unique([blockerId, blockedId])
+    // Reverse-direction lookups ("who blocked me") filter by blockedId alone
+    @@index([blockedId])
     @@map("blocked_users")
 }
 
@@ -124,7 +131,10 @@ model Post {
     comments         Comment[]
     sharedInMessages Message[] @relation("SharedInMessages")
 
-    @@index([authorId])
+    // Profile pages: posts by author, newest first
+    @@index([authorId, createdAt])
+    // Global feed ordering
+    @@index([createdAt])
     @@map(name: "posts")
 }
 
@@ -150,7 +160,8 @@ model ConversationMember {
     conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
     @@id([userId, conversationId])
-    @@index([userId])
+    // Listing the members of a conversation (PK starts with userId, so it doesn't cover this)
+    @@index([conversationId])
     @@map(name: "conversation_members")
 }
 
@@ -168,6 +179,8 @@ model Message {
 
     @@index([conversationId, createdAt])
     @@index([senderId])
+    // onDelete: SetNull on sharedPost means post deletion looks messages up by this column
+    @@index([sharedPostId])
     @@map(name: "messages")
 }
 
@@ -185,7 +198,10 @@ model Notification {
     type   NotificationType
     isRead Boolean          @default(false)
 
-    @@index([userId])
+    // Notification list: by recipient, newest first
+    @@index([userId, createdAt])
+    // Unread count badge + markAllRead
+    @@index([userId, isRead])
     @@map(name: "notifications")
 }
 
@@ -254,6 +270,7 @@ model Comment {
     postId String
 
     @@index([userId])
-    @@index([postId])
+    // Comment threads: by post, oldest first
+    @@index([postId, createdAt])
     @@map(name: "comments")
 }
