@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { consumePasswordResetToken, verifyPasswordResetToken } from "@queries/auth/tokens";
-import { checkRateLimit } from "~/lib/server/rateLimit";
+import { checkRateLimitDistributed } from "~/lib/server/rateLimit";
 
 const schema = z.object({
   token: z.string().length(64),
@@ -15,7 +15,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const limit = checkRateLimit(`reset-password:${ip}`, 10, 15 * 60 * 1000);
+  const limit = await checkRateLimitDistributed(`reset-password:${ip}`, 10, 15 * 60 * 1000);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },

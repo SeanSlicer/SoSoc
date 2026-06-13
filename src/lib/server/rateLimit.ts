@@ -1,12 +1,14 @@
 /**
- * In-memory sliding window rate limiter with optional DB-backed config.
+ * Sliding window rate limiter with optional DB-backed config.
  *
  * Uses a sliding window log — tracks exact request timestamps rather than a
  * fixed counter, so bursts at window boundaries are handled correctly.
  *
- * Trade-off: resets on server restart and is per-instance (not shared across
- * replicas). For multi-instance deployments, swap the store for a Redis-backed
- * implementation (e.g. @upstash/ratelimit).
+ * Two stores:
+ * - In-memory (default) — `checkRateLimit`. Per-instance; resets on restart.
+ * - Upstash Redis — used automatically by `checkRateLimitDistributed` when
+ *   `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` are set, so limits
+ *   hold across replicas. Falls back to in-memory on any Redis error.
  */
 import { TRPCError } from "@trpc/server";
 
@@ -71,6 +73,107 @@ export function checkRateLimit(
     remaining: maxRequests - entry.requests.length,
     retryAfterMs: 0,
   };
+}
+
+// ─── Upstash Redis store (optional, multi-instance safe) ─────────────────────
+
+/**
+ * Sliding window check backed by a Redis sorted set, via the Upstash REST
+ * pipeline API (no SDK dependency). One round trip on the allowed path:
+ * prune old entries, add this request, count, refresh TTL, read the oldest
+ * entry. If the count exceeds the limit, the just-added entry is removed so
+ * blocked requests don't extend the lockout.
+ */
+interface RedisConfig {
+  url: string;
+  token: string;
+}
+
+/**
+ * Reads Upstash credentials from env. Dynamic import (matching the prisma
+ * pattern below) so importing this module never triggers env validation —
+ * keeps unit tests runnable without a populated .env.
+ */
+async function getRedisConfig(): Promise<RedisConfig | null> {
+  try {
+    const { env } = await import("~/env");
+    if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
+      return { url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN };
+    }
+  } catch {
+    // env unavailable (e.g. test environment) — fall through to in-memory
+  }
+  return null;
+}
+
+async function checkRateLimitRedis(
+  key: string,
+  maxRequests: number,
+  windowMs: number,
+  redis: RedisConfig,
+): Promise<RateLimitResult> {
+  const now = Date.now();
+  const member = `${now}-${Math.random().toString(36).slice(2)}`;
+  const redisKey = `rl:${key}`;
+
+  const results = await redisPipeline(redis, [
+    ["ZREMRANGEBYSCORE", redisKey, "0", String(now - windowMs)],
+    ["ZADD", redisKey, String(now), member],
+    ["ZCARD", redisKey],
+    ["PEXPIRE", redisKey, String(windowMs)],
+    ["ZRANGE", redisKey, "0", "0", "WITHSCORES"],
+  ]);
+
+  const count = results[2] as number;
+  if (count > maxRequests) {
+    // Over the limit — undo our own entry and compute when the oldest expires
+    await redisPipeline(redis, [["ZREM", redisKey, member]]);
+    const oldest = Number((results[4] as string[])[1] ?? now);
+    return { allowed: false, remaining: 0, retryAfterMs: Math.max(0, oldest + windowMs - now) };
+  }
+
+  return { allowed: true, remaining: maxRequests - count, retryAfterMs: 0 };
+}
+
+/** Execute Redis commands via the Upstash REST pipeline endpoint. */
+async function redisPipeline(redis: RedisConfig, commands: string[][]): Promise<unknown[]> {
+  const res = await fetch(`${redis.url}/pipeline`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${redis.token}` },
+    body: JSON.stringify(commands),
+    signal: AbortSignal.timeout(2_000),
+  });
+  if (!res.ok) throw new Error(`Upstash pipeline failed: ${res.status}`);
+  const data = (await res.json()) as { result?: unknown; error?: string }[];
+  const failed = data.find((r) => r.error);
+  if (failed) throw new Error(`Upstash command failed: ${failed.error}`);
+  return data.map((r) => r.result);
+}
+
+/**
+ * Like `checkRateLimit`, but uses Redis when configured so the limit is
+ * shared across server instances. Falls back to the in-memory store when
+ * Redis isn't configured or the call fails (fail-open to per-instance limits
+ * rather than blocking legitimate traffic on a Redis outage).
+ *
+ * @param key         Unique identifier — typically `"action:userId"` or `"action:ip"`
+ * @param maxRequests Maximum requests allowed per window
+ * @param windowMs    Sliding window duration in milliseconds
+ */
+export async function checkRateLimitDistributed(
+  key: string,
+  maxRequests: number,
+  windowMs: number,
+): Promise<RateLimitResult> {
+  const redis = await getRedisConfig();
+  if (redis) {
+    try {
+      return await checkRateLimitRedis(key, maxRequests, windowMs, redis);
+    } catch (err) {
+      console.error("[rateLimit] Redis check failed, falling back to memory:", err);
+    }
+  }
+  return checkRateLimit(key, maxRequests, windowMs);
 }
 
 // ─── DB-backed config cache ───────────────────────────────────────────────────
@@ -138,7 +241,7 @@ export async function enforceRateLimit(
   message: string,
 ): Promise<void> {
   const cfg = await getRateLimitConfig(action, defaultMax, defaultWindow);
-  const rl = checkRateLimit(`${action}:${subject}`, cfg.maxRequests, cfg.windowMs);
+  const rl = await checkRateLimitDistributed(`${action}:${subject}`, cfg.maxRequests, cfg.windowMs);
   if (!rl.allowed) {
     throw new TRPCError({ code: "TOO_MANY_REQUESTS", message });
   }

@@ -122,9 +122,9 @@ Provider-agnostic interface at `src/lib/storage/types.ts`. Buckets: `"avatars" |
 
 ### Rate Limiting
 
-- In-memory sliding window limiter in `src/lib/server/rateLimit.ts` (`checkRateLimit`).
+- Sliding window limiter in `src/lib/server/rateLimit.ts`. `checkRateLimit` is the sync in-memory store; `checkRateLimitDistributed` uses Upstash Redis (via REST, no SDK) when `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` are set, falling back to in-memory otherwise. Route handlers and `enforceRateLimit` use the distributed version.
 - Admin-configurable overrides stored in the `RateLimitConfig` DB table, cached in memory for 60 seconds (`getRateLimitConfig`).
-- Applied to: `post.create` (100/hr), `post.comment` (200/hr), `post.like` (500/hr), `message.send` (100/hr), `user.follow` (100/hr), `auth.signup` (5/hr per IP).
+- Applied to: `post.create` (100/hr), `post.comment` (200/hr), `post.like` (500/hr), `message.send` (100/hr), `user.follow` (100/hr), `user.search` (60/min), `auth.signup` (5/hr per IP).
 - Admin UI at `/admin` → Rate Limits tab to view and override limits. Reset button restores defaults.
 - Rate-limited actions throw `TOO_MANY_REQUESTS` (HTTP 429).
 
@@ -280,5 +280,4 @@ mobile/
 
 See `FUTURE_WORK.md` for a full list. Top priorities:
 - JWT role revocation window (no immediate invalidation on role/password change)
-- Rate limiting is per-instance (not shared across replicas) — swap store for Redis for multi-instance deployments
-- No email verification or password reset flow
+- Rate limiting is per-instance unless Upstash Redis env vars are set (then shared across replicas)
