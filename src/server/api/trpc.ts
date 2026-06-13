@@ -70,6 +70,7 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
       userId: payload.sub,
       role: payload.role,
       adminId: payload.imp, // defined only when an admin is impersonating
+      emailVerified: payload.emailVerified, // undefined on old tokens → treated as allowed
     },
   });
 });
@@ -103,7 +104,18 @@ const isAdmin = t.middleware(async ({ ctx, next }) => {
   });
 });
 
+const requiresEmailVerification = t.middleware(({ ctx, next }) => {
+  // ctx.emailVerified is added by isAuthenticated; cast needed because the base
+  // context type doesn't know about middleware-extended fields.
+  if ((ctx as { emailVerified?: boolean }).emailVerified === false) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Please verify your email address to continue." });
+  }
+  return next({ ctx });
+});
+
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 export const userProcedure = t.procedure.use(isAuthenticated);
+/** Like `userProcedure`, but additionally blocks users whose email is unverified. */
+export const verifiedProcedure = t.procedure.use(isAuthenticated).use(requiresEmailVerification);
 export const adminProcedure = t.procedure.use(isAdmin);

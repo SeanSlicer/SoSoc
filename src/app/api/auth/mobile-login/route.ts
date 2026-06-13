@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getUserByUsernameOrEmailAndPassword } from "@queries/auth/getUser";
 import { createAuthToken } from "~/lib/server/auth";
-import { checkRateLimit } from "~/lib/server/rateLimit";
+import { checkRateLimitDistributed } from "~/lib/server/rateLimit";
 import { applyCorsHeaders, corsPreflight } from "~/lib/server/cors";
 
 export function OPTIONS(req: NextRequest) {
@@ -22,7 +22,7 @@ function respond(body: unknown, init: ResponseInit | undefined, origin: string |
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin");
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const limit = checkRateLimit(`mobile-login:${ip}`, 10, 15 * 60 * 1000);
+  const limit = await checkRateLimitDistributed(`mobile-login:${ip}`, 10, 15 * 60 * 1000);
   if (!limit.allowed) {
     return respond(
       { error: "Too many login attempts. Please try again later." },
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       return respond({ error: "Invalid username or password" }, { status: 401 }, origin);
     }
 
-    const token = createAuthToken(user.id, user.role);
+    const token = createAuthToken(user.id, user.role, !!user.emailVerified);
     return respond(
       { token, user: { id: user.id, username: user.username, role: user.role } },
       undefined,

@@ -24,12 +24,13 @@ const IMPERSONATION_COOKIE_OPTIONS = {
 /**
  * Creates a signed HS256 JWT for a regular user session (7-day expiry).
  *
- * @param userId  Subject claim
- * @param role    User's role — stored in the JWT so DB lookups are not needed per request
+ * @param userId         Subject claim
+ * @param role           User's role — stored in the JWT so DB lookups are not needed per request
+ * @param emailVerified  Whether the user's email address has been verified
  */
-export function createAuthToken(userId: string, role: UserRole): string {
+export function createAuthToken(userId: string, role: UserRole, emailVerified: boolean): string {
   return sign(
-    { sub: userId, role, iat: Math.floor(Date.now() / 1000) },
+    { sub: userId, role, emailVerified, iat: Math.floor(Date.now() / 1000) },
     env.JWT_SECRET_KEY,
     { expiresIn: "7d", algorithm: "HS256" },
   );

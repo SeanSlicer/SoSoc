@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, userProcedure, verifiedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   getUserProfile,
@@ -67,7 +67,10 @@ export const userRouter = createTRPCRouter({
 
   search: userProcedure
     .input(z.object({ query: z.string(), limit: z.number().int().min(1).max(50).default(20) }))
-    .query(({ ctx, input }) => searchUsers(input.query, ctx.userId, input.limit)),
+    .query(async ({ ctx, input }) => {
+      await enforceRateLimit("user.search", ctx.userId, 60, 60 * 1000, "Too many searches. Slow down a bit.");
+      return searchUsers(input.query, ctx.userId, input.limit);
+    }),
 
   getFollowers: userProcedure
     .input(z.object({ username: z.string() }))
@@ -85,7 +88,7 @@ export const userRouter = createTRPCRouter({
       return result;
     }),
 
-  follow: userProcedure
+  follow: verifiedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       if (ctx.userId === input.userId) {

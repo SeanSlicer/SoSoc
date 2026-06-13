@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, userProcedure, verifiedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   getConversations,
@@ -33,7 +33,7 @@ export const messagesRouter = createTRPCRouter({
   /** Total unread count across ACTIVE conversations only. */
   getTotalUnread: userProcedure.query(({ ctx }) => getTotalUnread(ctx.userId)),
 
-  getOrCreateDM: userProcedure
+  getOrCreateDM: verifiedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       if (ctx.userId === input.userId) {
@@ -59,7 +59,7 @@ export const messagesRouter = createTRPCRouter({
       return getMessages(input.conversationId, input.cursor);
     }),
 
-  send: userProcedure
+  send: verifiedProcedure
     .input(z.object({
       conversationId: z.string(),
       content: z.string().max(2000).optional(),

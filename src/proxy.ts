@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 
 const PUBLIC_ROUTES = new Set(["/", "/login", "/signup"]);
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
+const VERIFY_ROUTE = "/verify-email";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -10,6 +11,7 @@ export async function proxy(request: NextRequest) {
 
   let isAuthenticated = false;
   let role: string | undefined;
+  let emailVerified: boolean | undefined;
 
   if (token) {
     try {
@@ -17,6 +19,7 @@ export async function proxy(request: NextRequest) {
       const { payload } = await jwtVerify(token, secret);
       isAuthenticated = true;
       role = payload.role as string | undefined;
+      emailVerified = payload.emailVerified as boolean | undefined;
     } catch {
       isAuthenticated = false;
     }
@@ -28,8 +31,14 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirect unauthenticated users to login
-  if (!PUBLIC_ROUTES.has(pathname) && !isAuthenticated) {
+  if (!PUBLIC_ROUTES.has(pathname) && pathname !== VERIFY_ROUTE && !isAuthenticated) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Authenticated users with an unverified email (explicit false — old tokens lacking the
+  // field are undefined, which is not === false, so they pass through for backwards compat)
+  if (isAuthenticated && emailVerified === false && pathname !== VERIFY_ROUTE) {
+    return NextResponse.redirect(new URL(VERIFY_ROUTE, request.url));
   }
 
   // Admin routes require ADMIN role — non-admins go back to feed

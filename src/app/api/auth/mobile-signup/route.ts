@@ -4,7 +4,7 @@ import { signUpSchema } from "~/validation/auth/auth";
 import { createAuthToken } from "~/lib/server/auth";
 import { createEmailVerificationToken } from "@queries/auth/tokens";
 import { sendVerificationEmail } from "~/lib/server/email";
-import { checkRateLimit } from "~/lib/server/rateLimit";
+import { checkRateLimitDistributed } from "~/lib/server/rateLimit";
 import { applyCorsHeaders, corsPreflight } from "~/lib/server/cors";
 import { TRPCError } from "@trpc/server";
 
@@ -25,7 +25,7 @@ function respond(body: unknown, init: ResponseInit | undefined, origin: string |
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin");
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const limit = checkRateLimit(`mobile-signup:${ip}`, 5, 60 * 60 * 1000);
+  const limit = await checkRateLimitDistributed(`mobile-signup:${ip}`, 5, 60 * 60 * 1000);
   if (!limit.allowed) {
     return respond(
       { error: "Too many accounts created from this IP. Please try again later." },
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const { username, email, password } = parsed.data;
     const user = await createUser(username, email, password);
-    const token = createAuthToken(user.id, user.role);
+    const token = createAuthToken(user.id, user.role, false);
 
     try {
       const verificationToken = await createEmailVerificationToken(user.id);

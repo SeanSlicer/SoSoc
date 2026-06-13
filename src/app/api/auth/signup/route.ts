@@ -4,13 +4,13 @@ import { signUpSchema } from "~/validation/auth/auth";
 import { createAuthToken, setAuthCookie } from "~/lib/server/auth";
 import { createEmailVerificationToken } from "@queries/auth/tokens";
 import { sendVerificationEmail } from "~/lib/server/email";
-import { checkRateLimit } from "~/lib/server/rateLimit";
+import { checkRateLimitDistributed } from "~/lib/server/rateLimit";
 import { TRPCError } from "@trpc/server";
 
 export async function POST(req: NextRequest) {
   // Rate limit: 5 signups per hour per IP
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const limit = checkRateLimit(`signup:${ip}`, 5, 60 * 60 * 1000);
+  const limit = await checkRateLimitDistributed(`signup:${ip}`, 5, 60 * 60 * 1000);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many accounts created from this IP. Please try again later." },
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const user = await createUser(username, email, password);
 
     // Issue an auth cookie so the user is logged in while they verify
-    const token = createAuthToken(user.id, user.role);
+    const token = createAuthToken(user.id, user.role, false);
     const response = NextResponse.json({ success: true, pendingVerification: true });
     setAuthCookie(response.cookies, token);
 

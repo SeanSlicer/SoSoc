@@ -12,6 +12,10 @@ export interface UserJwtPayload {
   role: string;
   /** Set only during an admin impersonation session — holds the real admin's user id. */
   imp?: string;
+  /** Present on tokens issued after the email-verification feature shipped.
+   *  `false` = signed up but not yet verified; `true` = verified.
+   *  Absent on tokens from before the feature was added — treated as allowed. */
+  emailVerified?: boolean;
   /** Issued-at (seconds since epoch). */
   iat: number;
   /** Expiry (seconds since epoch). */

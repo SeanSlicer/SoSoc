@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, userProcedure, verifiedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { createPostSchema, updatePostSchema } from "~/validation/post/post";
 import { getFeed } from "@queries/posts/feed";
@@ -27,7 +27,7 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ username: z.string() }))
     .query(({ ctx, input }) => getUserPosts(input.username, ctx.userId)),
 
-  create: userProcedure
+  create: verifiedProcedure
     .input(createPostSchema)
     .mutation(async ({ ctx, input }) => {
       await enforceRateLimit("post.create", ctx.userId, 100, 60 * 60 * 1000, "You're posting too fast. Slow down a bit.");
@@ -62,7 +62,7 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ postId: z.string(), cursor: z.string().optional(), limit: z.number().int().min(1).max(50).default(10) }))
     .query(({ input }) => getComments(input.postId, input.cursor, input.limit)),
 
-  addComment: userProcedure
+  addComment: verifiedProcedure
     .input(z.object({ postId: z.string(), content: z.string().min(1).max(300) }))
     .mutation(async ({ ctx, input }) => {
       await enforceRateLimit("post.comment", ctx.userId, 200, 60 * 60 * 1000, "You're commenting too fast. Slow down a bit.");

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Mail, AlertCircle } from "lucide-react";
-import Link from "next/link";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -55,9 +54,6 @@ function VerifyEmailContent() {
           {resendError && (
             <p className="mt-2 text-xs text-red-500">{resendError}</p>
           )}
-          <Link href="/feed" className="mt-3 block text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200">
-            Continue to feed
-          </Link>
         </div>
       </div>
     );
@@ -93,9 +89,6 @@ function VerifyEmailContent() {
           </>
         )}
 
-        <Link href="/feed" className="mt-3 block text-sm text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300">
-          Skip for now
-        </Link>
       </div>
     </div>
   );
