@@ -30,7 +30,7 @@ export default function RequestList({ selectedId, onSelect, currentUserId }: Pro
     <div className="flex h-full flex-col">
       <div className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Message requests are from people you don't follow back.
+          Message requests are from people you don&apos;t follow back.
         </p>
       </div>
 

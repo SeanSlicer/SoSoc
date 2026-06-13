@@ -95,7 +95,7 @@ export async function createNotification(
         notifyNewMessage:    true,
       },
     });
-    if (prefs && prefs[prefColumn] === false) return;
+    if (prefs?.[prefColumn] === false) return;
   }
 
   return prisma.notification.create({

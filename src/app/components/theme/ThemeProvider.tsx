@@ -6,7 +6,7 @@ export type Theme = "light" | "dark" | "system";
 const ThemeContext = createContext<{
   theme: Theme;
   setTheme: (t: Theme) => void;
-}>({ theme: "system", setTheme: () => {} });
+}>({ theme: "system", setTheme: (_t: Theme) => undefined });
 
 export function useTheme() {
   return useContext(ThemeContext);
@@ -19,14 +19,11 @@ function setThemeCookie(value: string) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-
-  useEffect(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "system";
     const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored === "light" || stored === "dark" || stored === "system") {
-      setThemeState(stored);
-    }
-  }, []);
+    return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+  });
 
   useEffect(() => {
     const root = document.documentElement;

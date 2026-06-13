@@ -54,14 +54,14 @@ describe("DM creation status routing", () => {
 
   it("both members are ACTIVE when the users are friends", () => {
     const statuses = getInitialStatuses("alice", "bob", true);
-    expect(statuses["alice"]).toBe("ACTIVE");
-    expect(statuses["bob"]).toBe("ACTIVE");
+    expect(statuses.alice).toBe("ACTIVE");
+    expect(statuses.bob).toBe("ACTIVE");
   });
 
   it("sender is ACTIVE, recipient is REQUEST when not friends", () => {
     const statuses = getInitialStatuses("alice", "carol", false);
-    expect(statuses["alice"]).toBe("ACTIVE");
-    expect(statuses["carol"]).toBe("REQUEST");
+    expect(statuses.alice).toBe("ACTIVE");
+    expect(statuses.carol).toBe("REQUEST");
   });
 });
 

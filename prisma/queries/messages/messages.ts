@@ -68,7 +68,7 @@ export async function sendMessage(
     where: { id: conversationId },
     select: { name: true, members: { select: { userId: true } } },
   });
-  if (convo && convo.name === null && convo.members.length === 2) {
+  if (convo !== null && convo.name === null && convo.members.length === 2) {
     const otherId = convo.members.find((m) => m.userId !== senderId)?.userId;
     if (otherId) {
       const block = await prisma.blockedUser.findFirst({
