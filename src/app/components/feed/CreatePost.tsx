@@ -76,7 +76,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
     setUploadError("");
     try {
       const path = `videos/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-      const url = await storageProvider.upload("posts", path, file as unknown as File);
+      const url = await storageProvider.upload("posts", path, file);
       setVideoUrl(url);
     } catch {
       setUploadError("Video upload failed.");

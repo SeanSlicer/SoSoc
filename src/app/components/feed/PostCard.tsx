@@ -120,7 +120,7 @@ function CommentMenu({ onDelete }: { onDelete: () => void }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget as Node)) setOpen(false); }}
+        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget)) setOpen(false); }}
         className="rounded p-0.5 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
         aria-label="Comment options"
       >
