@@ -5,6 +5,11 @@ export default tseslint.config(
   {
     ignores: [".next", "mobile/**"],
   },
+  // eslint-plugin-react's auto-detection (`context.getFilename()`) isn't compatible
+  // with eslint 10's Linter API. Pinning the version explicitly skips that codepath.
+  {
+    settings: { react: { version: "19.2.7" } },
+  },
   ...nextConfig,
   {
     files: ["**/*.ts", "**/*.tsx"],

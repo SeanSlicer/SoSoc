@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, Dimensions, FlatList, type ViewToken } from "react-native";
-import { Image } from "expo-image";
 import { useTheme } from "~/lib/theme";
+import { FittedImage } from "./FittedImage";
 
 interface Props {
   images: string[];
@@ -29,10 +29,10 @@ export function PostImageCarousel({ images }: Props) {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(u, i) => `${i}:${u}`}
         renderItem={({ item }) => (
-          <Image
-            source={{ uri: item }}
-            style={{ width: SCREEN_WIDTH, aspectRatio: 1, backgroundColor: colors.bgSubtle }}
-            contentFit="cover"
+          <FittedImage
+            uri={item}
+            style={{ width: SCREEN_WIDTH, aspectRatio: 1 }}
+            bg={colors.bgSubtle}
           />
         )}
         onViewableItemsChanged={onViewable}

@@ -3,6 +3,8 @@ import { useState, useRef } from "react";
 import { Image as ImageIcon, Video, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
+import FittedImage from "~/app/components/ui/FittedImage";
+import ImageEditStage from "./ImageEditStage";
 import { storageProvider } from "~/lib/storage";
 import { resizeImage } from "~/lib/client/resizeImage";
 
@@ -15,6 +17,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
   const utils = api.useUtils();
   const [content, setContent] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -34,16 +37,23 @@ export default function CreatePost({ user }: { user: PostUser }) {
     },
   });
 
-  const handleImageUpload = async (files: FileList) => {
+  const handleImageSelect = (files: FileList) => {
     const remaining = MAX_IMAGES - images.length;
     if (remaining <= 0) return;
-    const toUpload = Array.from(files).slice(0, remaining);
+    const toStage = Array.from(files).slice(0, remaining);
+    if (toStage.length === 0) return;
+    setMode("photo");
+    setVideoUrl(null);
+    setPendingFiles(toStage);
+  };
 
+  const uploadImages = async (files: File[]) => {
+    setPendingFiles(null);
     setIsUploading(true);
     setUploadError("");
     try {
       const urls = await Promise.all(
-        toUpload.map(async (file) => {
+        files.map(async (file) => {
           const resized = await resizeImage(file, 1200);
           const path = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
           return storageProvider.upload("posts", path, resized);
@@ -103,8 +113,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
             <div className={`grid gap-1.5 ${images.length === 1 ? "grid-cols-1" : images.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
               {images.map((url, i) => (
                 <div key={i} className="relative group aspect-square overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`Image ${i + 1}`} className="h-full w-full object-cover" />
+                  <FittedImage src={url} alt={`Image ${i + 1}`} className="h-full w-full" />
                   <button
                     onClick={() => removeImage(i)}
                     className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -145,49 +154,28 @@ export default function CreatePost({ user }: { user: PostUser }) {
           {isFocused && (
             <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-800 pt-3">
               <div className="flex items-center gap-1">
-                {/* Mode toggle */}
+                {/* Add images — also switches to photo mode if a video was staged */}
                 <button
-                  onClick={() => { setMode("photo"); setVideoUrl(null); }}
-                  className={`rounded-lg p-2 transition-colors ${mode === "photo" ? "text-indigo-500 bg-indigo-50" : "text-neutral-400 hover:bg-indigo-50 hover:text-indigo-500"}`}
-                  title="Photo mode"
+                  onClick={() => { setMode("photo"); setVideoUrl(null); imageRef.current?.click(); }}
+                  disabled={isUploading || (mode === "photo" && images.length >= MAX_IMAGES)}
+                  className="rounded-lg p-2 text-neutral-400 hover:bg-indigo-50 hover:text-indigo-500 transition-colors disabled:opacity-40"
+                  title={mode === "photo" && images.length >= MAX_IMAGES ? "Maximum 15 images" : "Add images"}
                 >
                   <ImageIcon size={18} />
                 </button>
+                {mode === "photo" && images.length > 0 && (
+                  <span className="text-xs text-neutral-400">{images.length}/{MAX_IMAGES}</span>
+                )}
+
+                {/* Add a video — also switches to video mode if photos were staged */}
                 <button
-                  onClick={() => { setMode("video"); setImages([]); }}
-                  className={`rounded-lg p-2 transition-colors ${mode === "video" ? "text-indigo-500 bg-indigo-50" : "text-neutral-400 hover:bg-indigo-50 hover:text-indigo-500"}`}
-                  title="Video mode"
+                  onClick={() => { setMode("video"); setImages([]); videoRef.current?.click(); }}
+                  disabled={isUploading || (mode === "video" && !!videoUrl)}
+                  className="rounded-lg p-2 text-neutral-400 hover:bg-indigo-50 hover:text-indigo-500 transition-colors disabled:opacity-40"
+                  title={mode === "video" && videoUrl ? "Video already attached" : "Add a video"}
                 >
                   <Video size={18} />
                 </button>
-
-                {/* Photo add button */}
-                {mode === "photo" && (
-                  <>
-                    <button
-                      onClick={() => imageRef.current?.click()}
-                      disabled={isUploading || images.length >= MAX_IMAGES}
-                      className="rounded-lg p-2 text-neutral-400 hover:bg-indigo-50 hover:text-indigo-500 transition-colors disabled:opacity-40"
-                      title={images.length >= MAX_IMAGES ? "Maximum 15 images" : "Add images"}
-                    >
-                      <ImageIcon size={18} />
-                    </button>
-                    {images.length > 0 && (
-                      <span className="text-xs text-neutral-400">{images.length}/{MAX_IMAGES}</span>
-                    )}
-                  </>
-                )}
-
-                {/* Video select button */}
-                {mode === "video" && !videoUrl && (
-                  <button
-                    onClick={() => videoRef.current?.click()}
-                    disabled={isUploading}
-                    className="rounded-lg p-2 text-neutral-400 hover:bg-indigo-50 hover:text-indigo-500 transition-colors disabled:opacity-40"
-                  >
-                    <Video size={18} />
-                  </button>
-                )}
 
                 {isUploading && (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
@@ -210,13 +198,21 @@ export default function CreatePost({ user }: { user: PostUser }) {
           )}
 
           <input ref={imageRef} type="file" accept="image/*" multiple className="hidden"
-            onChange={(e) => { if (e.target.files?.length) void handleImageUpload(e.target.files); e.target.value = ""; }}
+            onChange={(e) => { if (e.target.files?.length) handleImageSelect(e.target.files); e.target.value = ""; }}
           />
           <input ref={videoRef} type="file" accept="video/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleVideoUpload(f); e.target.value = ""; }}
           />
         </div>
       </div>
+
+      {pendingFiles && (
+        <ImageEditStage
+          files={pendingFiles}
+          onConfirm={(files) => void uploadImages(files)}
+          onCancel={() => setPendingFiles(null)}
+        />
+      )}
     </div>
   );
 }
