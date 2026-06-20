@@ -5,7 +5,7 @@ const PUBLIC_ROUTES = new Set(["/", "/login", "/signup"]);
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
 const VERIFY_ROUTE = "/verify-email";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("user-token")?.value;
 
