@@ -14,7 +14,7 @@ export interface AuthState {
   status: "loading" | "signedIn" | "signedOut";
   signIn: (usernameOrEmail: string, password: string) => Promise<void>;
   signUp: (args: { username: string; email: string; password: string }) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: (opts?: { revoke?: boolean }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -88,13 +88,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("signedIn");
   }, []);
 
-  const signOut = useCallback(async () => {
+  // `revoke: false` skips the server-side call. Use it when reacting to a
+  // session that's already invalid (e.g. an UNAUTHORIZED response) — that path
+  // must only clear local state, never hit /api/auth/mobile-logout, because that
+  // endpoint bumps tokenValidFrom and revokes the account's sessions on *every*
+  // device (web included), not just this one.
+  const signOut = useCallback(async (opts?: { revoke?: boolean }) => {
     const current = token;
     setToken(null);
     setUser(null);
     setStatus("signedOut");
     await secureStorage.remove(AUTH_TOKEN_KEY);
-    if (current) {
+    if (current && opts?.revoke !== false) {
       try {
         await fetch(apiUrl("/api/auth/mobile-logout"), {
           method: "POST",
