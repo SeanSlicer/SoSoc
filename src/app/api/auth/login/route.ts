@@ -25,6 +25,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
     }
 
+    // Per-account limit (in addition to per-IP) so credential stuffing spread across
+    // many IPs against a single account is still throttled: 10 attempts per 15 minutes.
+    const accountLimit = await checkRateLimitDistributed(
+      `login:account:${usernameOrEmail.trim().toLowerCase()}`,
+      10,
+      15 * 60 * 1000,
+    );
+    if (!accountLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Please try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil(accountLimit.retryAfterMs / 1000)) },
+        },
+      );
+    }
+
     const user = await getUserByUsernameOrEmailAndPassword(usernameOrEmail, password);
     if (!user) {
       return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });

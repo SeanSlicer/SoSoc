@@ -15,7 +15,7 @@ export type { UserJwtPayload };
  */
 export const verifyAuth = (token: string): UserJwtPayload => {
   try {
-    return jwt.verify(token, env.JWT_SECRET_KEY) as UserJwtPayload;
+    return jwt.verify(token, env.JWT_SECRET_KEY, { algorithms: ["HS256"] }) as UserJwtPayload;
   } catch {
     throw new Error("Your token has expired.");
   }

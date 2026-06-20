@@ -8,7 +8,10 @@ const FROM = "sosoc <onboarding@resend.dev>";
 
 function logFallback(label: string, url: string) {
   console.warn(`[email] RESEND_API_KEY not set — ${label} email not sent.`);
-  console.info(`[email] ${label} URL: ${url}`);
+  // Don't print tokens to production logs — they're commonly aggregated to external platforms.
+  if (process.env.NODE_ENV !== "production") {
+    console.info(`[email] ${label} URL: ${url}`);
+  }
 }
 
 export async function sendVerificationEmail(to: string, token: string) {

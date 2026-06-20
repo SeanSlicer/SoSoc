@@ -32,7 +32,7 @@ export async function adminCreateUser(data: {
   password: string;
   role: UserRole;
 }) {
-  const hashedPassword = await bcrypt.hash(data.password, 10);
+  const hashedPassword = await bcrypt.hash(data.password, 12);
   try {
     return await prisma.user.create({
       data: {

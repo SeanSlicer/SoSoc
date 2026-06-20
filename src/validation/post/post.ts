@@ -1,9 +1,14 @@
 import { z } from "zod";
 
+const httpUrlSchema = z
+  .string()
+  .url()
+  .refine((url) => /^https?:\/\//i.test(url), "URL must use http or https");
+
 export const createPostSchema = z.object({
   content: z.string().min(1, "Post cannot be empty").max(500, "Post too long"),
-  images: z.array(z.string().url()).max(15).default([]),
-  videoUrl: z.string().url().optional(),
+  images: z.array(httpUrlSchema).max(15).default([]),
+  videoUrl: httpUrlSchema.optional(),
 });
 
 export const updatePostSchema = z.object({

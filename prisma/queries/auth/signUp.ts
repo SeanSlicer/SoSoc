@@ -11,7 +11,7 @@ export async function createUser(
 ): Promise<User> {
   try {
     // now TypeScript knows bcrypt.hash returns Promise<string>
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
       data: {

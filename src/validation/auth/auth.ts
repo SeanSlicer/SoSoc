@@ -8,6 +8,7 @@ const usernameRegex = /^[a-zA-Z0-9_]+$/;
 const passwordSchema = z
   .string()
   .min(8, "Must be at least 8 characters")
+  .max(72, "Must be under 72 characters")
   .regex(/[A-Z]/, "One uppercase character")
   .regex(/\d/, "One number");
 

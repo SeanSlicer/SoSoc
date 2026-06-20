@@ -16,7 +16,7 @@ export async function proxy(request: NextRequest) {
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET_KEY);
-      const { payload } = await jwtVerify(token, secret);
+      const { payload } = await jwtVerify(token, secret, { algorithms: ["HS256"] });
       isAuthenticated = true;
       role = payload.role as string | undefined;
       emailVerified = payload.emailVerified as boolean | undefined;
