@@ -38,7 +38,11 @@ export const getUserByToken = async (token: string) => {
       throw new Error("Token has been revoked.");
     }
     return user;
-  } catch {
+  } catch (err) {
+    // Every caller treats this uniformly as "signed out" — the generic message is
+    // intentional so callers don't leak which case occurred. Log the real cause so
+    // unexpected failures (DB errors, mass revocation) are still visible server-side.
+    console.error("[jwt] getUserByToken failed:", err);
     throw new Error("Your token has expired.");
   }
 };

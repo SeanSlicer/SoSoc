@@ -59,7 +59,7 @@ This is a T3 Stack social media app (Next.js 15 App Router + tRPC v11 + Prisma v
 - **Impersonation:** Admin can impersonate via `/api/admin/impersonate`. Real admin token saved as `admin-token` cookie; `user-token` replaced with short-lived (4h) impersonation token containing `{ imp: adminId }`. Exit via `/api/admin/impersonate/exit`.
 - **Env validation:** All env vars declared in `src/env.js` using `@t3-oss/env-nextjs`. Access via `~/env.js`, never `process.env` directly.
 - **DB access:** Only import `db` from `~/server/db` in server-side code.
-- **Proxy / middleware:** `src/proxy.ts` (exports `proxy` function, not default middleware) — gates `/admin` routes by role, handles auth redirects.
+- **Middleware:** `src/middleware.ts` — gates `/admin` routes by role, handles auth redirects, enforces the email-verification gate.
 
 ### Database Models (Prisma)
 

@@ -1,3 +1,4 @@
+"use client";
 /**
  * Browser-only image helpers. Uses `Image`, `URL.createObjectURL`, and the
  * Canvas API — not portable to React Native. A future Expo client should
