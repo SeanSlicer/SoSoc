@@ -4,7 +4,7 @@ import { Image as ImageIcon, Video, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import FittedImage from "~/app/components/ui/FittedImage";
-import ImageEditStage from "./ImageEditStage";
+import ImageEditStage, { type PendingImage } from "./ImageEditStage";
 import { storageProvider } from "~/lib/storage";
 import { resizeImage } from "~/lib/client/resizeImage";
 
@@ -17,7 +17,7 @@ export default function CreatePost({ user }: { user: PostUser }) {
   const utils = api.useUtils();
   const [content, setContent] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [pendingImages, setPendingImages] = useState<PendingImage[] | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -44,11 +44,19 @@ export default function CreatePost({ user }: { user: PostUser }) {
     if (toStage.length === 0) return;
     setMode("photo");
     setVideoUrl(null);
-    setPendingFiles(toStage);
+    // Created here, in a regular event handler — not an effect — so there's no
+    // StrictMode double-invoke to race against. Owned and revoked by whichever
+    // of uploadImages/closePendingImages runs next.
+    setPendingImages(toStage.map((file) => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) })));
+  };
+
+  const closePendingImages = () => {
+    pendingImages?.forEach((img) => URL.revokeObjectURL(img.url));
+    setPendingImages(null);
   };
 
   const uploadImages = async (files: File[]) => {
-    setPendingFiles(null);
+    closePendingImages();
     setIsUploading(true);
     setUploadError("");
     try {
@@ -206,11 +214,11 @@ export default function CreatePost({ user }: { user: PostUser }) {
         </div>
       </div>
 
-      {pendingFiles && (
+      {pendingImages && (
         <ImageEditStage
-          files={pendingFiles}
+          images={pendingImages}
           onConfirm={(files) => void uploadImages(files)}
-          onCancel={() => setPendingFiles(null)}
+          onCancel={closePendingImages}
         />
       )}
     </div>
