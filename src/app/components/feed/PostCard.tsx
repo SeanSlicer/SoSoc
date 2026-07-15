@@ -5,6 +5,7 @@ import { Heart, MessageCircle, Trash2, Edit2, X, Check, ChevronLeft, ChevronRigh
 import { api, type RouterOutputs } from "~/trpc/react";
 import Avatar from "~/app/components/ui/Avatar";
 import Lightbox from "~/app/components/ui/Lightbox";
+import FittedImage from "~/app/components/ui/FittedImage";
 import { timeAgo } from "~/lib/shared/timeAgo";
 
 export type FeedPost = RouterOutputs["post"]["getFeed"]["posts"][number];
@@ -46,13 +47,11 @@ function ImageCarousel({ images, onImageClick }: { images: string[]; onImageClic
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {images.map((src, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <FittedImage
             key={i}
             src={src}
             alt={`Image ${i + 1} of ${images.length}`}
-            className="w-full shrink-0 max-h-96 object-cover"
-            draggable={false}
+            className="aspect-square w-full shrink-0"
           />
         ))}
       </div>
@@ -121,7 +120,7 @@ function CommentMenu({ onDelete }: { onDelete: () => void }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget as Node)) setOpen(false); }}
+        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget)) setOpen(false); }}
         className="rounded p-0.5 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
         aria-label="Comment options"
       >

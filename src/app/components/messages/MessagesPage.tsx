@@ -30,7 +30,7 @@ export default function MessagesPage({ currentUserId }: Props) {
   const selectedConvo: AnyConversation | undefined =
     (convos?.find((c) => c.id === selectedId) ??
       requests?.find((c) => c.id === selectedId) ??
-      hidden?.find((c) => c.id === selectedId)) as AnyConversation | undefined;
+      hidden?.find((c) => c.id === selectedId));
 
   const handleSelect = (id: string, fromTab: Tab) => {
     setTab(fromTab);
@@ -113,7 +113,7 @@ export default function MessagesPage({ currentUserId }: Props) {
           {selectedId ? (
             <MessageThread
               conversationId={selectedId}
-              conversation={selectedConvo as ActiveConversation | undefined}
+              conversation={selectedConvo}
               currentUserId={currentUserId}
               onBack={() => setSelectedId(null)}
             />

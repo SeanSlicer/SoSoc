@@ -9,7 +9,6 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -19,6 +18,8 @@ import { uploadFile, uploadPath } from "~/lib/upload";
 import { useAuth } from "~/lib/auth";
 import { Button } from "~/components/Button";
 import { Icon } from "~/components/Icon";
+import { FittedImage } from "~/components/FittedImage";
+import { ImageEditStage } from "~/components/ImageEditStage";
 
 const MAX_IMAGES = 15;
 
@@ -33,6 +34,7 @@ export default function Compose() {
 
   const [content, setContent] = useState("");
   const [localImages, setLocalImages] = useState<string[]>([]);
+  const [pendingUris, setPendingUris] = useState<string[] | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +65,7 @@ export default function Compose() {
     });
 
     if (result.canceled) return;
-    setLocalImages((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+    setPendingUris(result.assets.map((a) => a.uri));
     setError(null);
   };
 
@@ -138,15 +140,10 @@ export default function Compose() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {localImages.map((uri) => (
                 <View key={uri} style={{ position: "relative" }}>
-                  <Image
-                    source={{ uri }}
-                    style={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: 10,
-                      backgroundColor: colors.bgSubtle,
-                    }}
-                    contentFit="cover"
+                  <FittedImage
+                    uri={uri}
+                    style={{ width: 120, height: 120, borderRadius: 10 }}
+                    bg={colors.bgSubtle}
                   />
                   <Pressable
                     onPress={() => removeImage(uri)}
@@ -198,6 +195,17 @@ export default function Compose() {
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {pendingUris && (
+        <ImageEditStage
+          uris={pendingUris}
+          onConfirm={(uris) => {
+            setLocalImages((prev) => [...prev, ...uris]);
+            setPendingUris(null);
+          }}
+          onCancel={() => setPendingUris(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }

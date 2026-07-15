@@ -17,7 +17,7 @@ export default function DropdownMenu({ items, label = "Options" }: { items: Drop
     <div ref={ref} className="relative shrink-0">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget as Node)) setOpen(false); }}
+        onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget)) setOpen(false); }}
         aria-label={label}
         className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
       >

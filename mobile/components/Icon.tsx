@@ -4,12 +4,14 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Crop,
   Heart,
   Home,
   Image as ImageIcon,
   type LucideIcon,
   LogOut,
   Mail,
+  Maximize2,
   MessageCircle,
   MoreHorizontal,
   Plus,
@@ -43,7 +45,9 @@ export type IconName =
   | "check"
   | "x"
   | "send"
-  | "trash";
+  | "trash"
+  | "crop"
+  | "maximize";
 
 const ICONS: Record<IconName, LucideIcon> = {
   home: Home,
@@ -67,6 +71,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   x: X,
   send: Send,
   trash: Trash2,
+  crop: Crop,
+  maximize: Maximize2,
 };
 
 export function Icon({
